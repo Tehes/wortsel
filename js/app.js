@@ -3,23 +3,28 @@ var app = (function() {
     Variables
     ---------------------------------------------------------------------------------------------------*/
     var keyboard = document.querySelector("#keyboard");
-    var backKey = document.querySelectorAll(".input")[0];
-    var enterKey = document.querySelectorAll(".input")[1];
     var rows = document.querySelectorAll(".row");
     var activeRow = 0;
+    var wordList = ["pferd", "insel", "knopf", "hafer", "feuer"];
+    var solution = wordList[getRndInteger(0, wordList.length-1)];
+    console.log(solution);
 
     /* --------------------------------------------------------------------------------------------------
     functions
     ---------------------------------------------------------------------------------------------------*/
+    function getRndInteger(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
     function typeKey() {
-        var letters = rows[activeRow].querySelectorAll(".letter");
-        var i = 0;
+        var letters, i;
+
+        letters = rows[activeRow].querySelectorAll(".letter");
+        i = 0;
 
         while (i < letters.length && letters[i].textContent !== "") {
             i++;
         }
-
-        console.log(i);
 
         if (event.target.textContent === "back") {
             if (!letters[i-1]) {
@@ -30,14 +35,43 @@ var app = (function() {
 
         else if (event.target.textContent === "enter") {
             if (i === letters.length) {
-                console.log("word complete");
-                // Here will be the function call for evaluation of the word.
+                checkSolution(letters);
             }
         }
 
         else if (i < letters.length && event.target.classList.contains('key')) {
             letters[i].textContent = event.target.textContent;
         }
+    }
+
+    function checkSolution(letters) {
+        var i, j, tempSolution;
+
+        i = 0;
+        tempSolution = solution.split("");
+
+        for (i = 0; i < letters.length; i++) {
+            if (letters[i].textContent === solution[i]) {
+                letters[i].classList.add("correct");
+                tempSolution[i] = "";
+            }
+        }
+
+        for (i = 0; i < letters.length; i++) {
+            j = tempSolution.indexOf(letters[i].textContent);
+            if (j !== -1) {
+                letters[i].classList.add("present");
+                tempSolution[j] = "";
+            }
+        }
+
+        for (i = 0; i < letters.length; i++) {
+            if (!letters[i].classList.contains("correct") && !letters[i].classList.contains("present")) {
+                letters[i].classList.add("absent");
+            }
+        }
+
+        activeRow++;
     }
 
 
