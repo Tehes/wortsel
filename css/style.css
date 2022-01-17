@@ -1,11 +1,11 @@
 :root {
-  --main-bg-color: #FFF;
-  --main-font-color: #333;
-  --highlight-font-color: #eee;
-  --color-correct: rgb(106,170,100);
-  --color-present: rgb(201,180,88);
-  --color-absent: rgb(120,124,126);
-  --border-standard: 2px solid #ccc;
+    --main-bg-color: #FFF;
+    --main-font-color: #333;
+    --highlight-font-color: #eee;
+    --color-correct: rgb(106, 170, 100);
+    --color-present: rgb(201, 180, 88);
+    --color-absent: rgb(120, 124, 126);
+    --border-standard: 2px solid #ccc;
 }
 
 * {
@@ -14,8 +14,8 @@
 
 html {
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-     margin:0;
-	 padding:0;
+    margin: 0;
+    padding: 0;
 }
 
 body {
@@ -23,11 +23,10 @@ body {
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
-    margin:0;
-	padding:0;
-	color: var(--main-font-color);
+    margin: 0;
+    padding: 0;
+    color: var(--main-font-color);
     font-family: 'Work Sans', sans-serif;
-
 }
 
 /*
@@ -35,7 +34,6 @@ body {
 HEADER
 -------------------------------------------------------------------
 */
-
 header {
     display: flex;
     width: 58vmin;
@@ -57,7 +55,6 @@ h1 {
 KEYBOARD
 -------------------------------------------------------------------
 */
-
 #keyboard {
     display: flex;
     margin: 3vmin auto;
@@ -82,7 +79,7 @@ KEYBOARD
 }
 
 .input {
-    flex-grow: 20;
+    flex-grow: 18;
 }
 
 .key:active {
@@ -96,7 +93,6 @@ KEYBOARD
 ROWS
 -------------------------------------------------------------------
 */
-
 .row {
     display: flex;
     margin: 0 auto;
@@ -139,10 +135,9 @@ ROWS
 MEDIA QUERIES
 -------------------------------------------------------------------
 */
-
 @media (prefers-color-scheme: dark) {
-	:root {
-		--main-bg-color: #111;
-		--main-font-color: #CCC;
-	}
+    :root {
+        --main-bg-color: #111;
+        --main-font-color: #CCC;
+    }
 }
