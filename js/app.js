@@ -56,20 +56,26 @@ var app = (function() {
                 tempSolution[i] = "";
             }
         }
+        console.log(tempSolution);
 
         for (i = 0; i < letters.length; i++) {
-            j = tempSolution.indexOf(letters[i].textContent);
-            if (j !== -1) {
-                letters[i].classList.add("present");
-                tempSolution[j] = "";
+            if (!letters[i].classList.contains("correct")) {
+                j = tempSolution.indexOf(letters[i].textContent);
+                if (j !== -1 ) {
+                    letters[i].classList.add("present");
+                    tempSolution[j] = "";
+                }
             }
+
         }
+        console.log(tempSolution);
 
         for (i = 0; i < letters.length; i++) {
             if (!letters[i].classList.contains("correct") && !letters[i].classList.contains("present")) {
                 letters[i].classList.add("absent");
             }
         }
+        console.log(tempSolution);
 
         activeRow++;
     }
