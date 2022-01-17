@@ -15,16 +15,27 @@ var app = (function() {
         var letters = rows[activeRow].querySelectorAll(".letter");
         var i = 0;
 
-        while (letters[i].textContent !== "") {
+        while (i < letters.length && letters[i].textContent !== "") {
             i++;
-            if (!letters[i]) {
+        }
+
+        console.log(i);
+
+        if (event.target.textContent === "back") {
+            if (!letters[i-1]) {
                 return;
+            }
+            letters[i-1].textContent = "";
+        }
+
+        else if (event.target.textContent === "enter") {
+            if (i === letters.length) {
+                console.log("word complete");
+                // Here will be the function call for evaluation of the word.
             }
         }
 
-
-
-        if (event.target.classList.contains('key')) {
+        else if (i < letters.length && event.target.classList.contains('key')) {
             letters[i].textContent = event.target.textContent;
         }
     }
