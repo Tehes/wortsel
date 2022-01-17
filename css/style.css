@@ -1,6 +1,11 @@
 :root {
   --main-bg-color: #FFF;
   --main-font-color: #333;
+  --highlight-font-color: #eee;
+  --color-correct: rgb(106,170,100);
+  --color-present: rgb(201,180,88);
+  --color-absent: rgb(120,124,126);
+  --border-standard: 2px solid #ccc;
 }
 
 * {
@@ -21,14 +26,113 @@ body {
     margin:0;
 	padding:0;
 	color: var(--main-font-color);
-	
+    font-family: 'Work Sans', sans-serif;
+
 }
 
 /*
 -------------------------------------------------------------------
-YOUR SECTIONS
+HEADER
 -------------------------------------------------------------------
 */
+
+header {
+    display: flex;
+    width: 58vmin;
+    margin: 0 auto;
+    justify-content: center;
+    border-bottom: var(--border-standard);
+    margin-bottom: 3vmin;
+}
+
+h1 {
+    text-transform: uppercase;
+    font-size: 5vmin;
+    font-weight: 500;
+    margin: 1vmin;
+}
+
+/*
+-------------------------------------------------------------------
+KEYBOARD
+-------------------------------------------------------------------
+*/
+
+#keyboard {
+    display: flex;
+    margin: 3vmin auto;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: 1vmin;
+    padding: 2vmin;
+    flex-wrap: wrap;
+    max-width: 95vmin;
+}
+
+.key {
+    cursor: grab;
+    flex: 1 1 7.5%;
+    background-color: #cdcdcd;
+    text-transform: uppercase;
+    font-size: 3vmin;
+    border-radius: 1vmin;
+    padding: 1vmin;
+    line-height: 200%;
+    text-align: center;
+}
+
+.input {
+    flex-grow: 20;
+}
+
+.key:active {
+    cursor: grabbing;
+    background-color: #aaa;
+    color: var(--main-font-color);
+}
+
+/*
+-------------------------------------------------------------------
+ROWS
+-------------------------------------------------------------------
+*/
+
+.row {
+    display: flex;
+    margin: 0 auto;
+    justify-content: center;
+}
+
+.letter {
+    border: var(--border-standard);
+    width: 10vmin;
+    height: 10vmin;
+    margin: 1vmin;
+    padding: 1vmin;
+    font-size: 7vmin;
+    text-align: center;
+    line-height: 100%;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.correct {
+    background-color: var(--color-correct);
+    border-color: var(--color-correct);
+    color: var(--highlight-font-color);
+}
+
+.present {
+    background-color: var(--color-present);
+    border-color: var(--color-present);
+    color: var(--highlight-font-color);
+}
+
+.absent {
+    background-color: var(--color-absent);
+    border-color: var(--color-absent);
+    color: var(--highlight-font-color);
+}
 
 /*
 -------------------------------------------------------------------
