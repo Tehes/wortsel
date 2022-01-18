@@ -8,6 +8,7 @@ var app = (function() {
     var wordList = ["Abart", "Abbau", "Abend", "Abgas", "Abort", "Abruf", "Abtei", "abtun", "Abzug", "Achse", "Acker", "Acryl", "Adern", "Adieu", "Adler", "adlig", "Affen", "affig", "affin", "After", "Agave", "Agent", "Ahorn", "Aktie", "aktiv", "Alarm", "Alben", "Album", "Algen", "Alias", "Alibi", "Alien", "Allah", "Allee", "Alles", "Alpen", "Alpha", "Altar", "Alter", "Altöl", "Amigo", "Amöbe", "Ampel", "Amsel", "Anbau", "anbei", "Anden", "Angel", "Angst", "Anker", "Anmut", "Anode", "Anruf", "antik", "antun", "Anzug", "Aorta", "Apell", "Apfel", "April", "Arche", "Areal", "Arena", "Armee", "Armut", "Aroma", "Arsch", "artig", "Asien", "Asket", "Aspik", "Assel", "Athen", "Atlas", "atmen", "Atoll", "Audio", "Autor", "Axiom", "Pferd", "Insel", "Knopf", "Hafer", "Feuer"];
     var solution = wordList[getRndInteger(0, wordList.length-1)].toLowerCase();;
     console.log(solution);
+	console.log(wordList.length);
 
     /* --------------------------------------------------------------------------------------------------
     functions

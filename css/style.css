@@ -36,7 +36,7 @@ HEADER
 */
 header {
     display: flex;
-    width: 58vmin;
+    width: 63vmin;
     margin: 0 auto;
     justify-content: center;
     border-bottom: var(--border-standard);
@@ -101,8 +101,8 @@ ROWS
 
 .letter {
     border: var(--border-standard);
-    width: 10vmin;
-    height: 10vmin;
+    width: 11vmin;
+    height: 11vmin;
     margin: 1vmin;
     padding: 1vmin;
     font-size: 7vmin;
