@@ -56,7 +56,6 @@ var app = (function() {
                 tempSolution[i] = "";
             }
         }
-        console.log(tempSolution);
 
         for (i = 0; i < letters.length; i++) {
             if (!letters[i].classList.contains("correct")) {
@@ -68,17 +67,45 @@ var app = (function() {
             }
 
         }
-        console.log(tempSolution);
 
         for (i = 0; i < letters.length; i++) {
             if (!letters[i].classList.contains("correct") && !letters[i].classList.contains("present")) {
                 letters[i].classList.add("absent");
             }
         }
-        console.log(tempSolution);
-
+		
+		colorizeKeyboard(letters);
         activeRow++;
     }
+	
+	function colorizeKeyboard(letters) {
+		var i, j, keys;
+		i = 0;
+		keys = document.querySelectorAll(".key");
+		arrkeys = [...keys].map(keys => keys.textContent);
+		
+		for (i = 0; i < letters.length; i++) {
+			j = arrkeys.indexOf(letters[i].textContent);
+			
+			if (letters[i].classList.contains("absent") 
+			&& !keys[j].classList.contains("correct") 
+			&& !keys[j].classList.contains("present")) {
+				keys[j].classList.add("absent");
+			}
+			
+			if (letters[i].classList.contains("present") 
+			&& !keys[j].classList.contains("correct")) {
+				keys[j].classList.add("present");
+				keys[j].classList.remove("absent");
+			}
+			
+			if (letters[i].classList.contains("correct")) {
+				keys[j].classList.add("correct");
+				keys[j].classList.remove("present");
+				keys[j].classList.remove("absent");
+			}
+		}
+	}
 
 
     function init() {
