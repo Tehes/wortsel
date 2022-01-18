@@ -40,7 +40,7 @@ header {
     margin: 0 auto;
     justify-content: center;
     border-bottom: var(--border-standard);
-    margin-bottom: 3vmin;
+    margin-bottom: 2vmin;
 }
 
 h1 {
@@ -74,7 +74,7 @@ KEYBOARD
     font-size: 3vmin;
     border-radius: 1vmin;
     padding: 1vmin;
-    line-height: 200%;
+    line-height: 2;
     text-align: center;
 }
 
@@ -101,13 +101,13 @@ ROWS
 
 .letter {
     border: var(--border-standard);
-    width: 11vmin;
-    height: 11vmin;
-    margin: 1vmin;
-    padding: 1vmin;
-    font-size: 7vmin;
+    width: 8vmin;
+    height: 8vmin;
+    margin: 0.5vmin;
+    padding: 0.5vmin;
+    font-size: 6vmin;
     text-align: center;
-    line-height: 100%;
+    line-height: 1.1;
     text-transform: uppercase;
     font-weight: 500;
 }
@@ -139,5 +139,31 @@ MEDIA QUERIES
     :root {
         --main-bg-color: #111;
         --main-font-color: #CCC;
+    }
+}
+
+@media only screen and (max-width: 450px) and (orientation: portrait) {
+    header {
+        width: 90vmin;
+    }
+
+    .letter {
+        width: 16vmin;
+        height: 16vmin;
+        margin: 1vmin;
+        padding: 1vmin;
+        font-size: 11vmin;
+    }
+
+    #keyboard {
+        justify-content: space-between;
+        align-items: stretch;
+        gap: 1vmin;
+        padding: 1vmin;
+        max-width: 99vmin;
+    }
+
+    .key {
+        font-size: 5vmin;
     }
 }
