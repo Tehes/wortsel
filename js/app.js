@@ -5,8 +5,8 @@ var app = (function() {
     var keyboard = document.querySelector("#keyboard");
     var rows = document.querySelectorAll(".row");
     var activeRow = 0;
-    var wordList = ["Abart", "Abbau", "Abend", "Abgas", "Abort", "Abruf", "Abtei", "abtun", "Abzug", "Achse", "Acker", "Acryl", "Adern", "Adieu", "Adler", "adlig", "Affen", "affig", "affin", "After", "Agave", "Agent", "Ahorn", "Aktie", "aktiv", "Alarm", "Alben", "Album", "Algen", "Alias", "Alibi", "Alien", "Allah", "Allee", "Alles", "Alpen", "Alpha", "Altar", "Alter", "Altöl", "Amigo", "Amöbe", "Ampel", "Amsel", "Anbau", "anbei", "Anden", "Angel", "Angst", "Anker", "Anmut", "Anode", "Anruf", "antik", "antun", "Anzug", "Aorta", "Apell", "Apfel", "April", "Arche", "Areal", "Arena", "Armee", "Armut", "Aroma", "Arsch", "artig", "Asien", "Asket", "Aspik", "Assel", "Athen", "Atlas", "atmen", "Atoll", "Audio", "Autor", "Axiom", "Pferd", "Insel", "Knopf", "Hafer", "Feuer"];
-    var solution = wordList[getRndInteger(0, wordList.length - 1)].toLowerCase();;
+    var wordList = ["Abart", "Abbau", "Abend", "Abgas", "Abort", "Abruf", "Abtei", "abtun", "Abzug", "Achse", "Acker", "Acryl", "Adern", "Adieu", "Adler", "adlig", "Affen", "affig", "affin", "After", "Agave", "Agent", "Ahorn", "Aktie", "aktiv", "Alarm", "Alben", "Album", "Algen", "Alias", "Alibi", "Alien", "Allah", "Allee", "Alles", "Alpen", "Alpha", "Altar", "Alter", "Altöl", "Amigo", "Amöbe", "Ampel", "Amsel", "Anbau", "anbei", "Anden", "Angel", "Angst", "Anker", "Anmut", "Anode", "Anruf", "antik", "antun", "Anzug", "Aorta", "Apell", "Apfel", "April", "Arche", "Areal", "Arena", "Armee", "Armut", "Aroma", "Arsch", "artig", "Asien", "Asket", "Aspik", "Assel", "Athen", "Atlas", "atmen", "Atoll", "Audio", "Autor", "Axiom", "Backe", "baden", "Bälle", "Bänke", "Bären", "Bäume", "banal", "Bande", "bange", "Banjo", "Bares", "Barke", "Baron", "Basar", "Bauch", "bauen", "Bauer", "Beben", "Beere", "Beete", "Beide", "Beige", "Beine", "Belag", "Beleg", "Beruf", "Besen", "Beste", "beten",  "Beuge", "Beule", "Beute", "bevor", "Bezug", "Bibel", "Biber", "Biene", "Biere", "Biest", "Binde", "Bingo", "Birke", "Birne", "Bison", "Bitte", "Blank", "Blase", "Blech", "Blick", "blind", "Blitz", "blöde", "Blond", "Blüte", "Blume", "Bluse", "Boden", "Böcke", "Bogen", "Bohne", "Bojen", "Bombe", "Boote", "Bowle", "Brand", "Braue", "Braun", "Braut", "Bravo", "breit", "Brett", "Brief", "Brise", "Bruch", "Buben", "Buche", "Bucht", "Bügel", "Bürde", "Büste", "Bulle", "Busch", "Busen", "Pferd", "Insel", "Knopf", "Hafer", "Feuer"];
+    var solution = wordList[getRndInteger(0, wordList.length - 1)].toLowerCase();
     console.log(solution);
     console.log(wordList.length);
 
@@ -66,7 +66,6 @@ var app = (function() {
                     tempSolution[j] = "";
                 }
             }
-
         }
 
         for (i = 0; i < letters.length; i++) {
