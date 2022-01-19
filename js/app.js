@@ -76,12 +76,7 @@ var app = (function() {
         }
 
         colorizeKeyboard(letters);
-        activeRow++;
-		
-		if (activeRow === 6) {
-			modal.textContent = "Leider verloren. Gesucht wurde '"+solution.toUpperCase()+"'.";
-			modal.classList.toggle("hidden");
-		}
+		hasEnded();
     }
 
     function colorizeKeyboard(letters) {
@@ -112,6 +107,24 @@ var app = (function() {
             }
         }
     }
+	
+	function hasEnded() {
+		var correctLetters;
+		
+		correctLetters = rows[activeRow].querySelectorAll(".correct");
+		if (correctLetters.length === 5) {
+			modal.textContent = "Yay, gewonnen!";
+			modal.classList.toggle("hidden");
+		}
+		else {
+			activeRow++;
+		}
+		
+		if (activeRow === 6) {
+			modal.textContent = "Leider verloren. Gesucht wurde '"+solution.toUpperCase()+"'.";
+			modal.classList.toggle("hidden");
+		}
+	}
 
 
     function init() {
