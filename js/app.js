@@ -145,9 +145,6 @@ var app = (function() {
 
     function init() {
         document.addEventListener("touchstart", function() {}, false);
-        document.addEventListener("dblclick", function(event) {
-            event.preventDefault();
-        });
         keyboard.addEventListener("click", typeKey, false);
 
         console.log("amount of words: " + wordList.length);
