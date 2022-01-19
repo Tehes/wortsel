@@ -13,7 +13,7 @@
 
 * {
     box-sizing: border-box;
-    touch-action: manipulation;
+    touch-action: manipulation; /* disable double tap to zoom */
 }
 
 html {
