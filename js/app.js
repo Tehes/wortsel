@@ -116,8 +116,8 @@ var app = (function() {
         correctLetters = rows[activeRow].querySelectorAll(".correct");
 
         if (correctLetters.length === 5) {
-            modal.textContent = "Yay, gewonnen!";
-            modal.classList.toggle("hidden");
+            showModal("Yay, gewonnen!");
+            playWinAnimation(correctLetters);
         }
         else {
             activeRow++;
@@ -130,13 +130,25 @@ var app = (function() {
 
     function showModal(text, duration) {
         modal.textContent = text;
-        modal.classList.toggle("hidden");
+        modal.classList.remove("hidden");
 
         if (duration > 0) {
             setTimeout(function() {
-                modal.classList.toggle("hidden");
+                modal.classList.add("hidden");
             }, duration);
         }
+    }
+
+    function playWinAnimation(letters) {
+        var i;
+
+        for (i = 0; i < letters.length; i++) {
+            letters[i].classList.add("jump");
+        }
+    }
+
+    function stopWinAnimation() {
+        event.target.classList.remove("jump");
     }
 
     function solve() {
@@ -144,8 +156,10 @@ var app = (function() {
     }
 
     function init() {
+        var gameBoard = document.querySelector("main");
         document.addEventListener("touchstart", function() {}, false);
         keyboard.addEventListener("click", typeKey, false);
+        gameBoard.addEventListener("animationend", stopWinAnimation, false);
 
         console.log("amount of words: " + wordList.length);
     }
