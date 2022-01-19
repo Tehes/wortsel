@@ -9,6 +9,7 @@
     --key-font-color: #333;
     --key-highlight-bg-color: #aaa;
     --key-bg-color: #cdcdcd;
+    --animation-delay: 0.15s;
 }
 
 * {
@@ -183,23 +184,23 @@ ANIMATIONS
 }
 
 .letter:nth-child(1) {
-	animation-delay: 0.20s;
+	animation-delay: calc(var(--animation-delay)*1);
 }
 
 .letter:nth-child(2) {
-	animation-delay: 0.40s;
+	animation-delay: calc(var(--animation-delay)*2);
 }
 
 .letter:nth-child(3) {
-	animation-delay: 0.60s;
+	animation-delay: calc(var(--animation-delay)*3);
 }
 
 .letter:nth-child(4) {
-	animation-delay: 0.80s;
+	animation-delay: calc(var(--animation-delay)*4);
 }
 
 .letter:nth-child(5) {
-	animation-delay: 1.0s;
+	animation-delay: calc(var(--animation-delay)*5);
 }
 
 /*
