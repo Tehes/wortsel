@@ -41,26 +41,14 @@ var app = (function() {
         // WHEN ENTER-BUTTON IS PRESSED
         else if (event.target.textContent === "enter") {
             if (i === letters.length) {
-                //TEST Start
-                enteredWord = [...letters].map(letters => letters.textContent);
-                enteredWord = enteredWord.toString();
-                enteredWord = enteredWord.replace(/,/g, "");
-
-                var index = wordList.findIndex(element => {
-                return element.toLowerCase() === enteredWord.toLowerCase();
-                });
-
-                if (index !== -1) {
-                    console.log(enteredWord+" is in the database");
+                if (indexInDatabase(letters) !== -1) {
+					colorizeRow(letters);
+                	colorizeKeyboard(letters);
+                	hasEnded();
                 }
                 else {
-                    console.log(enteredWord+" is not in the database");
+					showModal("Kein zulässiges Wort", 1000);
                 }
-                //TEST END
-
-                colorizeRow(letters);
-                colorizeKeyboard(letters);
-                hasEnded();
             }
             else {
                 showModal("Zu wenig Zeichen", 1000);
@@ -72,6 +60,20 @@ var app = (function() {
             letters[i].textContent = event.target.textContent;
         }
     }
+	
+	function indexInDatabase(letters) {
+		var index; 
+		
+		enteredWord = [...letters].map(letters => letters.textContent);
+        enteredWord = enteredWord.toString();
+        enteredWord = enteredWord.replace(/,/g, "");
+
+        index = wordList.findIndex(element => {
+        	return element.toLowerCase() === enteredWord.toLowerCase();
+		});
+		
+		return index;
+	}
 
     function colorizeRow(letters) {
         var i, j, tempSolution;
