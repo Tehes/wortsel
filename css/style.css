@@ -118,6 +118,7 @@ ROWS
     line-height: 1.1;
     text-transform: uppercase;
     font-weight: 500;
+	transition: all 0.5s;
 }
 
 .letter:empty {
@@ -174,6 +175,10 @@ ANIMATIONS
     animation: jump 0.5s;
 }
 
+.shake {
+    animation: shake 0.5s;
+}
+
 @keyframes jump {
     0% {
         transform: translateY(0vmin);
@@ -206,6 +211,24 @@ ANIMATIONS
 
 .letter:nth-child(5) {
 	animation-delay: calc(var(--animation-delay)*5);
+}
+
+@keyframes shake {
+    0% {
+        transform: translateX(0vmin);
+    }
+
+    20%, 60% {
+        transform: translateX(-1vmin);
+    }
+	
+	40%, 80% {
+        transform: translateX(+1vmin);
+    }
+
+    100% {
+        transform: translateX(0vmin);
+    }
 }
 
 /*

@@ -47,6 +47,7 @@ var app = (function() {
                 	hasEnded();
                 }
                 else {
+					playErrorAnimation();
 					showModal("Kein zulässiges Wort", 1000);
                 }
             }
@@ -169,9 +170,14 @@ var app = (function() {
             letters[i].classList.add("jump");
         }
     }
+	
+	function playErrorAnimation() {
+		rows[activeRow].classList.add("shake");
+    }
 
-    function stopWinAnimation() {
+    function stopAnyAnimation() {
         event.target.classList.remove("jump");
+		event.target.classList.remove("shake");
     }
 
     function solve() {
@@ -182,7 +188,7 @@ var app = (function() {
         var gameBoard = document.querySelector("main");
         document.addEventListener("touchstart", function() {}, false);
         keyboard.addEventListener("click", typeKey, false);
-        gameBoard.addEventListener("animationend", stopWinAnimation, false);
+        gameBoard.addEventListener("animationend", stopAnyAnimation, false);
 
         console.log("curated words: " + curatedWords.length);
         console.log("additional words: "+additionalWords.length);
