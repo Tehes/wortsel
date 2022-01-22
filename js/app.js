@@ -4,9 +4,11 @@ var app = (function() {
     ---------------------------------------------------------------------------------------------------*/
     var keyboard = document.querySelector("#keyboard");
     var rows = document.querySelectorAll(".row");
-    var modal = document.querySelector("aside");
+    var modal = document.querySelector("aside .modal");
+    var howTo = document.querySelector("#howto");
     var activeRow = 0;
     var enteredWord = "";
+    var firstVisit = localStorage.getItem("wortsel_firstVisit") || true;
 
     /* --------------------------------------------------------------------------------------------------
     functions
@@ -158,6 +160,10 @@ var app = (function() {
         }
     }
 
+    function hideWindow() {
+        event.currentTarget.classList.add("hidden");
+    }
+
     function playWinAnimation(letters) {
         var i;
 
@@ -179,10 +185,17 @@ var app = (function() {
         showModal("Die Lösung lautet '" + solution.toUpperCase() + "'.", 2000);
     }
 
+    function saveSettings() {
+        localStorage.setItem("wortsel_firstVisit", false);
+    }
+
     function init() {
+        if (firstVisit === true) { howTo.classList.remove("hidden"); }
+
         var gameBoard = document.querySelector("main");
         document.addEventListener("touchstart", function() {}, false);
         gameBoard.addEventListener("animationend", stopAnyAnimation, false);
+        window.addEventListener("unload", saveSettings, false);
 
 		fetch('database/words.json')
     	.then(response => response.json())
@@ -191,6 +204,7 @@ var app = (function() {
     		var solution = data.curatedWords[getRndInteger(0, data.curatedWords.length - 1)].toLowerCase();
 
 			keyboard.addEventListener("click", typeKey.bind(null, wordList, solution), false);
+			howTo.addEventListener("click", hideWindow, false);
 
 			console.log("curated words: " + data.curatedWords.length);
         	console.log("additional words: "+ data.additionalWords.length);
