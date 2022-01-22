@@ -41,7 +41,7 @@ var app = (function() {
                 if (indexInDatabase(letters, wordList) !== -1) {
 					colorizeRow(letters, solution);
                 	colorizeKeyboard(letters);
-                	hasEnded();
+                	hasEnded(solution);
                 }
                 else {
 					playErrorAnimation();
@@ -132,7 +132,7 @@ var app = (function() {
         }
     }
 
-    function hasEnded() {
+    function hasEnded(solution) {
         var correctLetters;
         correctLetters = rows[activeRow].querySelectorAll(".correct");
 
