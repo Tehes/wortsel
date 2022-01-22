@@ -4,7 +4,7 @@ var app = (function() {
     ---------------------------------------------------------------------------------------------------*/
     var keyboard = document.querySelector("#keyboard");
     var rows = document.querySelectorAll(".row");
-    var modal = document.querySelector("aside .modal");
+    var modal = document.querySelector("aside.modal");
     var howTo = document.querySelector("#howto");
     var activeRow = 0;
     var enteredWord = "";
