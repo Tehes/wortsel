@@ -56,10 +56,10 @@ var app = (function() {
             letters[i].textContent = event.target.textContent;
         }
     }
-	
+
 	function indexInDatabase(letters, wordList) {
-		var index; 
-		
+		var index;
+
 		enteredWord = [...letters].map(letters => letters.textContent);
         enteredWord = enteredWord.toString();
         enteredWord = enteredWord.replace(/,/g, "");
@@ -67,7 +67,7 @@ var app = (function() {
         index = wordList.findIndex(element => {
         	return element.toLowerCase() === enteredWord.toLowerCase();
 		});
-		
+
 		return index;
 	}
 
@@ -165,7 +165,7 @@ var app = (function() {
             letters[i].classList.add("jump");
         }
     }
-	
+
 	function playErrorAnimation() {
 		rows[activeRow].classList.add("shake");
     }
@@ -183,19 +183,17 @@ var app = (function() {
         var gameBoard = document.querySelector("main");
         document.addEventListener("touchstart", function() {}, false);
         gameBoard.addEventListener("animationend", stopAnyAnimation, false);
-		
+
 		fetch('database/words.json')
     	.then(response => response.json())
     	.then(data => {
-			var curatedWords = data[0];
-			var additionalWords = data[1];
-    		var wordList = curatedWords.concat(additionalWords);
-    		var solution = curatedWords[getRndInteger(0, curatedWords.length - 1)].toLowerCase();
-			
+    		var wordList = data.curatedWords.concat(data.additionalWords);
+    		var solution = data.curatedWords[getRndInteger(0, data.curatedWords.length - 1)].toLowerCase();
+
 			keyboard.addEventListener("click", typeKey.bind(null, wordList, solution), false);
-			
-			console.log("curated words: " + curatedWords.length);
-        	console.log("additional words: "+additionalWords.length);
+
+			console.log("curated words: " + data.curatedWords.length);
+        	console.log("additional words: "+ data.additionalWords.length);
         	console.log("altogether: "+wordList.length);
     	});
     }
