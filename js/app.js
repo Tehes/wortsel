@@ -1,3 +1,5 @@
+import { curatedWords, additionalWords } from '/js/words.js';
+
 var app = (function() {
     /* --------------------------------------------------------------------------------------------------
     Variables
@@ -9,6 +11,8 @@ var app = (function() {
     var activeRow = 0;
     var enteredWord = "";
     var firstVisit = localStorage.getItem("wortsel_firstVisit") || true;
+    var wordList = curatedWords.concat(additionalWords);
+    var solution = curatedWords[getRndInteger(0, curatedWords.length - 1)].toLowerCase();
 
     /* --------------------------------------------------------------------------------------------------
     functions
@@ -17,7 +21,7 @@ var app = (function() {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    function typeKey(wordList, solution) {
+    function typeKey() {
         var letters, i;
 
         letters = rows[activeRow].querySelectorAll(".letter");
@@ -38,10 +42,10 @@ var app = (function() {
         // WHEN ENTER-BUTTON IS PRESSED
         else if (event.target.textContent === "enter") {
             if (i === letters.length) {
-                if (indexInDatabase(letters, wordList) !== -1) {
-					colorizeRow(letters, solution);
+                if (indexInDatabase(letters) !== -1) {
+					colorizeRow(letters);
                 	colorizeKeyboard(letters);
-                	hasEnded(solution);
+                	hasEnded();
                 }
                 else {
 					playErrorAnimation();
@@ -59,7 +63,7 @@ var app = (function() {
         }
     }
 
-	function indexInDatabase(letters, wordList) {
+	function indexInDatabase(letters) {
 		var index;
 
 		enteredWord = [...letters].map(letters => letters.textContent);
@@ -73,7 +77,7 @@ var app = (function() {
 		return index;
 	}
 
-    function colorizeRow(letters, solution) {
+    function colorizeRow(letters) {
         var i, j, tempSolution;
 
         i = 0;
@@ -104,7 +108,7 @@ var app = (function() {
     }
 
     function colorizeKeyboard(letters) {
-        var i, j, keys;
+        var i, j, keys, arrkeys;
         i = 0;
         keys = document.querySelectorAll(".key");
         arrkeys = [...keys].map(keys => keys.textContent);
@@ -132,7 +136,7 @@ var app = (function() {
         }
     }
 
-    function hasEnded(solution) {
+    function hasEnded() {
         var correctLetters;
         correctLetters = rows[activeRow].querySelectorAll(".correct");
 
@@ -193,23 +197,16 @@ var app = (function() {
         if (firstVisit === true) { howTo.classList.remove("hidden"); }
 
         var gameBoard = document.querySelector("main");
+        
         document.addEventListener("touchstart", function() {}, false);
         gameBoard.addEventListener("animationend", stopAnyAnimation, false);
+        keyboard.addEventListener("click", typeKey, false);
+        howTo.addEventListener("click", hideWindow, false);
         window.addEventListener("unload", saveSettings, false);
 
-		fetch('database/words.json')
-    	.then(response => response.json())
-    	.then(data => {
-    		var wordList = data.curatedWords.concat(data.additionalWords);
-    		var solution = data.curatedWords[getRndInteger(0, data.curatedWords.length - 1)].toLowerCase();
-
-			keyboard.addEventListener("click", typeKey.bind(null, wordList, solution), false);
-			howTo.addEventListener("click", hideWindow, false);
-
-			console.log("curated words: " + data.curatedWords.length);
-        	console.log("additional words: "+ data.additionalWords.length);
-        	console.log("altogether: "+wordList.length);
-    	});
+        console.log("curated words: " + curatedWords.length);
+        console.log("additional words: "+ additionalWords.length);
+        console.log("altogether: "+wordList.length);
     }
 
     /* --------------------------------------------------------------------------------------------------
