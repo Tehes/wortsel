@@ -5,7 +5,7 @@ import {
     curatedWords,
     additionalWords
 }
-from '/js/words.js';
+from './words.js';
 
 var keyboard = document.querySelector("#keyboard");
 var rows = document.querySelectorAll(".row");
