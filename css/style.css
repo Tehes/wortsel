@@ -291,6 +291,10 @@ MEDIA QUERIES
         --key-highlight-bg-color: #ccc;
         --key-bg-color: #aaa;
     }
+	
+	header img {
+		filter: invert(.75);
+	}
 }
 
 @media only screen and (max-width: 450px) and (orientation: portrait) {
