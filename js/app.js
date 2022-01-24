@@ -10,7 +10,9 @@ from '/js/words.js';
 var keyboard = document.querySelector("#keyboard");
 var rows = document.querySelectorAll(".row");
 var modal = document.querySelector("aside.modal");
-var howTo = document.querySelector("#howto");
+var howToIcon = document.querySelector("#howToIcon");
+var howTo = document.querySelector("#howTo");
+var settingsIcon = document.querySelector("#settingsIcon");
 var activeRow = 0;
 var enteredWord = "";
 var firstVisit = localStorage.getItem("wortsel_firstVisit") || true;
@@ -167,8 +169,8 @@ function showModal(text, duration) {
     }
 }
 
-function hideWindow() {
-    event.currentTarget.classList.add("hidden");
+function toggleWindow(x) {
+    x.classList.toggle("hidden");
 }
 
 function playWinAnimation(letters) {
@@ -206,7 +208,9 @@ function init() {
     document.addEventListener("touchstart", function() {}, false);
     gameBoard.addEventListener("animationend", stopAnyAnimation, false);
     keyboard.addEventListener("click", typeKey, false);
-    howTo.addEventListener("click", hideWindow, false);
+    howTo.addEventListener("click", toggleWindow.bind(null, howTo), false);
+    howToIcon.addEventListener("click", toggleWindow.bind(null, howTo), false);
+    settingsIcon.addEventListener("click", showModal.bind(null, "noch in Arbeit ..."), false);
     window.addEventListener("unload", saveSettings, false);
 
     console.log("curated words: " + curatedWords.length);

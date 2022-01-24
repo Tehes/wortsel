@@ -46,9 +46,15 @@ header {
     display: flex;
     width: 63vmin;
     margin: 0 auto;
-    justify-content: center;
+    justify-content: space-between;
+    align-items: baseline;
     border-bottom: var(--border-standard);
     margin-bottom: 2vmin;
+}
+
+header img {
+    width: 3.5vmin;
+    height: 3.5vmin;
 }
 
 h1 {
@@ -283,12 +289,23 @@ MEDIA QUERIES
 }
 
 @media only screen and (max-width: 450px) and (orientation: portrait) {
-    header {
-        width: 90vmin;
-    }
     body {
         font-size: 4vmin;
     }
+
+    header {
+        width: 90vmin;
+    }
+
+    header img {
+        width: 6vmin;
+        height: 6vmin;
+    }
+
+    h1 {
+        font-size: 8vmin;
+    }
+
 
     .letter {
         width: 16vmin;
