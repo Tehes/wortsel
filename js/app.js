@@ -214,11 +214,12 @@ function init() {
     console.log("altogether: " + wordList.length);
 }
 
-init();
 /* --------------------------------------------------------------------------------------------------
 public members, exposed with window scope
 ---------------------------------------------------------------------------------------------------*/
-
-window.solveWortsel = function() {
-    solve();
+window.wortsel = {
+   init,
+   solve
 };
+
+wortsel.init();
