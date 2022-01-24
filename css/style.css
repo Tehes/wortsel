@@ -53,15 +53,20 @@ header {
 }
 
 header img {
-    width: 3.5vmin;
-    height: 3.5vmin;
+    width: 4vmin;
+    height: 4vmin;
+    cursor: grab;
+}
+
+header img:active {
+    cursor: grabbing;
 }
 
 h1 {
     text-transform: uppercase;
     font-size: 5vmin;
     font-weight: 500;
-    margin: 1vmin;
+    margin: 1vmin 4vmin;
 }
 
 /*

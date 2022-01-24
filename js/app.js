@@ -210,7 +210,7 @@ function init() {
     keyboard.addEventListener("click", typeKey, false);
     howTo.addEventListener("click", toggleWindow.bind(null, howTo), false);
     howToIcon.addEventListener("click", toggleWindow.bind(null, howTo), false);
-    settingsIcon.addEventListener("click", showModal.bind(null, "noch in Arbeit ..."), false);
+    settingsIcon.addEventListener("click", showModal.bind(null, "noch in Arbeit ...", 1000), false);
     window.addEventListener("unload", saveSettings, false);
 
     console.log("curated words: " + curatedWords.length);
