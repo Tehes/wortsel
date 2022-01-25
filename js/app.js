@@ -142,11 +142,19 @@ function colorizeKeyboard(letters) {
 }
 
 function hasEnded() {
-    var correctLetters;
+    var correctLetters, winText;
+	winText = [
+	"Wahnsinn, eine perfekte Runde!", 
+	"Wow, das war fantastisch!",
+	"Ein beachtlicher Sieg!",
+	"Sehr gut gemacht!",
+	"Yay, gewonnen!",
+	"Puh, das war knapp."
+	];
     correctLetters = rows[activeRow].querySelectorAll(".correct");
 
     if (correctLetters.length === 5) {
-        showModal("Yay, gewonnen!", 3000);
+        showModal(winText[activeRow], 3000);
         playWinAnimation(correctLetters);
     }
     else {
