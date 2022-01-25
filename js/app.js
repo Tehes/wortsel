@@ -10,6 +10,7 @@ from './words.js';
 var keyboard = document.querySelector("#keyboard");
 var rows = document.querySelectorAll(".row");
 var modal = document.querySelector("aside.modal");
+var headline = document.querySelector("h1");
 var howToIcon = document.querySelector("#howToIcon");
 var howTo = document.querySelector("#howTo");
 var settingsIcon = document.querySelector("#settingsIcon");
@@ -206,6 +207,26 @@ function saveSettings() {
     localStorage.setItem("wortsel_firstVisit", false);
 }
 
+function reset() {
+	var i, letters, keys;
+	letters = document.querySelectorAll("main .letter");
+	keys = document.querySelectorAll(".key");
+	
+	for (i = 0; i < letters.length; i++) {
+        letters[i].textContent = "";
+        letters[i].classList.remove("correct");
+		letters[i].classList.remove("present");
+		letters[i].classList.remove("absent");
+    }
+	for (i = 0; i < keys.length; i++) {
+        keys[i].classList.remove("correct");
+		keys[i].classList.remove("present");
+		keys[i].classList.remove("absent");
+    }
+	solution = curatedWords[getRndInteger(0, curatedWords.length - 1)].toLowerCase();
+	activeRow = 0;
+}
+
 function init() {
     if (firstVisit === true) {
         howTo.classList.remove("hidden");
@@ -216,6 +237,7 @@ function init() {
     document.addEventListener("touchstart", function() {}, false);
     gameBoard.addEventListener("animationend", stopAnyAnimation, false);
     keyboard.addEventListener("click", typeKey, false);
+	headline.addEventListener("click", reset, false);
     howTo.addEventListener("click", toggleWindow.bind(null, howTo), false);
     howToIcon.addEventListener("click", toggleWindow.bind(null, howTo), false);
     settingsIcon.addEventListener("click", showModal.bind(null, "noch in Arbeit ...", 1000), false);
