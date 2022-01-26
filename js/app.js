@@ -225,6 +225,7 @@ function reset() {
     }
 	solution = curatedWords[getRndInteger(0, curatedWords.length - 1)].toLowerCase();
 	activeRow = 0;
+	showModal("neue Runde, neues Glück",1000);
 }
 
 function init() {

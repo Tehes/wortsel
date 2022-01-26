@@ -69,6 +69,10 @@ h1 {
     margin: 1vmin 4vmin;
 }
 
+h1:active {
+    cursor: grabbing;
+}
+
 /*
 -------------------------------------------------------------------
 KEYBOARD
