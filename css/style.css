@@ -419,4 +419,21 @@ MEDIA QUERIES
     .modal {
         font-size: 4vmin;
     }
+
+    .option {
+      padding: 0 6vmin;
+      margin: 3vmin 0;
+    }
+
+    .checkmark {
+      height: 5vmin;
+      width: 5vmin;
+    }
+
+    .option .checkmark:after {
+      left: 1.5vmin;
+      top: 0.5vmin;
+      width: 1.2vmin;
+      height: 2.3vmin;
+    }
 }
