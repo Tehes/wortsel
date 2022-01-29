@@ -14,9 +14,12 @@ var headline = document.querySelector("h1");
 var howToIcon = document.querySelector("#howToIcon");
 var howTo = document.querySelector("#howTo");
 var settingsIcon = document.querySelector("#settingsIcon");
+var settings = document.querySelector("#settings");
+var wholeWords = document.querySelector("#wholeWords");
+wholeWords.checked = JSON.parse(localStorage.getItem("wortsel_wholeWords") || true);
 var activeRow = 0;
 var enteredWord = "";
-var firstVisit = localStorage.getItem("wortsel_firstVisit") || true;
+var firstVisit = JSON.parse(localStorage.getItem("wortsel_firstVisit") || true);
 var wordList = curatedWords.concat(additionalWords);
 var solution = curatedWords[getRndInteger(0, curatedWords.length - 1)].toLowerCase();
 
@@ -48,14 +51,14 @@ function typeKey() {
     // WHEN ENTER-BUTTON IS PRESSED
     else if (event.target.textContent === "enter") {
         if (i === letters.length) {
-            if (indexInDatabase(letters) !== -1) {
+            if (indexInDatabase(letters) === -1 && wholeWords.checked === true) {
+                playErrorAnimation();
+                showModal("Kein zulässiges Wort", 1000);
+            }
+            else {
                 colorizeRow(letters);
                 colorizeKeyboard(letters);
                 hasEnded();
-            }
-            else {
-                playErrorAnimation();
-                showModal("Kein zulässiges Wort", 1000);
             }
         }
         else {
@@ -145,7 +148,7 @@ function colorizeKeyboard(letters) {
 function hasEnded() {
     var correctLetters, winText;
 	winText = [
-	"Wahnsinn, eine perfekte Runde!", 
+	"Wahnsinn, eine perfekte Runde!",
 	"Wow, das war fantastisch!",
 	"Ein beachtlicher Sieg!",
 	"Sehr gut gemacht!",
@@ -179,7 +182,12 @@ function showModal(text, duration) {
 }
 
 function toggleWindow(x) {
-    x.classList.toggle("hidden");
+    if (activeRow !== 0 && x.id === "settings") {
+        showModal("Nicht während des Spiels möglich", 1000);
+    }
+    else {
+        x.classList.toggle("hidden");
+    }
 }
 
 function playWinAnimation(letters) {
@@ -204,14 +212,15 @@ function solve() {
 }
 
 function saveSettings() {
-    localStorage.setItem("wortsel_firstVisit", false);
+    localStorage.setItem("wortsel_firstVisit", JSON.stringify(false));
+    localStorage.setItem("wortsel_wholeWords", JSON.stringify(wholeWords.checked));
 }
 
 function reset() {
 	var i, letters, keys;
 	letters = document.querySelectorAll("main .letter");
 	keys = document.querySelectorAll(".key");
-	
+
 	for (i = 0; i < letters.length; i++) {
         letters[i].textContent = "";
         letters[i].classList.remove("correct");
@@ -225,14 +234,13 @@ function reset() {
     }
 	solution = curatedWords[getRndInteger(0, curatedWords.length - 1)].toLowerCase();
 	activeRow = 0;
-	showModal("neue Runde, neues Glück",1000);
+	showModal("Neue Runde, neues Glück",1000);
 }
 
 function init() {
     if (firstVisit === true) {
         howTo.classList.remove("hidden");
     }
-
     var gameBoard = document.querySelector("main");
 
     document.addEventListener("touchstart", function() {}, false);
@@ -241,7 +249,7 @@ function init() {
 	headline.addEventListener("click", reset, false);
     howTo.addEventListener("click", toggleWindow.bind(null, howTo), false);
     howToIcon.addEventListener("click", toggleWindow.bind(null, howTo), false);
-    settingsIcon.addEventListener("click", showModal.bind(null, "noch in Arbeit ...", 1000), false);
+    settingsIcon.addEventListener("click", toggleWindow.bind(null, settings), false, false);
     window.addEventListener("unload", saveSettings, false);
 
     console.log("curated words: " + curatedWords.length);

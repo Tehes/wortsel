@@ -208,7 +208,57 @@ h2 {
 h3 {
     font-size: 2.5vmin;
     font-weight: 600;
-    margin: 0 0 1vmin 0;
+    /* margin: 0 0 1vmin 0; */
+}
+
+.option {
+  display: block;
+  position: relative;
+  padding: 0 6vmin;
+  margin: 3vmin 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.option input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 3.5vmin;
+  width: 3.5vmin;
+  background-color: var(--color-absent);
+}
+
+.option input:checked ~ .checkmark {
+  background-color: var(--color-correct);
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.option input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.option .checkmark:after {
+  left: 1.25vmin;
+  top: 0.75vmin;
+  width: 0.7vmin;
+  height: 1.5vmin;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg);
 }
 
 .hidden {
@@ -295,7 +345,7 @@ MEDIA QUERIES
         --key-highlight-bg-color: #ccc;
         --key-bg-color: #aaa;
     }
-	
+
 	header img {
 		filter: invert(.75);
 	}
