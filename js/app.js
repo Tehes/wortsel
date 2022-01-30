@@ -182,7 +182,8 @@ function showModal(text, duration) {
 }
 
 function toggleWindow(x) {
-    if (activeRow !== 0 && x.id === "settings") {
+	var correctLetters = rows[activeRow].querySelectorAll(".correct");
+    if ((activeRow > 0 && activeRow < 6 && correctLetters.length !== 5) && x.id === "settings") {
         showModal("Nicht während des Spiels möglich", 1000);
     }
     else {
