@@ -67,6 +67,7 @@ h1 {
     font-size: 5vmin;
     font-weight: 500;
     margin: 1vmin 4vmin;
+    cursor: grab;
 }
 
 h1:active {
