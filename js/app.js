@@ -31,7 +31,16 @@ function getRndInteger(min, max) {
 }
 
 function typeKey() {
-    var letters, i;
+    var pressedKey, letters, i;
+    if (event.key) {
+        pressedKey = event.key.toLowerCase();
+    }
+    else if (event.target.textContent && event.target.classList.contains('key')) {
+        pressedKey = event.target.textContent;
+    }
+    else {
+        return;
+    }
 
     letters = rows[activeRow].querySelectorAll(".letter");
     i = 0;
@@ -41,7 +50,7 @@ function typeKey() {
     }
 
     // WHEN BACK-BUTTON IS PRESSED
-    if (event.target.textContent === "back") {
+    if (pressedKey === "back" || pressedKey === "backspace") {
         if (!letters[i - 1]) {
             return;
         }
@@ -49,7 +58,7 @@ function typeKey() {
     }
 
     // WHEN ENTER-BUTTON IS PRESSED
-    else if (event.target.textContent === "enter") {
+    else if (pressedKey === "enter") {
         if (i === letters.length) {
             if (indexInDatabase(letters) === -1 && wholeWords.checked === true) {
                 playErrorAnimation();
@@ -67,8 +76,8 @@ function typeKey() {
     }
 
     // WHEN ANY LETTER IS PRESSED
-    else if (i < letters.length && event.target.classList.contains('key')) {
-        letters[i].textContent = event.target.textContent;
+    else if (i < letters.length && pressedKey.length === 1) {
+        letters[i].textContent = pressedKey;
     }
 }
 
@@ -247,6 +256,7 @@ function init() {
     document.addEventListener("touchstart", function() {}, false);
     gameBoard.addEventListener("animationend", stopAnyAnimation, false);
     keyboard.addEventListener("click", typeKey, false);
+    document.addEventListener("keyup", typeKey, false);
 	headline.addEventListener("click", reset, false);
     howTo.addEventListener("click", toggleWindow.bind(null, howTo), false);
     howToIcon.addEventListener("click", toggleWindow.bind(null, howTo), false);
