@@ -63,6 +63,7 @@ function typeKey() {
             if (indexInDatabase(letters) === -1 && wholeWords.checked === true) {
                 playErrorAnimation();
                 showModal("Kein zulässiges Wort", 1000);
+                splitbee.track("illegal Word");
             }
             else {
                 colorizeRow(letters);
@@ -169,6 +170,7 @@ function hasEnded() {
     if (correctLetters.length === 5) {
         showModal(winText[activeRow], 3000);
         playWinAnimation(correctLetters);
+        splitbee.track("won in "+activeRow+" round(s)");
     }
     else {
         activeRow++;
@@ -176,6 +178,7 @@ function hasEnded() {
 
     if (activeRow === 6) {
         showModal("Leider verloren. Gesucht wurde '" + solution.toUpperCase() + "'.", 3000);
+        splitbee.track("lost");
     }
 }
 
