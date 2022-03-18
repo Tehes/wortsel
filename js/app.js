@@ -170,7 +170,7 @@ function hasEnded() {
     if (correctLetters.length === 5) {
         showModal(winText[activeRow], 3000);
         playWinAnimation(correctLetters);
-        splitbee.track("won in "+activeRow+" round(s)");
+        splitbee.track("won");
     }
     else {
         activeRow++;
