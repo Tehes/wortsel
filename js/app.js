@@ -170,7 +170,10 @@ function hasEnded() {
     if (correctLetters.length === 5) {
         showModal(winText[activeRow], 3000);
         playWinAnimation(correctLetters);
-        window.splitbee.track("won");
+
+        window.splitbee.track("won", {
+          rounds: activeRow+1
+        })
     }
     else {
         activeRow++;
@@ -178,7 +181,9 @@ function hasEnded() {
 
     if (activeRow === 6) {
         showModal("Leider verloren. Gesucht wurde '" + solution.toUpperCase() + "'.", 3000);
-        window.splitbee.track("lost");
+        window.splitbee.track("lost", {
+          word: solution.toUpperCase()
+        })
     }
 }
 
