@@ -34,11 +34,9 @@ function typeKey() {
     var pressedKey, letters, i;
     if (event.key) {
         pressedKey = event.key.toLowerCase();
-    }
-    else if (event.target.textContent && event.target.classList.contains('key')) {
+    } else if (event.target.textContent && event.target.classList.contains('key')) {
         pressedKey = event.target.textContent;
-    }
-    else {
+    } else {
         return;
     }
 
@@ -63,15 +61,16 @@ function typeKey() {
             if (indexInDatabase(letters) === -1 && wholeWords.checked === true) {
                 playErrorAnimation();
                 showModal("Kein zulässiges Wort", 1000);
-                window.splitbee.track("illegal Word");
-            }
-            else {
+
+                window.splitbee.track("illegal Word", {
+                    word: [...letters].map(letters => letters.textContent).join().replace(/,/g, "")
+                });
+            } else {
                 colorizeRow(letters);
                 colorizeKeyboard(letters);
                 hasEnded();
             }
-        }
-        else {
+        } else {
             showModal("Zu wenig Zeichen", 1000);
         }
     }
@@ -157,14 +156,14 @@ function colorizeKeyboard(letters) {
 
 function hasEnded() {
     var correctLetters, winText;
-	winText = [
-	"Wahnsinn, eine perfekte Runde!",
-	"Wow, das war fantastisch!",
-	"Ein beachtlicher Sieg!",
-	"Sehr gut gemacht!",
-	"Yay, gewonnen!",
-	"Puh, das war knapp."
-	];
+    winText = [
+        "Wahnsinn, eine perfekte Runde!",
+        "Wow, das war fantastisch!",
+        "Ein beachtlicher Sieg!",
+        "Sehr gut gemacht!",
+        "Yay, gewonnen!",
+        "Puh, das war knapp."
+    ];
     correctLetters = rows[activeRow].querySelectorAll(".correct");
 
     if (correctLetters.length === 5) {
@@ -172,18 +171,17 @@ function hasEnded() {
         playWinAnimation(correctLetters);
 
         window.splitbee.track("won", {
-          rounds: activeRow+1
-        })
-    }
-    else {
+            rounds: activeRow + 1
+        });
+    } else {
         activeRow++;
     }
 
     if (activeRow === 6) {
         showModal("Leider verloren. Gesucht wurde '" + solution.toUpperCase() + "'.", 3000);
         window.splitbee.track("lost", {
-          word: solution.toUpperCase()
-        })
+            word: solution.toUpperCase()
+        });
     }
 }
 
@@ -199,11 +197,10 @@ function showModal(text, duration) {
 }
 
 function toggleWindow(x) {
-	var correctLetters = rows[activeRow].querySelectorAll(".correct");
+    var correctLetters = rows[activeRow].querySelectorAll(".correct");
     if ((activeRow > 0 && activeRow < 6 && correctLetters.length !== 5) && x.id === "settings") {
         showModal("Nicht während des Spiels möglich", 1000);
-    }
-    else {
+    } else {
         x.classList.toggle("hidden");
     }
 }
@@ -235,24 +232,24 @@ function saveSettings() {
 }
 
 function reset() {
-	var i, letters, keys;
-	letters = document.querySelectorAll("main .letter");
-	keys = document.querySelectorAll(".key");
+    var i, letters, keys;
+    letters = document.querySelectorAll("main .letter");
+    keys = document.querySelectorAll(".key");
 
-	for (i = 0; i < letters.length; i++) {
+    for (i = 0; i < letters.length; i++) {
         letters[i].textContent = "";
         letters[i].classList.remove("correct");
-		letters[i].classList.remove("present");
-		letters[i].classList.remove("absent");
+        letters[i].classList.remove("present");
+        letters[i].classList.remove("absent");
     }
-	for (i = 0; i < keys.length; i++) {
+    for (i = 0; i < keys.length; i++) {
         keys[i].classList.remove("correct");
-		keys[i].classList.remove("present");
-		keys[i].classList.remove("absent");
+        keys[i].classList.remove("present");
+        keys[i].classList.remove("absent");
     }
-	solution = curatedWords[getRndInteger(0, curatedWords.length - 1)].toLowerCase();
-	activeRow = 0;
-	showModal("Neue Runde, neues Glück",1000);
+    solution = curatedWords[getRndInteger(0, curatedWords.length - 1)].toLowerCase();
+    activeRow = 0;
+    showModal("Neue Runde, neues Glück", 1000);
 }
 
 function init() {
@@ -265,7 +262,7 @@ function init() {
     gameBoard.addEventListener("animationend", stopAnyAnimation, false);
     keyboard.addEventListener("click", typeKey, false);
     document.addEventListener("keyup", typeKey, false);
-	headline.addEventListener("click", reset, false);
+    headline.addEventListener("click", reset, false);
     howTo.addEventListener("click", toggleWindow.bind(null, howTo), false);
     howToIcon.addEventListener("click", toggleWindow.bind(null, howTo), false);
     settingsIcon.addEventListener("click", toggleWindow.bind(null, settings), false, false);
@@ -280,8 +277,8 @@ function init() {
 public members, exposed with window scope
 ---------------------------------------------------------------------------------------------------*/
 window.wortsel = {
-   init,
-   solve
+    init,
+    solve
 };
 
 wortsel.init();
