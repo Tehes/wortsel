@@ -338,7 +338,7 @@ MEDIA QUERIES
 */
 @media (prefers-color-scheme: dark) {
     :root {
-        --main-bg-color: #111;
+        --main-bg-color: #222;
         --main-font-color: #CCC;
         --border-standard: 2px solid #aaa;
 		--border-highlight: 2px solid #ddd;
