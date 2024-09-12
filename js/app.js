@@ -5,7 +5,7 @@ import {
     curatedWords,
     additionalWords
 }
-from './words.js';
+    from "./words.js";
 
 var keyboard = document.querySelector("#keyboard");
 var rows = document.querySelectorAll(".row");
@@ -34,7 +34,7 @@ function typeKey() {
     var pressedKey, letters, i;
     if (event.key) {
         pressedKey = event.key.toLowerCase();
-    } else if (event.target.textContent && event.target.classList.contains('key')) {
+    } else if (event.target.textContent && event.target.classList.contains("key")) {
         pressedKey = event.target.textContent;
     } else {
         return;
@@ -281,4 +281,17 @@ window.wortsel = {
     solve
 };
 
-wortsel.init();
+window.wortsel.init();
+
+/* --------------------------------------------------------------------------------------------------
+Service Worker registration. Only use, when you want a PWA
+---------------------------------------------------------------------------------------------------*/
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function() {
+        navigator.serviceWorker.register("/service-worker.js").then(function(registration) {
+            console.log("Service Worker registered with scope:", registration.scope);
+        }).catch(function(error) {
+            console.log("Service Worker registration failed:", error);
+        });
+    });
+}
