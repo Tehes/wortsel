@@ -266,6 +266,17 @@ h3 {
     display: none;
 }
 
+hr {
+    border: none;
+    border-top: 1px solid var(--main-font-color);
+    margin: 1em 0;
+    width: 100%;
+  }
+
+.credit {
+    font-size: 1.8vmin;
+}
+
 /*
 -------------------------------------------------------------------
 ANIMATIONS
