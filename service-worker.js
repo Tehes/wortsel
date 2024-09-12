@@ -8,34 +8,40 @@ self.addEventListener("install", () => {
 
 // Fetch event
 self.addEventListener("fetch", (event) => {
-    // Respond with cache-first strategy and stale-while-revalidate
-    event.respondWith(
-        caches.match(event.request).then((cachedResponse) => {
-            if (cachedResponse) {
-                // Return cached response immediately and update in the background
-                event.waitUntil(
-                    fetch(event.request).then((networkResponse) => {
-                        // Open the cache and update the requested resource
-                        caches.open(CACHE_NAME).then((cache) => {
+    // Only handle GET requests
+    if (event.request.method === "GET") {
+        // Respond with cache-first strategy and stale-while-revalidate
+        event.respondWith(
+            caches.match(event.request).then((cachedResponse) => {
+                if (cachedResponse) {
+                    // Return cached response immediately and update in the background
+                    event.waitUntil(
+                        fetch(event.request).then((networkResponse) => {
+                            // Open the cache and update the requested resource
+                            caches.open(CACHE_NAME).then((cache) => {
+                                cache.put(event.request, networkResponse.clone());
+                            });
+                        })
+                    );
+                    return cachedResponse; // Return stale (cached) response
+                } else {
+                    // If not in cache, fetch from network and cache dynamically
+                    return fetch(event.request).then((networkResponse) => {
+                        return caches.open(CACHE_NAME).then((cache) => {
+                            // Cache the new network response dynamically
                             cache.put(event.request, networkResponse.clone());
+                            return networkResponse; // Return the fresh network response
                         });
-                    })
-                );
-                return cachedResponse; // Return stale (cached) response
-            } else {
-                // If not in cache, fetch from network and cache dynamically
-                return fetch(event.request).then((networkResponse) => {
-                    return caches.open(CACHE_NAME).then((cache) => {
-                        // Cache the new network response dynamically
-                        cache.put(event.request, networkResponse.clone());
-                        return networkResponse; // Return the fresh network response
+                    }).catch(() => {
+                        // Optionally handle offline scenario for dynamic requests
                     });
-                }).catch(() => {
-                    // Optionally handle offline scenario for dynamic requests
-                });
-            }
-        })
-    );
+                }
+            })
+        );
+    } else {
+        // For non-GET requests, just fetch from the network
+        event.respondWith(fetch(event.request));
+    }
 });
 
 // Activate event to clear old caches
