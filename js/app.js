@@ -288,11 +288,12 @@ Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
 
+const currentPath = window.location.pathname;
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", function() {
         if (useServiceWorker) {
             // Register the Service Worker
-            navigator.serviceWorker.register("../service-worker.js").then(function(registration) {
+            navigator.serviceWorker.register(`${currentPath}service-worker.js`).then(function(registration) {
                 console.log("Service Worker registered with scope:", registration.scope);
             }).catch(function(error) {
                 console.log("Service Worker registration failed:", error);
