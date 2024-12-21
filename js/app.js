@@ -190,7 +190,7 @@ function showModal(text, duration) {
     modal.classList.remove("hidden");
 
     if (duration > 0) {
-        setTimeout(function() {
+        setTimeout(function () {
             modal.classList.add("hidden");
         }, duration);
     }
@@ -258,7 +258,7 @@ function init() {
     }
     var gameBoard = document.querySelector("main");
 
-    document.addEventListener("touchstart", function() {}, false);
+    document.addEventListener("touchstart", function () { }, false);
     gameBoard.addEventListener("animationend", stopAnyAnimation, false);
     keyboard.addEventListener("click", typeKey, false);
     document.addEventListener("keyup", typeKey, false);
@@ -290,19 +290,19 @@ const useServiceWorker = true; // Set to "true" if you want to register the Serv
 
 const currentPath = window.location.pathname;
 if ("serviceWorker" in navigator) {
-    window.addEventListener("load", function() {
+    window.addEventListener("load", function () {
         if (useServiceWorker) {
             // Register the Service Worker
-            navigator.serviceWorker.register(`${currentPath}service-worker.js`).then(function(registration) {
+            navigator.serviceWorker.register(`${currentPath}service-worker.js`).then(function (registration) {
                 console.log("Service Worker registered with scope:", registration.scope);
-            }).catch(function(error) {
+            }).catch(function (error) {
                 console.log("Service Worker registration failed:", error);
             });
         } else {
             // Unregister all Service Workers
-            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            navigator.serviceWorker.getRegistrations().then(function (registrations) {
                 for (let registration of registrations) {
-                    registration.unregister().then(function(success) {
+                    registration.unregister().then(function (success) {
                         if (success) {
                             console.log("Service Worker successfully unregistered.");
                         }
