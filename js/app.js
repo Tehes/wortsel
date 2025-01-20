@@ -62,8 +62,8 @@ function typeKey() {
                 playErrorAnimation();
                 showModal("Kein zulässiges Wort", 1000);
 
-                window.splitbee.track("illegal Word", {
-                    word: [...letters].map(letters => letters.textContent).join().replace(/,/g, "")
+                window.splitbee.track("Wortsel", {
+                    illegalWord: [...letters].map(letters => letters.textContent).join().replace(/,/g, "")
                 });
             } else {
                 colorizeRow(letters);
@@ -170,8 +170,8 @@ function hasEnded() {
         showModal(winText[activeRow], 3000);
         playWinAnimation(correctLetters);
 
-        window.splitbee.track("won", {
-            rounds: activeRow + 1
+        window.splitbee.track("Wortsel", {
+            roundsUntilWin: activeRow + 1
         });
     } else {
         activeRow++;
@@ -179,8 +179,8 @@ function hasEnded() {
 
     if (activeRow === 6) {
         showModal("Leider verloren. Gesucht wurde '" + solution.toUpperCase() + "'.", 3000);
-        window.splitbee.track("lost", {
-            word: solution.toUpperCase()
+        window.splitbee.track("Wortsel", {
+            failedWord: solution.toUpperCase()
         });
     }
 }
