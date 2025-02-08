@@ -131,6 +131,7 @@ function colorizeRow(letters) {
     for (i = 0; i < letters.length; i++) {
         if (letters[i].textContent === solution[i]) {
             letters[i].classList.add("correct");
+            letters[i].classList.remove("active");
             tempSolution[i] = "";
         }
     }
@@ -140,6 +141,7 @@ function colorizeRow(letters) {
             j = tempSolution.indexOf(letters[i].textContent);
             if (j !== -1) {
                 letters[i].classList.add("present");
+                letters[i].classList.remove("active");
                 tempSolution[j] = "";
             }
         }
@@ -148,6 +150,7 @@ function colorizeRow(letters) {
     for (i = 0; i < letters.length; i++) {
         if (!letters[i].classList.contains("correct") && !letters[i].classList.contains("present")) {
             letters[i].classList.add("absent");
+            letters[i].classList.remove("active");
         }
     }
 }

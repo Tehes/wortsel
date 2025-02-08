@@ -155,7 +155,20 @@ ROWS
 }
 
 .letter.active {
-    border: var(--border-active);
+    position: relative;
+}
+
+/* Pseudo-Element für den blinkenden Cursor */
+.letter.active::after {
+    content: "";
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    width: 2px;
+    height: 70%;
+    background-color: var(--main-font-color);
+    transform: translateY(-50%);
+    animation: blinkCursor 1.5s linear infinite;
 }
 
 .correct {
@@ -317,6 +330,19 @@ ANIMATIONS
 
     100% {
         transform: translateY(0vmin);
+    }
+}
+
+@keyframes blinkCursor {
+
+    0%,
+    50% {
+        opacity: 1;
+    }
+
+    50.01%,
+    100% {
+        opacity: 0;
     }
 }
 
