@@ -19,6 +19,7 @@ var wholeWords = document.querySelector("#wholeWords");
 wholeWords.checked = JSON.parse(localStorage.getItem("wortsel_wholeWords") || true);
 var activeRow = 0;
 var enteredWord = "";
+var letterIndex = 0;
 var firstVisit = JSON.parse(localStorage.getItem("wortsel_firstVisit") || true);
 var wordList = curatedWords.concat(additionalWords);
 var solution = curatedWords[getRndInteger(0, curatedWords.length - 1)].toLowerCase();
@@ -30,22 +31,36 @@ function getRndInteger(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function typeKey() {
+function setLetterIndex(ev) {
+    if (ev.target.parentElement === rows[activeRow]) {
+        const letters = Array.from(rows[activeRow].querySelectorAll(".letter"));
+        const index = letters.indexOf(ev.target);
+        letterIndex = index;
+        updateActiveLetter();
+    }
+}
+
+function updateActiveLetter() {
+    const letters = Array.from(rows[activeRow].querySelectorAll(".letter"));
+
+    letters.forEach(letter => letter.classList.remove("active"));
+    if (letterIndex < letters.length) {
+        letters[letterIndex].classList.add("active");
+    }
+}
+
+function typeKey(ev) {
     var pressedKey, letters, i;
-    if (event.key) {
-        pressedKey = event.key.toLowerCase();
-    } else if (event.target.textContent && event.target.classList.contains("key")) {
-        pressedKey = event.target.textContent;
+    if (ev.key) {
+        pressedKey = ev.key.toLowerCase();
+    } else if (ev.target.textContent && ev.target.classList.contains("key")) {
+        pressedKey = ev.target.textContent;
     } else {
         return;
     }
 
-    letters = rows[activeRow].querySelectorAll(".letter");
-    i = 0;
-
-    while (i < letters.length && letters[i].textContent !== "") {
-        i++;
-    }
+    letters = [...rows[activeRow].querySelectorAll(".letter")];
+    i = letterIndex;
 
     // WHEN BACK-BUTTON IS PRESSED
     if (pressedKey === "back" || pressedKey === "backspace") {
@@ -53,11 +68,21 @@ function typeKey() {
             return;
         }
         letters[i - 1].textContent = "";
+        letterIndex--;
+        updateActiveLetter();
+    }
+
+    // WHEN DELETE-TASTE IS PRESSED
+    else if (pressedKey === "delete") {
+        if (!letters[i]) {
+            return;
+        }
+        letters[i].textContent = "";
     }
 
     // WHEN ENTER-BUTTON IS PRESSED
     else if (pressedKey === "enter") {
-        if (i === letters.length) {
+        if (letters.every(letter => letter.textContent !== "")) {
             if (indexInDatabase(letters) === -1 && wholeWords.checked === true) {
                 playErrorAnimation();
                 showModal("Kein zulässiges Wort", 1000);
@@ -78,6 +103,8 @@ function typeKey() {
     // WHEN ANY LETTER IS PRESSED
     else if (i < letters.length && pressedKey.length === 1) {
         letters[i].textContent = pressedKey;
+        letterIndex++;
+        updateActiveLetter();
     }
 }
 
@@ -174,7 +201,9 @@ function hasEnded() {
             roundsUntilWin: activeRow + 1
         });
     } else {
+        letterIndex = 0;
         activeRow++;
+        updateActiveLetter();
     }
 
     if (activeRow === 6) {
@@ -241,6 +270,7 @@ function reset() {
         letters[i].classList.remove("correct");
         letters[i].classList.remove("present");
         letters[i].classList.remove("absent");
+        letters[i].classList.remove("active");
     }
     for (i = 0; i < keys.length; i++) {
         keys[i].classList.remove("correct");
@@ -249,6 +279,8 @@ function reset() {
     }
     solution = curatedWords[getRndInteger(0, curatedWords.length - 1)].toLowerCase();
     activeRow = 0;
+    letterIndex = 0;
+    updateActiveLetter();
     showModal("Neue Runde, neues Glück", 1000);
 }
 
@@ -261,6 +293,7 @@ function init() {
     document.addEventListener("touchstart", function () { }, false);
     gameBoard.addEventListener("animationend", stopAnyAnimation, false);
     keyboard.addEventListener("click", typeKey, false);
+    gameBoard.addEventListener("click", setLetterIndex, false);
     document.addEventListener("keyup", typeKey, false);
     headline.addEventListener("click", reset, false);
     howTo.addEventListener("click", toggleWindow.bind(null, howTo), false);
