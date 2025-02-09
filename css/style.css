@@ -123,6 +123,7 @@ KEYBOARD
     cursor: grabbing;
     background-color: var(--key-highlight-bg-color);
     color: var(--key-font-color);
+    transform: translateY(1px);
 }
 
 /*
