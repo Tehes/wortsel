@@ -114,14 +114,14 @@ KEYBOARD
     padding: 1vmin;
     line-height: 2;
     text-align: center;
-    transition: background-color 0.5s ease-in-out;
 }
 
 .input {
     flex-grow: 18;
 }
 
-.key:active {
+.key:active,
+.key.pressed {
     cursor: grabbing;
     background-color: var(--key-highlight-bg-color);
     color: var(--key-font-color);

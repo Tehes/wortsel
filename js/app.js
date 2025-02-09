@@ -62,6 +62,23 @@ function typeKey(ev) {
     letters = [...rows[activeRow].querySelectorAll(".letter")];
     i = letterIndex;
 
+    // WHEN ARROWLEFT IS PRESSED
+    if (pressedKey === "arrowleft") {
+        if (letterIndex > 0) {
+            letterIndex--;
+            updateActiveLetter();
+        }
+        return;
+    }
+    // WHENN ARROWRIGHT IS PRESSED
+    else if (pressedKey === "arrowright") {
+        if (letterIndex < letters.length - 1) {
+            letterIndex++;
+            updateActiveLetter();
+        }
+        return;
+    }
+
     // WHEN BACK-BUTTON IS PRESSED
     if (pressedKey === "back" || pressedKey === "backspace") {
         if (!letters[i - 1]) {
@@ -100,11 +117,34 @@ function typeKey(ev) {
         }
     }
 
+
+
     // WHEN ANY LETTER IS PRESSED
     else if (i < letters.length && pressedKey.length === 1) {
         letters[i].textContent = pressedKey;
         letterIndex++;
         updateActiveLetter();
+    }
+}
+
+function handleVirtualKeyFeedback(ev) {
+    let key = ev.key.toLowerCase();
+
+    if (key === "backspace") {
+        key = "back";
+    } else if (key === "enter") {
+        key = "enter";
+    }
+
+    const virtualKey = Array.from(document.querySelectorAll(".key"))
+        .find(el => el.textContent.trim().toLowerCase() === key);
+
+    if (virtualKey) {
+        if (ev.type === "keydown") {
+            virtualKey.classList.add("pressed");
+        } else if (ev.type === "keyup") {
+            virtualKey.classList.remove("pressed");
+        }
     }
 }
 
@@ -298,6 +338,8 @@ function init() {
     keyboard.addEventListener("click", typeKey, false);
     gameBoard.addEventListener("click", setLetterIndex, false);
     document.addEventListener("keyup", typeKey, false);
+    document.addEventListener("keydown", handleVirtualKeyFeedback);
+    document.addEventListener("keyup", handleVirtualKeyFeedback);
     headline.addEventListener("click", reset, false);
     howTo.addEventListener("click", toggleWindow.bind(null, howTo), false);
     howToIcon.addEventListener("click", toggleWindow.bind(null, howTo), false);
