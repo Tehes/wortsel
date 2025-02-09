@@ -3,6 +3,8 @@
 Wortsel is a browser-based word game inspired by Wordle, allowing players to guess a hidden word within six attempts. 
 The game is designed as a Progressive Web App (PWA) and can be played on both mobile devices and desktop browsers.
 
+🔗 **Play Here:** [Wortsel](https://tehes.github.io/wortsel/)
+
 ## 📜 Disclaimer
 Wortsel is an independent, non-commercial project created for fun and personal use. It is inspired by Wordle but has no direct affiliation with Wordle or its developers. All rights to Wordle belong to their respective owners. Wortsel is a unique interpretation of the game with additional features and is not an official Wordle product. The project does not provide downloadable software and is not intended for redistribution.
 
@@ -33,4 +35,3 @@ Wortsel is an independent, non-commercial project created for fun and personal u
 This project is licensed under the MIT License.
 
 Enjoy playing! 🎉
-
