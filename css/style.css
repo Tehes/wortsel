@@ -1,5 +1,6 @@
 :root {
-    --main-bg-color: #FFF;
+    --main-bg-color: hsl(0, 0%, 95%);
+    --letter-bg-color: hsl(0, 0%, 100%);
     --main-font-color: #333;
     --highlight-font-color: #eee;
     --color-correct: rgb(106, 170, 100);
@@ -113,6 +114,7 @@ KEYBOARD
     padding: 1vmin;
     line-height: 2;
     text-align: center;
+    transition: background-color 0.5s ease-in-out;
 }
 
 .input {
@@ -139,6 +141,7 @@ ROWS
 
 .letter {
     border: var(--border-highlight);
+    background-color: var(--letter-bg-color);
     width: 8vmin;
     height: 8vmin;
     margin: 0.5vmin;
@@ -394,7 +397,8 @@ MEDIA QUERIES
 */
 @media (prefers-color-scheme: dark) {
     :root {
-        --main-bg-color: #222;
+        --main-bg-color: hsl(0, 0%, 14%);
+        --letter-bg-color: hsl(0, 0%, 25%);
         --main-font-color: #CCC;
         --border-standard: 2px solid #aaa;
         --border-highlight: 2px solid #ddd;
