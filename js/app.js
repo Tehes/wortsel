@@ -1,68 +1,79 @@
 /* --------------------------------------------------------------------------------------------------
-Variables
----------------------------------------------------------------------------------------------------*/
-import {
-    curatedWords,
-    additionalWords
-}
-    from "./words.js";
+ * Variables
+ ---------------------------------------------------------------------------------------------------*/
+import { curatedWords, additionalWords } from "./words.js";
 
-var keyboard = document.querySelector("#keyboard");
-var rows = document.querySelectorAll(".row");
-var modal = document.querySelector("aside.modal");
-var headline = document.querySelector("h1");
-var howToIcon = document.querySelector("#howToIcon");
-var howTo = document.querySelector("#howTo");
-var settingsIcon = document.querySelector("#settingsIcon");
-var settings = document.querySelector("#settings");
-var wholeWords = document.querySelector("#wholeWords");
-wholeWords.checked = JSON.parse(localStorage.getItem("wortsel_wholeWords") || true);
-var activeRow = 0;
-var enteredWord = "";
-var letterIndex = 0;
-var firstVisit = JSON.parse(localStorage.getItem("wortsel_firstVisit") || true);
-var wordList = curatedWords.concat(additionalWords);
-var solution = curatedWords[getRndInteger(0, curatedWords.length - 1)].toLowerCase();
+const keyboardElement = document.querySelector("#keyboard");
+const rowElements = document.querySelectorAll(".row");
+const modalElement = document.querySelector("aside.modal");
+const headlineElement = document.querySelector("h1");
+const howToIcon = document.querySelector("#howToIcon");
+const howToSection = document.querySelector("#howTo");
+const settingsIcon = document.querySelector("#settingsIcon");
+const settingsSection = document.querySelector("#settings");
+const wholeWordsCheckbox = document.querySelector("#wholeWords");
+
+wholeWordsCheckbox.checked = JSON.parse(localStorage.getItem("wortsel_wholeWords") || "true");
+
+let activeRow = 0;
+let letterIndex = 0;
+let enteredWord = "";
+let firstVisit = JSON.parse(localStorage.getItem("wortsel_firstVisit") || "true");
+
+const wordList = [...curatedWords, ...additionalWords];
+let solution = curatedWords[getRandomInteger(0, curatedWords.length - 1)].toLowerCase();
 
 /* --------------------------------------------------------------------------------------------------
-functions
----------------------------------------------------------------------------------------------------*/
-function getRndInteger(min, max) {
+ * Functions
+ ---------------------------------------------------------------------------------------------------*/
+
+/**
+ * Returns a random integer between min and max (inclusive).
+ */
+function getRandomInteger(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function setLetterIndex(ev) {
-    if (ev.target.parentElement === rows[activeRow]) {
-        const letters = Array.from(rows[activeRow].querySelectorAll(".letter"));
-        const index = letters.indexOf(ev.target);
+/**
+ * Sets the current letter index based on the clicked element.
+ */
+function setLetterIndex(event) {
+    if (event.target.parentElement === rowElements[activeRow]) {
+        const letters = Array.from(rowElements[activeRow].querySelectorAll(".letter"));
+        const index = letters.indexOf(event.target);
         letterIndex = index;
         updateActiveLetter();
     }
 }
 
+/**
+ * Highlights the active letter in the current row.
+ */
 function updateActiveLetter() {
-    const letters = Array.from(rows[activeRow].querySelectorAll(".letter"));
-
+    const letters = Array.from(rowElements[activeRow].querySelectorAll(".letter"));
     letters.forEach(letter => letter.classList.remove("active"));
     if (letterIndex < letters.length) {
         letters[letterIndex].classList.add("active");
     }
 }
 
-function typeKey(ev) {
-    var pressedKey, letters, i;
-    if (ev.key) {
-        pressedKey = ev.key.toLowerCase();
-    } else if (ev.target.textContent && ev.target.classList.contains("key")) {
-        pressedKey = ev.target.textContent;
+/**
+ * Handles key presses from both physical and on-screen keyboards.
+ */
+function typeKey(event) {
+    let pressedKey;
+    if (event.key) {
+        pressedKey = event.key.toLowerCase();
+    } else if (event.target.textContent && event.target.classList.contains("key")) {
+        pressedKey = event.target.textContent.toLowerCase();
     } else {
         return;
     }
 
-    letters = [...rows[activeRow].querySelectorAll(".letter")];
-    i = letterIndex;
+    const letters = [...rowElements[activeRow].querySelectorAll(".letter")];
+    let i = letterIndex;
 
-    // WHEN ARROWLEFT IS PRESSED
+    // Move cursor left
     if (pressedKey === "arrowleft") {
         if (letterIndex > 0) {
             letterIndex--;
@@ -70,66 +81,60 @@ function typeKey(ev) {
         }
         return;
     }
-    // WHENN ARROWRIGHT IS PRESSED
-    else if (pressedKey === "arrowright") {
+    // Move cursor right
+    if (pressedKey === "arrowright") {
         if (letterIndex < letters.length - 1) {
             letterIndex++;
             updateActiveLetter();
         }
         return;
     }
-
-    // WHEN BACK-BUTTON IS PRESSED
+    // Delete last letter
     if (pressedKey === "back" || pressedKey === "backspace") {
-        if (!letters[i - 1]) {
-            return;
-        }
+        if (!letters[i - 1]) return;
         letters[i - 1].textContent = "";
         letterIndex--;
         updateActiveLetter();
+        return;
     }
-
-    // WHEN DELETE-TASTE IS PRESSED
-    else if (pressedKey === "delete") {
-        if (!letters[i]) {
-            return;
-        }
+    // Delete current letter
+    if (pressedKey === "delete") {
+        if (!letters[i]) return;
         letters[i].textContent = "";
+        return;
     }
-
-    // WHEN ENTER-BUTTON IS PRESSED
-    else if (pressedKey === "enter") {
+    // Submit the word
+    if (pressedKey === "enter") {
         if (letters.every(letter => letter.textContent !== "")) {
-            if (indexInDatabase(letters) === -1 && wholeWords.checked === true) {
+            if (indexInDatabase(letters) === -1 && wholeWordsCheckbox.checked === true) {
                 playErrorAnimation();
                 showModal("Kein zulässiges Wort", 1000);
-
                 window.splitbee.track("Wortsel", {
-                    illegalWord: [...letters].map(letters => letters.textContent).join().replace(/,/g, "")
+                    illegalWord: letters.map(letter => letter.textContent).join("")
                 });
             } else {
                 colorizeRow(letters);
                 colorizeKeyboard(letters);
-                hasEnded();
+                checkEndCondition();
             }
         } else {
             showModal("Zu wenig Zeichen", 1000);
         }
+        return;
     }
-
-
-
-    // WHEN ANY LETTER IS PRESSED
-    else if (i < letters.length && pressedKey.length === 1) {
+    // Type a letter
+    if (i < letters.length && pressedKey.length === 1) {
         letters[i].textContent = pressedKey;
         letterIndex++;
         updateActiveLetter();
     }
 }
 
-function handleVirtualKeyFeedback(ev) {
-    let key = ev.key.toLowerCase();
-
+/**
+ * Adds visual feedback on on-screen keys when physical keys are pressed.
+ */
+function handleVirtualKeyFeedback(event) {
+    let key = event.key.toLowerCase();
     if (key === "backspace") {
         key = "back";
     } else if (key === "enter") {
@@ -140,93 +145,100 @@ function handleVirtualKeyFeedback(ev) {
         .find(el => el.textContent.trim().toLowerCase() === key);
 
     if (virtualKey) {
-        if (ev.type === "keydown") {
+        if (event.type === "keydown") {
             virtualKey.classList.add("pressed");
-        } else if (ev.type === "keyup") {
+        } else if (event.type === "keyup") {
             virtualKey.classList.remove("pressed");
         }
     }
 }
 
+/**
+ * Checks if the entered word is in the database and returns its index if found.
+ */
 function indexInDatabase(letters) {
-    var index;
-
-    enteredWord = [...letters].map(letters => letters.textContent);
-    enteredWord = enteredWord.toString();
-    enteredWord = enteredWord.replace(/,/g, "");
-
-    index = wordList.findIndex(element => {
-        return element.toLowerCase() === enteredWord.toLowerCase();
-    });
-
-    return index;
+    enteredWord = letters.map(l => l.textContent).join("");
+    return wordList.findIndex(item => item.toLowerCase() === enteredWord.toLowerCase());
 }
 
+/**
+ * Colors each letter cell based on its relation to the solution.
+ */
 function colorizeRow(letters) {
-    var i, j, tempSolution;
+    let tempSolution = solution.split("");
 
-    i = 0;
-    tempSolution = solution.split("");
-
-    for (i = 0; i < letters.length; i++) {
-        if (letters[i].textContent === solution[i]) {
-            letters[i].classList.add("correct");
-            letters[i].classList.remove("active");
+    // Mark correct letters
+    letters.forEach((letter, i) => {
+        if (letter.textContent === solution[i]) {
+            letter.classList.add("correct");
+            letter.classList.remove("active");
             tempSolution[i] = "";
         }
-    }
+    });
 
-    for (i = 0; i < letters.length; i++) {
-        if (!letters[i].classList.contains("correct")) {
-            j = tempSolution.indexOf(letters[i].textContent);
-            if (j !== -1) {
-                letters[i].classList.add("present");
-                letters[i].classList.remove("active");
-                tempSolution[j] = "";
+    // Mark present letters
+    letters.forEach(letter => {
+        if (!letter.classList.contains("correct")) {
+            const index = tempSolution.indexOf(letter.textContent);
+            if (index !== -1) {
+                letter.classList.add("present");
+                letter.classList.remove("active");
+                tempSolution[index] = "";
             }
         }
-    }
+    });
 
-    for (i = 0; i < letters.length; i++) {
-        if (!letters[i].classList.contains("correct") && !letters[i].classList.contains("present")) {
-            letters[i].classList.add("absent");
-            letters[i].classList.remove("active");
+    // Mark absent letters
+    letters.forEach(letter => {
+        if (
+            !letter.classList.contains("correct") &&
+            !letter.classList.contains("present")
+        ) {
+            letter.classList.add("absent");
+            letter.classList.remove("active");
         }
-    }
+    });
 }
 
+/**
+ * Applies color states (correct/present/absent) to the on-screen keys.
+ */
 function colorizeKeyboard(letters) {
-    var i, j, keys, arrkeys;
-    i = 0;
-    keys = document.querySelectorAll(".key");
-    arrkeys = [...keys].map(keys => keys.textContent);
+    const keys = document.querySelectorAll(".key");
+    const arrKeys = [...keys].map(key => key.textContent);
 
-    for (i = 0; i < letters.length; i++) {
-        j = arrkeys.indexOf(letters[i].textContent);
+    letters.forEach(letter => {
+        const j = arrKeys.indexOf(letter.textContent);
+        if (j === -1) return;
 
-        if (letters[i].classList.contains("absent") &&
+        if (
+            letter.classList.contains("absent") &&
             !keys[j].classList.contains("correct") &&
-            !keys[j].classList.contains("present")) {
+            !keys[j].classList.contains("present")
+        ) {
             keys[j].classList.add("absent");
         }
-
-        if (letters[i].classList.contains("present") &&
-            !keys[j].classList.contains("correct")) {
+        if (
+            letter.classList.contains("present") &&
+            !keys[j].classList.contains("correct")
+        ) {
             keys[j].classList.add("present");
             keys[j].classList.remove("absent");
         }
-
-        if (letters[i].classList.contains("correct")) {
+        if (letter.classList.contains("correct")) {
             keys[j].classList.add("correct");
             keys[j].classList.remove("present");
             keys[j].classList.remove("absent");
         }
-    }
+    });
 }
 
-function hasEnded() {
-    var correctLetters, winText;
-    winText = [
+/**
+ * Checks if the user has won or lost after a guess.
+ */
+function checkEndCondition() {
+    const correctLetters = rowElements[activeRow].querySelectorAll(".correct");
+    const winText = [
         "Wahnsinn, eine perfekte Runde!",
         "Wow, das war fantastisch!",
         "Ein beachtlicher Sieg!",
@@ -234,12 +246,10 @@ function hasEnded() {
         "Yay, gewonnen!",
         "Puh, das war knapp."
     ];
-    correctLetters = rows[activeRow].querySelectorAll(".correct");
 
     if (correctLetters.length === 5) {
         showModal(winText[activeRow], 3000);
         playWinAnimation(correctLetters);
-
         window.splitbee.track("Wortsel", {
             roundsUntilWin: activeRow + 1
         });
@@ -250,142 +260,168 @@ function hasEnded() {
     }
 
     if (activeRow === 6) {
-        showModal("Leider verloren. Gesucht wurde '" + solution.toUpperCase() + "'.", 3000);
+        showModal(`Leider verloren. Gesucht wurde '${solution.toUpperCase()}'.`, 3000);
         window.splitbee.track("Wortsel", {
             failedWord: solution.toUpperCase()
         });
     }
 }
 
+/**
+ * Displays a message in the modal for a set duration (ms).
+ */
 function showModal(text, duration) {
-    modal.textContent = text;
-    modal.classList.remove("hidden");
+    modalElement.textContent = text;
+    modalElement.classList.remove("hidden");
 
     if (duration > 0) {
-        setTimeout(function () {
-            modal.classList.add("hidden");
+        setTimeout(() => {
+            modalElement.classList.add("hidden");
         }, duration);
     }
 }
 
-function toggleWindow(x) {
-    var correctLetters = rows[activeRow].querySelectorAll(".correct");
-    if ((activeRow > 0 && activeRow < 6 && correctLetters.length !== 5) && x.id === "settings") {
+/**
+ * Toggles visibility of a given window (e.g. settings or how-to).
+ */
+function toggleWindow(element) {
+    const correctLetters = rowElements[activeRow].querySelectorAll(".correct");
+    if (
+        activeRow > 0 &&
+        activeRow < 6 &&
+        correctLetters.length !== 5 &&
+        element.id === "settings"
+    ) {
         showModal("Nicht während des Spiels möglich", 1000);
     } else {
-        x.classList.toggle("hidden");
+        element.classList.toggle("hidden");
     }
 }
 
+/**
+ * Adds a jump animation for the winning row.
+ */
 function playWinAnimation(letters) {
-    var i;
-
-    for (i = 0; i < letters.length; i++) {
-        letters[i].classList.add("jump");
-    }
+    letters.forEach(letter => letter.classList.add("jump"));
 }
 
+/**
+ * Adds a shake animation if the word is invalid or not found.
+ */
 function playErrorAnimation() {
-    rows[activeRow].classList.add("shake");
+    rowElements[activeRow].classList.add("shake");
 }
 
-function stopAnyAnimation() {
+/**
+ * Removes jump/shake classes at the end of the animation.
+ */
+function stopAnyAnimation(event) {
     event.target.classList.remove("jump");
     event.target.classList.remove("shake");
 }
 
+/**
+ * Shows the solution (for debugging or cheat).
+ */
 function solve() {
-    showModal("Die Lösung lautet '" + solution.toUpperCase() + "'.", 2000);
+    showModal(`Die Lösung lautet '${solution.toUpperCase()}'.`, 2000);
 }
 
+/**
+ * Saves settings to localStorage when the window is unloaded.
+ */
 function saveSettings() {
     localStorage.setItem("wortsel_firstVisit", JSON.stringify(false));
-    localStorage.setItem("wortsel_wholeWords", JSON.stringify(wholeWords.checked));
+    localStorage.setItem("wortsel_wholeWords", JSON.stringify(wholeWordsCheckbox.checked));
 }
 
-function reset() {
-    var i, letters, keys;
-    letters = document.querySelectorAll("main .letter");
-    keys = document.querySelectorAll(".key");
+/**
+ * Resets the game board for a new round.
+ */
+function resetGame() {
+    const letters = document.querySelectorAll("main .letter");
+    const keys = document.querySelectorAll(".key");
 
-    for (i = 0; i < letters.length; i++) {
-        letters[i].textContent = "";
-        letters[i].classList.remove("correct");
-        letters[i].classList.remove("present");
-        letters[i].classList.remove("absent");
-        letters[i].classList.remove("active");
-    }
-    for (i = 0; i < keys.length; i++) {
-        keys[i].classList.remove("correct");
-        keys[i].classList.remove("present");
-        keys[i].classList.remove("absent");
-    }
-    solution = curatedWords[getRndInteger(0, curatedWords.length - 1)].toLowerCase();
+    letters.forEach(letter => {
+        letter.textContent = "";
+        letter.classList.remove("correct", "present", "absent", "active");
+    });
+    keys.forEach(key => {
+        key.classList.remove("correct", "present", "absent");
+    });
+
+    solution = curatedWords[getRandomInteger(0, curatedWords.length - 1)].toLowerCase();
     activeRow = 0;
     letterIndex = 0;
     updateActiveLetter();
     showModal("Neue Runde, neues Glück", 1000);
 }
 
-function init() {
+/**
+ * Initializes the game and sets up event listeners.
+ */
+function initGame() {
     if (firstVisit === true) {
-        howTo.classList.remove("hidden");
+        howToSection.classList.remove("hidden");
     }
-    var gameBoard = document.querySelector("main");
 
-    document.addEventListener("touchstart", function () { }, false);
+    const gameBoard = document.querySelector("main");
+
+    document.addEventListener("touchstart", () => { }, false);
     gameBoard.addEventListener("animationend", stopAnyAnimation, false);
-    keyboard.addEventListener("click", typeKey, false);
+    keyboardElement.addEventListener("click", typeKey, false);
     gameBoard.addEventListener("click", setLetterIndex, false);
     document.addEventListener("keyup", typeKey, false);
     document.addEventListener("keydown", handleVirtualKeyFeedback);
     document.addEventListener("keyup", handleVirtualKeyFeedback);
-    headline.addEventListener("click", reset, false);
-    howTo.addEventListener("click", toggleWindow.bind(null, howTo), false);
-    howToIcon.addEventListener("click", toggleWindow.bind(null, howTo), false);
-    settingsIcon.addEventListener("click", toggleWindow.bind(null, settings), false, false);
+    headlineElement.addEventListener("click", resetGame, false);
+
+    howToSection.addEventListener("click", () => toggleWindow(howToSection), false);
+    howToIcon.addEventListener("click", () => toggleWindow(howToSection), false);
+    settingsIcon.addEventListener("click", () => toggleWindow(settingsSection), false);
+
     window.addEventListener("unload", saveSettings, false);
 
-    console.log("curated words: " + curatedWords.length);
-    console.log("additional words: " + additionalWords.length);
-    console.log("altogether: " + wordList.length);
+    console.log(`curated words: ${curatedWords.length}`);
+    console.log(`additional words: ${additionalWords.length}`);
+    console.log(`altogether: ${wordList.length}`);
 }
 
 /* --------------------------------------------------------------------------------------------------
-public members, exposed with window scope
----------------------------------------------------------------------------------------------------*/
+ * Public members (exposed in window scope)
+ ---------------------------------------------------------------------------------------------------*/
 window.wortsel = {
-    init,
+    initGame,
     solve
 };
 
-window.wortsel.init();
+window.wortsel.initGame();
 
 /* --------------------------------------------------------------------------------------------------
-Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
----------------------------------------------------------------------------------------------------*/
-const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-
+ * Service Worker configuration
+ ---------------------------------------------------------------------------------------------------*/
+const useServiceWorker = true;
 const currentPath = window.location.pathname;
+
 if ("serviceWorker" in navigator) {
-    window.addEventListener("load", function () {
+    window.addEventListener("load", () => {
         if (useServiceWorker) {
-            // Register the Service Worker
-            navigator.serviceWorker.register(`${currentPath}service-worker.js`).then(function (registration) {
-                console.log("Service Worker registered with scope:", registration.scope);
-            }).catch(function (error) {
-                console.log("Service Worker registration failed:", error);
-            });
+            navigator.serviceWorker.register(`${currentPath}service-worker.js`)
+                .then((registration) => {
+                    console.log("Service Worker registered with scope:", registration.scope);
+                })
+                .catch((error) => {
+                    console.log("Service Worker registration failed:", error);
+                });
         } else {
-            // Unregister all Service Workers
-            navigator.serviceWorker.getRegistrations().then(function (registrations) {
-                for (let registration of registrations) {
-                    registration.unregister().then(function (success) {
+            navigator.serviceWorker.getRegistrations().then((registrations) => {
+                registrations.forEach(reg => {
+                    reg.unregister().then(success => {
                         if (success) {
                             console.log("Service Worker successfully unregistered.");
                         }
                     });
-                }
+                });
             });
         }
     });
