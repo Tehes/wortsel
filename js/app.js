@@ -109,8 +109,8 @@ function typeKey(event) {
             if (indexInDatabase(letters) === -1 && wholeWordsCheckbox.checked === true) {
                 playErrorAnimation();
                 showModal("Kein zulässiges Wort", 1000);
-                window.splitbee.track("Wortsel", {
-                    illegalWord: letters.map(letter => letter.textContent).join("")
+                window.umami.track('illegal_word', {
+                    illegalWord: letters.map(letter => letter.textContent).join('')
                 });
             } else {
                 colorizeRow(letters);
@@ -250,7 +250,7 @@ function checkEndCondition() {
     if (correctLetters.length === 5) {
         showModal(winText[activeRow], 3000);
         playWinAnimation(correctLetters);
-        window.splitbee.track("Wortsel", {
+        window.umami.track('rounds_until_win', {
             roundsUntilWin: activeRow + 1
         });
     } else {
@@ -261,7 +261,7 @@ function checkEndCondition() {
 
     if (activeRow === 6) {
         showModal(`Leider verloren. Gesucht wurde '${solution.toUpperCase()}'.`, 3000);
-        window.splitbee.track("Wortsel", {
+        window.umami.track('failed_word', {
             failedWord: solution.toUpperCase()
         });
     }
