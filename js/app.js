@@ -1,7 +1,7 @@
 /* --------------------------------------------------------------------------------------------------
  * Variables
  ---------------------------------------------------------------------------------------------------*/
-import { curatedWords, additionalWords } from "./words.js";
+import { additionalWords, curatedWords } from "./words.js";
 
 const keyboardElement = document.querySelector("#keyboard");
 const rowElements = document.querySelectorAll(".row");
@@ -13,15 +13,20 @@ const settingsIcon = document.querySelector("#settingsIcon");
 const settingsSection = document.querySelector("#settings");
 const wholeWordsCheckbox = document.querySelector("#wholeWords");
 
-wholeWordsCheckbox.checked = JSON.parse(localStorage.getItem("wortsel_wholeWords") || "true");
+wholeWordsCheckbox.checked = JSON.parse(
+    localStorage.getItem("wortsel_wholeWords") || "true",
+);
 
 let activeRow = 0;
 let letterIndex = 0;
 let enteredWord = "";
-let firstVisit = JSON.parse(localStorage.getItem("wortsel_firstVisit") || "true");
+let firstVisit = JSON.parse(
+    localStorage.getItem("wortsel_firstVisit") || "true",
+);
 
 const wordList = [...curatedWords, ...additionalWords];
-let solution = curatedWords[getRandomInteger(0, curatedWords.length - 1)].toLowerCase();
+let solution = curatedWords[getRandomInteger(0, curatedWords.length - 1)]
+    .toLowerCase();
 
 /* --------------------------------------------------------------------------------------------------
  * Functions
@@ -39,7 +44,9 @@ function getRandomInteger(min, max) {
  */
 function setLetterIndex(event) {
     if (event.target.parentElement === rowElements[activeRow]) {
-        const letters = Array.from(rowElements[activeRow].querySelectorAll(".letter"));
+        const letters = Array.from(
+            rowElements[activeRow].querySelectorAll(".letter"),
+        );
         const index = letters.indexOf(event.target);
         letterIndex = index;
         updateActiveLetter();
@@ -50,8 +57,10 @@ function setLetterIndex(event) {
  * Highlights the active letter in the current row.
  */
 function updateActiveLetter() {
-    const letters = Array.from(rowElements[activeRow].querySelectorAll(".letter"));
-    letters.forEach(letter => letter.classList.remove("active"));
+    const letters = Array.from(
+        rowElements[activeRow].querySelectorAll(".letter"),
+    );
+    letters.forEach((letter) => letter.classList.remove("active"));
     if (letterIndex < letters.length) {
         letters[letterIndex].classList.add("active");
     }
@@ -64,7 +73,9 @@ function typeKey(event) {
     let pressedKey;
     if (event.key) {
         pressedKey = event.key.toLowerCase();
-    } else if (event.target.textContent && event.target.classList.contains("key")) {
+    } else if (
+        event.target.textContent && event.target.classList.contains("key")
+    ) {
         pressedKey = event.target.textContent.toLowerCase();
     } else {
         return;
@@ -105,12 +116,16 @@ function typeKey(event) {
     }
     // Submit the word
     if (pressedKey === "enter") {
-        if (letters.every(letter => letter.textContent !== "")) {
-            if (indexInDatabase(letters) === -1 && wholeWordsCheckbox.checked === true) {
+        if (letters.every((letter) => letter.textContent !== "")) {
+            if (
+                indexInDatabase(letters) === -1 &&
+                wholeWordsCheckbox.checked === true
+            ) {
                 playErrorAnimation();
                 showModal("Kein zulässiges Wort", 1000);
-                window.umami.track('illegal_word', {
-                    illegalWord: letters.map(letter => letter.textContent).join('')
+                window.umami.track("illegal_word", {
+                    illegalWord: letters.map((letter) => letter.textContent)
+                        .join(""),
                 });
             } else {
                 colorizeRow(letters);
@@ -142,7 +157,7 @@ function handleVirtualKeyFeedback(event) {
     }
 
     const virtualKey = Array.from(document.querySelectorAll(".key"))
-        .find(el => el.textContent.trim().toLowerCase() === key);
+        .find((el) => el.textContent.trim().toLowerCase() === key);
 
     if (virtualKey) {
         if (event.type === "keydown") {
@@ -157,8 +172,10 @@ function handleVirtualKeyFeedback(event) {
  * Checks if the entered word is in the database and returns its index if found.
  */
 function indexInDatabase(letters) {
-    enteredWord = letters.map(l => l.textContent).join("");
-    return wordList.findIndex(item => item.toLowerCase() === enteredWord.toLowerCase());
+    enteredWord = letters.map((l) => l.textContent).join("");
+    return wordList.findIndex((item) =>
+        item.toLowerCase() === enteredWord.toLowerCase()
+    );
 }
 
 /**
@@ -177,7 +194,7 @@ function colorizeRow(letters) {
     });
 
     // Mark present letters
-    letters.forEach(letter => {
+    letters.forEach((letter) => {
         if (!letter.classList.contains("correct")) {
             const index = tempSolution.indexOf(letter.textContent);
             if (index !== -1) {
@@ -189,7 +206,7 @@ function colorizeRow(letters) {
     });
 
     // Mark absent letters
-    letters.forEach(letter => {
+    letters.forEach((letter) => {
         if (
             !letter.classList.contains("correct") &&
             !letter.classList.contains("present")
@@ -205,9 +222,9 @@ function colorizeRow(letters) {
  */
 function colorizeKeyboard(letters) {
     const keys = document.querySelectorAll(".key");
-    const arrKeys = [...keys].map(key => key.textContent);
+    const arrKeys = [...keys].map((key) => key.textContent);
 
-    letters.forEach(letter => {
+    letters.forEach((letter) => {
         const j = arrKeys.indexOf(letter.textContent);
         if (j === -1) return;
 
@@ -244,14 +261,14 @@ function checkEndCondition() {
         "Ein beachtlicher Sieg!",
         "Sehr gut gemacht!",
         "Yay, gewonnen!",
-        "Puh, das war knapp."
+        "Puh, das war knapp.",
     ];
 
     if (correctLetters.length === 5) {
         showModal(winText[activeRow], 3000);
         playWinAnimation(correctLetters);
-        window.umami.track('rounds_until_win', {
-            roundsUntilWin: activeRow + 1
+        window.umami.track("rounds_until_win", {
+            roundsUntilWin: activeRow + 1,
         });
     } else {
         letterIndex = 0;
@@ -260,9 +277,12 @@ function checkEndCondition() {
     }
 
     if (activeRow === 6) {
-        showModal(`Leider verloren. Gesucht wurde '${solution.toUpperCase()}'.`, 3000);
-        window.umami.track('failed_word', {
-            failedWord: solution.toUpperCase()
+        showModal(
+            `Leider verloren. Gesucht wurde '${solution.toUpperCase()}'.`,
+            3000,
+        );
+        window.umami.track("failed_word", {
+            failedWord: solution.toUpperCase(),
         });
     }
 }
@@ -302,7 +322,7 @@ function toggleWindow(element) {
  * Adds a jump animation for the winning row.
  */
 function playWinAnimation(letters) {
-    letters.forEach(letter => letter.classList.add("jump"));
+    letters.forEach((letter) => letter.classList.add("jump"));
 }
 
 /**
@@ -332,7 +352,10 @@ function solve() {
  */
 function saveSettings() {
     localStorage.setItem("wortsel_firstVisit", JSON.stringify(false));
-    localStorage.setItem("wortsel_wholeWords", JSON.stringify(wholeWordsCheckbox.checked));
+    localStorage.setItem(
+        "wortsel_wholeWords",
+        JSON.stringify(wholeWordsCheckbox.checked),
+    );
 }
 
 /**
@@ -342,15 +365,16 @@ function resetGame() {
     const letters = document.querySelectorAll("main .letter");
     const keys = document.querySelectorAll(".key");
 
-    letters.forEach(letter => {
+    letters.forEach((letter) => {
         letter.textContent = "";
         letter.classList.remove("correct", "present", "absent", "active");
     });
-    keys.forEach(key => {
+    keys.forEach((key) => {
         key.classList.remove("correct", "present", "absent");
     });
 
-    solution = curatedWords[getRandomInteger(0, curatedWords.length - 1)].toLowerCase();
+    solution = curatedWords[getRandomInteger(0, curatedWords.length - 1)]
+        .toLowerCase();
     activeRow = 0;
     letterIndex = 0;
     updateActiveLetter();
@@ -367,7 +391,7 @@ function initGame() {
 
     const gameBoard = document.querySelector("main");
 
-    document.addEventListener("touchstart", () => { }, false);
+    document.addEventListener("touchstart", () => {}, false);
     gameBoard.addEventListener("animationend", stopAnyAnimation, false);
     keyboardElement.addEventListener("click", typeKey, false);
     gameBoard.addEventListener("click", setLetterIndex, false);
@@ -376,9 +400,21 @@ function initGame() {
     document.addEventListener("keyup", handleVirtualKeyFeedback);
     headlineElement.addEventListener("click", resetGame, false);
 
-    howToSection.addEventListener("click", () => toggleWindow(howToSection), false);
-    howToIcon.addEventListener("click", () => toggleWindow(howToSection), false);
-    settingsIcon.addEventListener("click", () => toggleWindow(settingsSection), false);
+    howToSection.addEventListener(
+        "click",
+        () => toggleWindow(howToSection),
+        false,
+    );
+    howToIcon.addEventListener(
+        "click",
+        () => toggleWindow(howToSection),
+        false,
+    );
+    settingsIcon.addEventListener(
+        "click",
+        () => toggleWindow(settingsSection),
+        false,
+    );
 
     window.addEventListener("unload", saveSettings, false);
 
@@ -392,37 +428,49 @@ function initGame() {
  ---------------------------------------------------------------------------------------------------*/
 window.wortsel = {
     initGame,
-    solve
+    solve,
 };
 
 window.wortsel.initGame();
 
 /* --------------------------------------------------------------------------------------------------
- * Service Worker configuration
- ---------------------------------------------------------------------------------------------------*/
-const useServiceWorker = true;
-const currentPath = window.location.pathname;
+Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
+---------------------------------------------------------------------------------------------------*/
+const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
+
+async function registerServiceWorker() {
+    try {
+        const registration = await navigator.serviceWorker.register(
+            "./service-worker.js",
+            {
+                scope: "./",
+            },
+        );
+        console.log(
+            "Service Worker registered with scope:",
+            registration.scope,
+        );
+    } catch (error) {
+        console.log("Service Worker registration failed:", error);
+    }
+}
+
+async function unregisterServiceWorkers() {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    if (registrations.length === 0) return;
+
+    await Promise.all(registrations.map((r) => r.unregister()));
+    console.log("All service workers unregistered – reloading page…");
+    // Hard reload, um garantiert ohne Cache zu starten
+    globalThis.location.reload();
+}
 
 if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
+    globalThis.addEventListener("DOMContentLoaded", async () => {
         if (useServiceWorker) {
-            navigator.serviceWorker.register(`${currentPath}service-worker.js`)
-                .then((registration) => {
-                    console.log("Service Worker registered with scope:", registration.scope);
-                })
-                .catch((error) => {
-                    console.log("Service Worker registration failed:", error);
-                });
+            await registerServiceWorker();
         } else {
-            navigator.serviceWorker.getRegistrations().then((registrations) => {
-                registrations.forEach(reg => {
-                    reg.unregister().then(success => {
-                        if (success) {
-                            console.log("Service Worker successfully unregistered.");
-                        }
-                    });
-                });
-            });
+            await unregisterServiceWorkers();
         }
     });
 }

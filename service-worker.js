@@ -1,4 +1,4 @@
-const CACHE_NAME = "wortsel-cache-v5"; // Name of the dynamic cache
+const CACHE_NAME = "wortsel-cache-v6"; // Name of the dynamic cache
 
 // Install event
 self.addEventListener("install", () => {
@@ -19,9 +19,12 @@ self.addEventListener("fetch", (event) => {
                         fetch(event.request).then((networkResponse) => {
                             // Open the cache and update the requested resource
                             caches.open(CACHE_NAME).then((cache) => {
-                                cache.put(event.request, networkResponse.clone());
+                                cache.put(
+                                    event.request,
+                                    networkResponse.clone(),
+                                );
                             });
-                        })
+                        }),
                     );
                     return cachedResponse; // Return stale (cached) response
                 } else {
@@ -36,7 +39,7 @@ self.addEventListener("fetch", (event) => {
                         // Optionally handle offline scenario for dynamic requests
                     });
                 }
-            })
+            }),
         );
     } else {
         // For non-GET requests, just fetch from the network
@@ -55,9 +58,9 @@ self.addEventListener("activate", (event) => {
                         // Delete old caches
                         return caches.delete(cacheName);
                     }
-                })
+                }),
             );
-        })
+        }),
     );
     self.clients.claim(); // Ensure service worker takes control of the page immediately
 });
