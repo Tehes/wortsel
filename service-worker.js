@@ -1,4 +1,4 @@
-const CACHE_NAME = "wortsel-cache-v7"; // Name of the dynamic cache
+const CACHE_NAME = "wortsel-cache-v8"; // Name of the dynamic cache
 
 // Install event
 self.addEventListener("install", () => {
