@@ -1,50 +1,59 @@
-const CACHE_NAME = "wortsel-cache-v8"; // Name of the dynamic cache
+/*
+ * Generic Service Worker template
+ * 1. Uses a cache‑first / stale‑while‑revalidate strategy for all GET requests.
+ * 2. Ignores non‑GET requests to avoid “Uncaught (in promise) TypeError: Failed to fetch” when offline.
+ * 3. Cleans up old caches on activation.
+ */
+
+const CACHE_NAME = `app_name-cache-${new URL(location).searchParams.get("v") || "default"}`; // Name of the dynamic cache
 
 // Install event
 self.addEventListener("install", () => {
-	// Skip waiting to activate the service worker immediately
 	self.skipWaiting();
 });
 
-// Fetch event
+// Fetch event – cache‑first / stale‑while‑revalidate for **GET** requests only
 self.addEventListener("fetch", (event) => {
-	// Only handle GET requests
-	if (event.request.method === "GET") {
-		// Respond with cache-first strategy and stale-while-revalidate
-		event.respondWith(
-			caches.match(event.request).then((cachedResponse) => {
-				if (cachedResponse) {
-					// Return cached response immediately and update in the background
-					event.waitUntil(
-						fetch(event.request).then((networkResponse) => {
-							// Open the cache and update the requested resource
+	// Ignore non‑GET requests (POST, WebSocket upgrade, etc.)
+	if (event.request.method !== "GET") return;
+
+	event.respondWith(
+		caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
+			if (cachedResponse) {
+				// Return cached response immediately and update in the background
+				event.waitUntil(
+					fetch(event.request)
+						.then((networkResponse) =>
 							caches.open(CACHE_NAME).then((cache) => {
-								cache.put(
-									event.request,
-									networkResponse.clone(),
-								);
-							});
-						}),
-					);
-					return cachedResponse; // Return stale (cached) response
-				} else {
-					// If not in cache, fetch from network and cache dynamically
-					return fetch(event.request).then((networkResponse) => {
-						return caches.open(CACHE_NAME).then((cache) => {
-							// Cache the new network response dynamically
-							cache.put(event.request, networkResponse.clone());
-							return networkResponse; // Return the fresh network response
-						});
-					}).catch(() => {
-						// Optionally handle offline scenario for dynamic requests
-					});
-				}
-			}),
-		);
-	} else {
-		// For non-GET requests, just fetch from the network
-		event.respondWith(fetch(event.request));
-	}
+								cache.put(event.request, networkResponse.clone());
+							})
+						)
+						.catch(() => {}),
+				);
+				return cachedResponse; // stale (cached) response
+			}
+
+			// Not in cache – fetch from network, then cache dynamically
+			return fetch(event.request)
+				.then((networkResponse) =>
+					caches.open(CACHE_NAME).then((cache) => {
+						cache.put(event.request, networkResponse.clone());
+						return networkResponse; // fresh network response
+					})
+				)
+				.catch(() =>
+					// Offline fallback: attempt cache again (ignore query string);
+					// if it's a navigation request, return the shell page.
+					caches.match(event.request, { ignoreSearch: true }).then((resp) => {
+						if (resp) return resp;
+						if (event.request.mode === "navigate") {
+							return caches.match("./");
+						}
+						return new Response("", { status: 503, statusText: "Offline" });
+					})
+				);
+		}),
+	);
 });
 
 // Activate event to clear old caches

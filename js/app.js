@@ -435,15 +435,23 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
+const serviceWorkerVersion = "2025-07-20-v1"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
+		// Force bypassing the HTTP cache so even Safari checks for a new
+		// service-worker.js on every load.
 		const registration = await navigator.serviceWorker.register(
-			"./service-worker.js",
+			`./service-worker.js?v=${serviceWorkerVersion}`,
 			{
 				scope: "./",
+				// updateViaCache is ignored by Safari but helps other browsers
+				updateViaCache: "none",
 			},
 		);
+		// Immediately ping for an update to catch fresh versions that may
+		// have been cached by the browser.
+		registration.update();
 		console.log(
 			"Service Worker registered with scope:",
 			registration.scope,
@@ -459,7 +467,7 @@ async function unregisterServiceWorkers() {
 
 	await Promise.all(registrations.map((r) => r.unregister()));
 	console.log("All service workers unregistered – reloading page…");
-	// Hard reload, um garantiert ohne Cache zu starten
+	// Hard reload to ensure starting without cache
 	globalThis.location.reload();
 }
 
