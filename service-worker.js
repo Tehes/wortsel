@@ -16,6 +16,8 @@ self.addEventListener("install", () => {
 self.addEventListener("fetch", (event) => {
 	// Ignore non‑GET requests (POST, WebSocket upgrade, etc.)
 	if (event.request.method !== "GET") return;
+	// Skip requests with unsupported schemes (e.g., chrome-extension://)
+	if (!event.request.url.startsWith("http")) return;
 
 	event.respondWith(
 		caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {

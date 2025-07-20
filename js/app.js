@@ -414,7 +414,7 @@ function initGame() {
 		false,
 	);
 
-	globalThis.addEventListener("unload", saveSettings, false);
+	globalThis.addEventListener("beforeunload", saveSettings, false);
 
 	console.log(`curated words: ${curatedWords.length}`);
 	console.log(`additional words: ${additionalWords.length}`);
