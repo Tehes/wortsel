@@ -1169,6 +1169,7 @@ export const curatedWords = [
 	"Zwerg",
 	"Zwirn",
 	"Zwist",
+	"Zwölf",
 	"Zyste",
 ];
 
@@ -9231,7 +9232,6 @@ export const additionalWords = [
 	"zweit",
 	"zwick",
 	"zwing",
-	"Zwölf",
 	"Zwoos",
 	"Zwota",
 	"zwote",
