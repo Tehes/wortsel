@@ -11,6 +11,8 @@ const howToIcon = document.querySelector("#howToIcon");
 const howToSection = document.querySelector("#howTo");
 const settingsIcon = document.querySelector("#settingsIcon");
 const settingsSection = document.querySelector("#settings");
+const backdrop = document.querySelector(".backdrop");
+const closeIcons = document.querySelectorAll(".close");
 const wholeWordsCheckbox = document.querySelector("#wholeWords");
 
 wholeWordsCheckbox.checked = JSON.parse(
@@ -313,6 +315,7 @@ function toggleWindow(element) {
 		showModal("Nicht während des Spiels möglich", 1000);
 	} else {
 		element.classList.toggle("hidden");
+		backdrop.classList.toggle("hidden");
 	}
 }
 
@@ -389,7 +392,7 @@ function initGame() {
 
 	const gameBoard = document.querySelector("main");
 
-	document.addEventListener("touchstart", () => {}, false);
+	document.addEventListener("touchstart", () => { }, false);
 	gameBoard.addEventListener("animationend", stopAnyAnimation, false);
 	keyboardElement.addEventListener("click", typeKey, false);
 	gameBoard.addEventListener("click", setLetterIndex, false);
@@ -398,21 +401,10 @@ function initGame() {
 	document.addEventListener("keyup", handleVirtualKeyFeedback);
 	headlineElement.addEventListener("click", resetGame, false);
 
-	howToSection.addEventListener(
-		"click",
-		() => toggleWindow(howToSection),
-		false,
-	);
-	howToIcon.addEventListener(
-		"click",
-		() => toggleWindow(howToSection),
-		false,
-	);
-	settingsIcon.addEventListener(
-		"click",
-		() => toggleWindow(settingsSection),
-		false,
-	);
+	howToSection.addEventListener("click", () => toggleWindow(howToSection), false);
+	howToIcon.addEventListener("click",() => toggleWindow(howToSection),false);
+	settingsIcon.addEventListener("click",() => toggleWindow(settingsSection),false);
+	closeIcons[1].addEventListener("click", () => toggleWindow(settingsSection), false);
 
 	globalThis.addEventListener("beforeunload", saveSettings, false);
 
@@ -435,7 +427,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-07-20-v1"; // Increment this version to force browsers to fetch a new service-worker.js
+const serviceWorkerVersion = "2025-08-08-v1"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
