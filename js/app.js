@@ -21,12 +21,12 @@ wholeWordsCheckbox.checked = JSON.parse(
 
 let activeRow = 0;
 let letterIndex = 0;
-let enteredWord = "";
 const firstVisit = JSON.parse(
 	localStorage.getItem("wortsel_firstVisit") || "true",
 );
 
 const wordList = [...curatedWords, ...additionalWords];
+const wordSet = new Set(wordList.map(w => w.toLowerCase()));
 let solution = curatedWords[getRandomInteger(0, curatedWords.length - 1)]
 	.toLowerCase();
 
@@ -118,17 +118,11 @@ function typeKey(event) {
 	}
 	// Submit the word
 	if (pressedKey === "enter") {
-		if (letters.every((letter) => letter.textContent !== "")) {
-			if (
-				indexInDatabase(letters) === -1 &&
-				wholeWordsCheckbox.checked === true
-			) {
+		if (letters.every(l => l.textContent !== "")) {
+			if (!inDatabase(letters) && wholeWordsCheckbox.checked === true) {
 				playErrorAnimation();
 				showModal("Kein zulässiges Wort", 1000);
-				globalThis.umami.track("Wortsel", {
-					illegalWord: letters.map((letter) => letter.textContent)
-						.join(""),
-				});
+				globalThis.umami.track("Wortsel", { illegalWord: letters.map(l => l.textContent).join("") });
 			} else {
 				colorizeRow(letters);
 				colorizeKeyboard(letters);
@@ -171,11 +165,11 @@ function handleVirtualKeyFeedback(event) {
 }
 
 /**
- * Checks if the entered word is in the database and returns its index if found.
+ * Checks if the entered word is in the database.
  */
-function indexInDatabase(letters) {
-	enteredWord = letters.map((l) => l.textContent).join("");
-	return wordList.findIndex((item) => item.toLowerCase() === enteredWord.toLowerCase());
+function inDatabase(letters) {
+	const entered = letters.map(l => l.textContent).join("").toLowerCase();
+	return wordSet.has(entered);
 }
 
 /**
@@ -402,8 +396,8 @@ function initGame() {
 	headlineElement.addEventListener("click", resetGame, false);
 
 	howToSection.addEventListener("click", () => toggleWindow(howToSection), false);
-	howToIcon.addEventListener("click",() => toggleWindow(howToSection),false);
-	settingsIcon.addEventListener("click",() => toggleWindow(settingsSection),false);
+	howToIcon.addEventListener("click", () => toggleWindow(howToSection), false);
+	settingsIcon.addEventListener("click", () => toggleWindow(settingsSection), false);
 	closeIcons[1].addEventListener("click", () => toggleWindow(settingsSection), false);
 
 	globalThis.addEventListener("beforeunload", saveSettings, false);
@@ -427,7 +421,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-08-08-v1"; // Increment this version to force browsers to fetch a new service-worker.js
+const serviceWorkerVersion = "2025-08-08-v2"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
