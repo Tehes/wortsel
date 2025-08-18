@@ -393,7 +393,7 @@ function initGame() {
 	document.addEventListener("keyup", typeKey, false);
 	document.addEventListener("keydown", handleVirtualKeyFeedback);
 	document.addEventListener("keyup", handleVirtualKeyFeedback);
-	headlineElement.addEventListener("click", resetGame, false);
+	if (headlineElement) {	headlineElement.addEventListener("click", resetGame, false); }
 
 	howToSection.addEventListener("click", () => toggleWindow(howToSection), false);
 	howToIcon.addEventListener("click", () => toggleWindow(howToSection), false);
@@ -420,7 +420,7 @@ globalThis.wortsel.initGame();
 /* --------------------------------------------------------------------------------------------------
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
-const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
+const useServiceWorker = false; // Set to "true" if you want to register the Service Worker, "false" to unregister
 const serviceWorkerVersion = "2025-08-08-v2"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
