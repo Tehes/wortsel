@@ -119,7 +119,9 @@ KEYBOARD
     border-radius: 1vmin;
     padding: 1vmin;
     line-height: 2;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .input {
@@ -419,9 +421,50 @@ ANIMATIONS
 FAZ
 -------------------------------------------------------------------
 */
+@font-face {
+  font-display: block;
+  font-family: "DV Source Sans 3";
+  font-style: normal;
+  font-weight: 200 900;
+  src: url(https://dynamic.faz.net/fonts/source-sans-3-v15_latin-ext_normal_200-900.woff2) format("woff2");
+  unicode-range: u+0100-02af, u+0304, u+0308, u+0329, u+1e00-1e9f, u+1ef2-1eff,
+    u+2020, u+20a0-20ab, u+20ad-20c0, u+2113, u+2c60-2c7f, u+a720-a7ff;
+}
+
+@font-face {
+  font-display: block;
+  font-family: "DV Source Sans 3";
+  font-style: normal;
+  font-weight: 200 900;
+  src: url(https://dynamic.faz.net/fonts/source-sans-3-v15_latin_normal_200-900.woff2) format("woff2");
+  unicode-range: u+00??, u+0131, u+0152-0153, u+02bb-02bc, u+02c6, u+02da,
+    u+02dc, u+0304, u+0308, u+0329, u+2000-206f, u+2074, u+20ac, u+2122, u+2191,
+    u+2193, u+2212, u+2215, u+feff, u+fffd;
+}
 
 #faz {
-    --maxScreen: 1030px;
+    --main-bg-color: hsl(0, 0%, 100%);
+    --letter-bg-color: hsl(0, 0%, 100%);
+    --modal-bg-color: #444;
+    --main-font-color: #333;
+    --highlight-font-color: #eee;
+    --color-correct: rgb(106, 170, 100);
+    --color-present: rgb(201, 180, 88);
+    --color-absent: rgb(120, 124, 126);
+    --border-standard: 2px solid #ccc;
+    --border-highlight: 2px solid #999;
+    --border-active: 2px dashed #999;
+    --key-font-color: #333;
+    --key-highlight-bg-color: #aaa;
+    --key-bg-color: #cdcdcd;
+
+    --maxScreen: 1000px;
+    font-family: "DV Source Sans 3", Helvetica, Arial, sans-serif;
+    font-weight: 400;
+}
+
+#faz :where(h2,h3,.letter) {
+        font-weight: 600;
 }
 
 #faz main {
@@ -520,13 +563,11 @@ MEDIA QUERIES
 
     h2 {
         font-size: 5vmin;
-        font-weight: 600;
         margin: 0;
     }
 
     h3 {
         font-size: 4vmin;
-        font-weight: 600;
         margin: 0 0 2vmin 0;
     }
 
@@ -540,6 +581,10 @@ MEDIA QUERIES
 
     .key {
         font-size: 5vmin;
+    }
+
+    #faz .input {
+        font-size: 4vmin;
     }
 
     aside {
