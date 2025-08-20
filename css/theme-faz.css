@@ -46,19 +46,18 @@
     --maxScreen: 1000px;
   }
 
-  #faz :where(h2,h3,.letter) {
+  :where(h2,h3,.letter) {
     font-weight: 600;
   }
 
-  #faz main {
+  main {
     width: 100vw;
     max-width: var(--maxScreen);
-    border: var(--border-standard);
     padding: 3vmin;
     border: var(--border-thin);
   }
 
-  #faz header {
+  header {
     border: var(--border-thin);
     border-bottom: none;
     width: 100vw;
@@ -67,20 +66,20 @@
     padding: 0.5rem 3vmin;
   }
 
-  #faz header div {
+  header div {
     display: flex;
     align-items: center;
     gap: 1vmin;
     cursor: pointer;
   }
 
-  #faz header img,
-  #faz aside img {
+  header img,
+  aside img {
     width: 25px;
     height: 25px;
   }
 
-  #faz #keyboard {
+  #keyboard {
     margin: 3vmin;
     max-width: var(--maxScreen);
     padding: 0;
@@ -104,12 +103,12 @@
   }
 
   @media only screen and (max-width: 450px) and (orientation: portrait) {
-    #faz header {
+    header {
       width: 100vw;
       padding: 3vmin 6vmin;
     }
 
-    #faz .input {
+    .input {
       font-size: 4vmin;
     }
   }
