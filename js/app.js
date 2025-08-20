@@ -26,7 +26,7 @@ const firstVisit = JSON.parse(
 );
 
 const wordList = [...curatedWords, ...additionalWords];
-const wordSet = new Set(wordList.map(w => w.toLowerCase()));
+const wordSet = new Set(wordList.map((w) => w.toLowerCase()));
 let solution = curatedWords[getRandomInteger(0, curatedWords.length - 1)]
 	.toLowerCase();
 
@@ -118,11 +118,13 @@ function typeKey(event) {
 	}
 	// Submit the word
 	if (pressedKey === "enter" || pressedKey === "eingabe") {
-		if (letters.every(l => l.textContent !== "")) {
+		if (letters.every((l) => l.textContent !== "")) {
 			if (!inDatabase(letters) && wholeWordsCheckbox.checked === true) {
 				playErrorAnimation();
 				showModal("Kein zulässiges Wort", 1000);
-				globalThis.umami.track("Wortsel", { illegalWord: letters.map(l => l.textContent).join("") });
+				globalThis.umami.track("Wortsel", {
+					illegalWord: letters.map((l) => l.textContent).join(""),
+				});
 			} else {
 				colorizeRow(letters);
 				colorizeKeyboard(letters);
@@ -168,7 +170,7 @@ function handleVirtualKeyFeedback(event) {
  * Checks if the entered word is in the database.
  */
 function inDatabase(letters) {
-	const entered = letters.map(l => l.textContent).join("").toLowerCase();
+	const entered = letters.map((l) => l.textContent).join("").toLowerCase();
 	return wordSet.has(entered);
 }
 
@@ -386,14 +388,14 @@ function initGame() {
 
 	const gameBoard = document.querySelector("main");
 
-	document.addEventListener("touchstart", () => { }, false);
+	document.addEventListener("touchstart", () => {}, false);
 	gameBoard.addEventListener("animationend", stopAnyAnimation, false);
 	keyboardElement.addEventListener("click", typeKey, false);
 	gameBoard.addEventListener("click", setLetterIndex, false);
 	document.addEventListener("keyup", typeKey, false);
 	document.addEventListener("keydown", handleVirtualKeyFeedback);
 	document.addEventListener("keyup", handleVirtualKeyFeedback);
-	if (headlineElement) {	headlineElement.addEventListener("click", resetGame, false); }
+	if (headlineElement) headlineElement.addEventListener("click", resetGame, false);
 
 	howToSection.addEventListener("click", () => toggleWindow(howToSection), false);
 	howToIcon.addEventListener("click", () => toggleWindow(howToSection), false);
@@ -420,7 +422,7 @@ globalThis.wortsel.initGame();
 /* --------------------------------------------------------------------------------------------------
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
-const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
+const useServiceWorker = false; // Set to "true" if you want to register the Service Worker, "false" to unregister
 const serviceWorkerVersion = "2025-08-20-v2"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {

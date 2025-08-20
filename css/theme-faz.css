@@ -40,13 +40,13 @@
     --base-font-size: 14px;
     --header-img-filter: none;
     --modal-font-color: #ddd;
-    --backdrop-bg-color: hsla(0,0%,0%,0.2);
+    --backdrop-bg-color: hsla(0, 0%, 0%, 0.2);
     --checkmark-border-color: #fff;
     --box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
     --maxScreen: 1000px;
   }
 
-  :where(h2,h3,.letter) {
+  :where(h2, h3, .letter) {
     font-weight: 600;
   }
 
@@ -83,6 +83,10 @@
     margin: 3vmin;
     max-width: var(--maxScreen);
     padding: 0;
+  }
+
+  .key {
+    flex-basis: 7.8%;
   }
 
   @media (prefers-color-scheme: dark) {
