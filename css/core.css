@@ -4,15 +4,15 @@
     --modal-bg-color: #444;
     --main-font-color: #333;
     --highlight-font-color: #eee;
-    --color-correct: rgb(106, 170, 100);
-    --color-present: rgb(201, 180, 88);
-    --color-absent: rgb(120, 124, 126);
-    --border-standard: 2px solid #ccc;
-    --border-highlight: 2px solid #999;
-    --border-active: 2px dashed #999;
+    --color-correct: #000;
+    --color-present: #000;
+    --color-absent: #000;
+    --border-standard: 2px solid #000;
+    --border-highlight: 2px solid #000;
+    --border-active: 2px dashed #000;
     --key-font-color: #333;
-    --key-highlight-bg-color: #aaa;
-    --key-bg-color: #cdcdcd;
+    --key-highlight-bg-color: #000;
+    --key-bg-color: #000;
     --animation-delay: 0.15s;
 }
 

@@ -1,0 +1,10 @@
+:root {
+    --color-correct: rgb(106, 170, 100);
+    --color-present: rgb(201, 180, 88);
+    --color-absent: rgb(120, 124, 126);
+    --border-standard: 2px solid #ccc;
+    --border-highlight: 2px solid #999;
+    --border-active: 2px dashed #999;
+    --key-highlight-bg-color: #aaa;
+    --key-bg-color: #cdcdcd;
+}
