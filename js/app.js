@@ -103,7 +103,7 @@ function typeKey(event) {
 		return;
 	}
 	// Delete last letter
-	if (pressedKey === "back" || pressedKey === "backspace") {
+	if (pressedKey === "back" || pressedKey === "backspace" || pressedKey === "zurück") {
 		if (!letters[i - 1]) return;
 		letters[i - 1].textContent = "";
 		letterIndex--;
@@ -117,7 +117,7 @@ function typeKey(event) {
 		return;
 	}
 	// Submit the word
-	if (pressedKey === "enter") {
+	if (pressedKey === "enter" || pressedKey === "eingabe") {
 		if (letters.every(l => l.textContent !== "")) {
 			if (!inDatabase(letters) && wholeWordsCheckbox.checked === true) {
 				playErrorAnimation();
@@ -420,7 +420,7 @@ globalThis.wortsel.initGame();
 /* --------------------------------------------------------------------------------------------------
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
-const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
+const useServiceWorker = false; // Set to "true" if you want to register the Service Worker, "false" to unregister
 const serviceWorkerVersion = "2025-08-20-v1"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {

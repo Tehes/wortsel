@@ -445,22 +445,24 @@ FAZ
 #faz {
     --main-bg-color: hsl(0, 0%, 100%);
     --letter-bg-color: hsl(0, 0%, 100%);
-    --modal-bg-color: #444;
-    --main-font-color: #333;
-    --highlight-font-color: #eee;
-    --color-correct: rgb(106, 170, 100);
-    --color-present: rgb(201, 180, 88);
-    --color-absent: rgb(120, 124, 126);
-    --border-standard: 2px solid #ccc;
-    --border-highlight: 2px solid #999;
-    --border-active: 2px dashed #999;
-    --key-font-color: #333;
+    --modal-bg-color: #393939;
+    --main-font-color: #212529;
+    --highlight-font-color: #F7F7F7;
+    --color-correct: #478517;
+    --color-present: #D8B118;
+    --color-absent: #717171;
+    --border-standard: 2px solid #c6c6c6;
+    --border-highlight: 2px solid #8e8e8e;
+    --border-active: 2px dashed #8e8e8e;
+    --border-thin: 1px solid #c6c6c6;
+    --key-font-color: #393939;
     --key-highlight-bg-color: #aaa;
-    --key-bg-color: #cdcdcd;
+    --key-bg-color: #c6c6c6;
 
     --maxScreen: 1000px;
     font-family: "DV Source Sans 3", Helvetica, Arial, sans-serif;
     font-weight: 400;
+    font-size: 14px;
 }
 
 #faz :where(h2,h3,.letter) {
@@ -472,10 +474,11 @@ FAZ
     max-width: var(--maxScreen);
     border: var(--border-standard);
     padding: 3vmin;
+    border: var(--border-thin);
 }
 
 #faz header {
-    border: var(--border-standard);
+    border: var(--border-thin);
     border-bottom: none;
     width: 100vw;
     max-width: var(--maxScreen);
@@ -488,6 +491,12 @@ FAZ
     align-items: center;
     gap: 1vmin;
     cursor: pointer;
+}
+
+#faz header img,
+#faz aside img {
+    width: 25px;
+    height: 25px;
 }
 
 #faz #keyboard {
@@ -515,8 +524,26 @@ MEDIA QUERIES
         --key-bg-color: #aaa;
     }
 
+    #faz {
+        --main-bg-color: #212529;
+        --letter-bg-color: #212529;
+        --color-correct: #55AC26;
+        --modal-bg-color: #555555;
+        --main-font-color: #fff;
+        --border-standard: 2px solid #717171;
+        --border-highlight: 2px solid #aaaaaa;
+        --border-thin: 1px solid #717171;
+        --key-font-color: #212529;
+        --key-highlight-bg-color: #aaaaaa;
+        --key-bg-color: #8e8e8e;
+    }
+
     header img {
         filter: invert(.75);
+    }
+
+    #faz header img {
+        filter: invert(1);
     }
 }
 
