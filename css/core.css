@@ -108,10 +108,6 @@
     cursor: pointer;
   }
 
-  h1:active {
-    cursor: pointer;
-  }
-
   #keyboard {
     display: flex;
     margin: 3vmin auto;
@@ -380,6 +376,10 @@
 
     .key {
       font-size: 5vmin;
+    }
+
+    .input {
+      font-size: 4vmin;
     }
 
     aside {
