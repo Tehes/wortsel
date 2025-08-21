@@ -1,7 +1,8 @@
 /* --------------------------------------------------------------------------------------------------
  * Variables
  ---------------------------------------------------------------------------------------------------*/
-import { additionalWords, curatedWords } from "./words.js";
+import additionalWords from "../data/additional_words.json" with { type: "json" };
+import curatedWords from "../data/curated_words.json" with { type: "json" };
 
 const keyboardElement = document.querySelector("#keyboard");
 const rowElements = document.querySelectorAll(".row");
@@ -423,7 +424,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-08-21-v2"; // Increment this version to force browsers to fetch a new service-worker.js
+const serviceWorkerVersion = "2025-08-21-v3"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
