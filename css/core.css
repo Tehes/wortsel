@@ -17,6 +17,7 @@
     --key-font-color: #333;
     --key-highlight-bg-color: #aaa;
     --key-bg-color: #cdcdcd;
+    --key-width: 7.5%;
     --font-family: sans-serif;
     --base-font-size: 2.5vmin;
     --header-img-filter: none;
@@ -112,8 +113,10 @@
   }
 
   .key {
-    cursor: grab;
-    flex: 1 1 7.5%;
+    cursor: pointer;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: var(--key-width);
     background-color: var(--key-bg-color);
     color: var(--key-font-color);
     text-transform: uppercase;
@@ -132,7 +135,7 @@
 
   .key:active,
   .key.pressed {
-    cursor: grabbing;
+    cursor: pointer;
     background-color: var(--key-highlight-bg-color);
     color: var(--key-font-color);
     transform: translateY(1px);

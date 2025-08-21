@@ -36,8 +36,9 @@
     --key-font-color: #393939;
     --key-highlight-bg-color: #aaa;
     --key-bg-color: #c6c6c6;
+    --key-width: 7.8%;
     --font-family: "DV Source Sans 3", Helvetica, Arial, sans-serif;
-    --base-font-size: 14px;
+    --base-font-size: 16px;
     --header-img-filter: none;
     --modal-font-color: #ddd;
     --backdrop-bg-color: hsla(0, 0%, 0%, 0.2);
@@ -83,10 +84,6 @@
     margin: 3vmin;
     max-width: var(--maxScreen);
     padding: 0;
-  }
-
-  .key {
-    flex-basis: 7.8%;
   }
 
   @media (prefers-color-scheme: dark) {
