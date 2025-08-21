@@ -19,7 +19,12 @@
     --key-bg-color: #cdcdcd;
     --key-width: 7.5%;
     --font-family: sans-serif;
-    --base-font-size: 2.5vmin;
+    --root-font-size: 16px;
+    --scale-h1: 2;
+    --scale-h2: 1.5;
+    --scale-h3: 1.25;
+    --scale-credit: 0.75;
+    --scale-modal: 1;
     --header-img-filter: none;
     --modal-font-color: #ddd;
     --backdrop-bg-color: hsla(0,0%,0%,0.2);
@@ -37,6 +42,7 @@
     -webkit-tap-highlight-color: rgba(0,0,0,0);
     margin: 0;
     padding: 0;
+    font-size: var(--root-font-size);
   }
 
   body {
@@ -48,7 +54,6 @@
     padding: 0;
     color: var(--main-font-color);
     font-family: var(--font-family);
-    font-size: var(--base-font-size);
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -77,10 +82,16 @@
     margin-bottom: 2vmin;
   }
 
-  header img,
-  aside img {
+  header img {
     width: 4vmin;
     height: 4vmin;
+    cursor: pointer;
+    filter: var(--header-img-filter);
+  }
+
+  aside img {
+    width: 3vmin;
+    height: 3vmin;
     cursor: pointer;
     filter: var(--header-img-filter);
   }
@@ -91,7 +102,7 @@
 
   h1 {
     text-transform: uppercase;
-    font-size: 5vmin;
+    font-size: calc(1rem * var(--scale-h1));
     font-weight: 500;
     margin: 1vmin 4vmin;
     cursor: pointer;
@@ -248,18 +259,18 @@
     background-color: var(--modal-bg-color);
     color: var(--modal-font-color);
     border-radius: 0.5vmin;
-    font-size: 2vmin;
+    font-size: calc(1rem * var(--scale-modal));
     text-align: center;
   }
 
   h2 {
-    font-size: 3vmin;
+    font-size: calc(1rem * var(--scale-h2));
     font-weight: 600;
     margin: 0;
   }
 
   h3 {
-    font-size: 2.5vmin;
+    font-size: calc(1rem * var(--scale-h3));
     font-weight: 600;
   }
 
@@ -321,14 +332,10 @@
   }
 
   .credit {
-    font-size: 2vmin;
+    font-size: calc(1rem * var(--scale-credit));
   }
 
   @media only screen and (max-width: 450px) and (orientation: portrait) {
-    body {
-      font-size: 4vmin;
-    }
-
     header {
       width: 88vw;
     }
@@ -336,10 +343,6 @@
     header img {
       width: 6vmin;
       height: 6vmin;
-    }
-
-    h1 {
-      font-size: 8vmin;
     }
 
     .letter {
@@ -360,12 +363,10 @@
     }
 
     h2 {
-      font-size: 5vmin;
       margin: 0;
     }
 
     h3 {
-      font-size: 4vmin;
       margin: 0 0 2vmin 0;
     }
 
@@ -386,13 +387,7 @@
       padding: 3vmin;
     }
 
-    .modal {
-      font-size: 4vmin;
-    }
-
-    .credit {
-      font-size: 3vmin;
-    }
+    /* modal and credit inherit font sizes */
 
     .option {
       padding: 0 6vmin;
@@ -464,3 +459,4 @@
     100% { transform: translateX(0vmin); }
   }
 }
+
