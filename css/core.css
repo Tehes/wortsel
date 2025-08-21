@@ -82,10 +82,16 @@
     margin-bottom: 2vmin;
   }
 
-  header img,
-  aside img {
+  header img {
     width: 4vmin;
     height: 4vmin;
+    cursor: pointer;
+    filter: var(--header-img-filter);
+  }
+
+  aside img {
+    width: 3vmin;
+    height: 3vmin;
     cursor: pointer;
     filter: var(--header-img-filter);
   }
