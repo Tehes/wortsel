@@ -15,9 +15,14 @@ const settingsSection = document.querySelector("#settings");
 const backdrop = document.querySelector(".backdrop");
 const closeIcons = document.querySelectorAll(".close");
 const wholeWordsCheckbox = document.querySelector("#wholeWords");
+const hardModeCheckbox = document.querySelector("#hardMode");
 
 wholeWordsCheckbox.checked = JSON.parse(
 	localStorage.getItem("wortsel_wholeWords") || "true",
+);
+
+hardModeCheckbox.checked = JSON.parse(
+	localStorage.getItem("wortsel_hardMode") || "false",
 );
 
 let activeRow = 0;
@@ -30,6 +35,9 @@ const wordList = [...curatedWords, ...additionalWords];
 const wordSet = new Set(wordList.map((w) => w.toLowerCase()));
 let solution = curatedWords[getRandomInteger(0, curatedWords.length - 1)]
 	.toLowerCase();
+
+// Hard mode state
+let lockedLetters = [null, null, null, null, null]; // fixed, correct letters carried over
 
 /* --------------------------------------------------------------------------------------------------
  * Functions
@@ -50,7 +58,22 @@ function setLetterIndex(event) {
 		const letters = Array.from(
 			rowElements[activeRow].querySelectorAll(".letter"),
 		);
-		const index = letters.indexOf(event.target);
+		let index = letters.indexOf(event.target);
+		if (index < 0) return;
+		// In hard mode, skip locked cells
+		if (
+			hardModeCheckbox.checked && letters[index].dataset.locked === "true"
+		) {
+			// find nearest editable cell to the right, then left
+			let j = index + 1;
+			while (j < letters.length && letters[j].dataset.locked === "true") j++;
+			if (j >= letters.length) {
+				j = index - 1;
+				while (j >= 0 && letters[j].dataset.locked === "true") j--;
+			}
+			if (j < 0 || j >= letters.length) return;
+			index = j;
+		}
 		letterIndex = index;
 		updateActiveLetter();
 	}
@@ -73,54 +96,90 @@ function updateActiveLetter() {
  * Handles key presses from both physical and on-screen keyboards.
  */
 function typeKey(event) {
-	let pressedKey;
-	if (event.key) {
-		pressedKey = event.key.toLowerCase();
-	} else if (
-		event.target.textContent && event.target.classList.contains("key")
-	) {
-		pressedKey = event.target.textContent.toLowerCase();
-	} else {
-		return;
+	const keyEl = event.target?.closest(".key");
+	const pressedKey = (keyEl?.textContent || event.key || "").trim().toLowerCase();
+	if (!pressedKey) return;
+
+	if (hardModeCheckbox.checked) {
+		const domKey = keyEl || [...document.querySelectorAll(".key")]
+			.find((k) => k.textContent.trim().toLowerCase() === pressedKey);
+		if (domKey?.classList.contains("absent")) return;
 	}
 
 	const letters = [...rowElements[activeRow].querySelectorAll(".letter")];
 	const i = letterIndex;
 
-	// Move cursor left
+	// Move cursor left (skip locked cells in hard mode)
 	if (pressedKey === "arrowleft") {
 		if (letterIndex > 0) {
-			letterIndex--;
-			updateActiveLetter();
+			let j = letterIndex - 1;
+			if (hardModeCheckbox.checked) {
+				while (j >= 0 && letters[j].dataset.locked === "true") j--;
+			}
+			if (j >= 0) {
+				letterIndex = j;
+				updateActiveLetter();
+			}
 		}
 		return;
 	}
-	// Move cursor right
+	// Move cursor right (skip locked cells in hard mode)
 	if (pressedKey === "arrowright") {
 		if (letterIndex < letters.length - 1) {
-			letterIndex++;
-			updateActiveLetter();
+			let j = letterIndex + 1;
+			if (hardModeCheckbox.checked) {
+				while (j < letters.length && letters[j].dataset.locked === "true") j++;
+			}
+			if (j <= letters.length - 1) {
+				letterIndex = j;
+				updateActiveLetter();
+			}
 		}
 		return;
 	}
-	// Delete last letter
-	if (pressedKey === "backspace" || pressedKey === "zurück") {
-		if (!letters[i - 1]) return;
-		letters[i - 1].textContent = "";
-		letterIndex--;
-		updateActiveLetter();
+	// Delete last letter (prefer previous editable cell); support virtual 'back' key
+	if (pressedKey === "backspace" || pressedKey === "zurück" || pressedKey === "back") {
+		let j = i - 1;
+		// skip locked cells in hard mode
+		if (hardModeCheckbox.checked) {
+			while (j >= 0 && letters[j].dataset.locked === "true") j--;
+		}
+		if (j >= 0 && letters[j]) {
+			// only clear if not locked
+			if (
+				!(hardModeCheckbox.checked &&
+					letters[j].dataset.locked === "true")
+			) {
+				letters[j].textContent = "";
+				letterIndex = j;
+				updateActiveLetter();
+			}
+		}
 		return;
 	}
-	// Delete current letter
-	if (pressedKey === "delete") {
-		if (!letters[i]) return;
-		letters[i].textContent = "";
+	// Delete current/next editable letter
+	if (pressedKey === "delete" || pressedKey === "löschen" || pressedKey === "del") {
+		let j = i;
+		// skip locked cells in hard mode
+		if (hardModeCheckbox.checked) {
+			while (j < letters.length && letters[j].dataset.locked === "true") j++;
+		}
+		if (j < letters.length && letters[j]) {
+			if (
+				!(hardModeCheckbox.checked &&
+					letters[j].dataset.locked === "true")
+			) {
+				letters[j].textContent = "";
+				letterIndex = j;
+				updateActiveLetter();
+			}
+		}
 		return;
 	}
 	// Submit the word
 	if (pressedKey === "enter" || pressedKey === "eingabe") {
 		if (letters.every((l) => l.textContent !== "")) {
-			if (!inDatabase(letters) && wholeWordsCheckbox.checked === true) {
+			if (!inDatabase(letters) && wholeWordsCheckbox.checked) {
 				playErrorAnimation();
 				showModal("Kein zulässiges Wort", 1000);
 				globalThis.umami.track("Wortsel", {
@@ -138,8 +197,19 @@ function typeKey(event) {
 	}
 	// Type a letter
 	if (i < letters.length && pressedKey.length === 1) {
+		// In hard mode block locked positions here
+		if (hardModeCheckbox.checked) {
+			const currentCellLocked = letters[i].dataset.locked === "true";
+			if (currentCellLocked) return;
+		}
 		letters[i].textContent = pressedKey;
-		letterIndex++;
+
+		// Advance caret and SKIP locked cells in hard mode
+		let next = i + 1;
+		if (hardModeCheckbox.checked) {
+			while (next < letters.length && letters[next].dataset.locked === "true") next++;
+		}
+		letterIndex = next; // may equal letters.length → no active cell shown, which is fine
 		updateActiveLetter();
 	}
 }
@@ -212,6 +282,14 @@ function colorizeRow(letters) {
 			letter.classList.remove("active");
 		}
 	});
+	// After coloring, capture correct letters for hard mode
+	if (hardModeCheckbox.checked) {
+		letters.forEach((letter, i) => {
+			if (letter.classList.contains("correct")) {
+				lockedLetters[i] = letter.textContent;
+			}
+		});
+	}
 }
 
 /**
@@ -219,10 +297,10 @@ function colorizeRow(letters) {
  */
 function colorizeKeyboard(letters) {
 	const keys = document.querySelectorAll(".key");
-	const arrKeys = [...keys].map((key) => key.textContent);
+	const arrKeys = [...keys].map((key) => key.textContent.trim().toLowerCase());
 
 	letters.forEach((letter) => {
-		const j = arrKeys.indexOf(letter.textContent);
+		const j = arrKeys.indexOf(letter.textContent.trim().toLowerCase());
 		if (j === -1) return;
 
 		if (
@@ -270,7 +348,10 @@ function checkEndCondition() {
 	} else {
 		letterIndex = 0;
 		activeRow++;
-		updateActiveLetter();
+		// Prefill & lock correct letters for the new row in hard mode (only if a next row exists)
+		if (activeRow < rowElements.length) {
+			applyHardModeStateToRow(rowElements[activeRow]);
+		}
 	}
 
 	if (activeRow === 6) {
@@ -350,6 +431,7 @@ function solve() {
  */
 function saveSettings() {
 	localStorage.setItem("wortsel_wholeWords", JSON.stringify(wholeWordsCheckbox.checked));
+	localStorage.setItem("wortsel_hardMode", JSON.stringify(hardModeCheckbox.checked));
 }
 
 /**
@@ -362,10 +444,13 @@ function resetGame() {
 	letters.forEach((letter) => {
 		letter.textContent = "";
 		letter.classList.remove("correct", "present", "absent", "active");
+		letter.dataset.locked = "false";
 	});
 	keys.forEach((key) => {
 		key.classList.remove("correct", "present", "absent");
 	});
+
+	lockedLetters = [null, null, null, null, null];
 
 	solution = curatedWords[getRandomInteger(0, curatedWords.length - 1)]
 		.toLowerCase();
@@ -402,10 +487,32 @@ function initGame() {
 	closeIcons[1].addEventListener("click", () => toggleWindow(settingsSection), false);
 
 	wholeWordsCheckbox.addEventListener("change", saveSettings, false);
+	hardModeCheckbox.addEventListener("change", saveSettings, false);
 
 	console.log(`curated words: ${curatedWords.length}`);
 	console.log(`additional words: ${additionalWords.length}`);
 	console.log(`altogether: ${wordList.length}`);
+}
+
+/**
+ * Applies hard mode locked letters and disables to the given row element.
+ */
+function applyHardModeStateToRow(rowEl) {
+	if (!hardModeCheckbox.checked) return;
+	const cells = [...rowEl.querySelectorAll(".letter")];
+	cells.forEach((cell, i) => {
+		if (lockedLetters[i]) {
+			cell.textContent = lockedLetters[i];
+			cell.classList.add("correct");
+			cell.dataset.locked = "true"; // prevent editing
+		} else {
+			cell.dataset.locked = "false";
+		}
+	});
+	// Move cursor to first editable
+	const firstEditable = cells.findIndex((c) => c.dataset.locked !== "true");
+	letterIndex = firstEditable >= 0 ? firstEditable : 0;
+	updateActiveLetter();
 }
 
 /* --------------------------------------------------------------------------------------------------
@@ -422,7 +529,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-08-22-v3"; // Increment this version to force browsers to fetch a new service-worker.js
+const serviceWorkerVersion = "2025-08-23-v1"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
