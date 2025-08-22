@@ -17,14 +17,13 @@
     --key-bg-color: #cdcdcd;
     --font-family: 'Work Sans', sans-serif;
     --root-font-size: clamp(15px, 1.2vw + 12px, 18px);
-    --scale-h1: 2.4;
-    --scale-h2: 1.7;
-    --scale-h3: 1.3;
+    --scale-h2: 1.5;
+    --scale-h3: 1.25;
     --scale-credit: 0.9;
     --scale-modal: 1.1;
     --header-img-filter: none;
     --modal-font-color: #ddd;
-    --backdrop-bg-color: hsla(0,0%,0%,0.2);
+    --backdrop-bg-color: hsla(0, 0%, 0%, 0.2);
     --checkmark-border-color: #fff;
     --box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
   }

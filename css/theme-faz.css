@@ -39,7 +39,6 @@
     --key-width: 7.8%;
     --font-family: "DV Source Sans 3", Helvetica, Arial, sans-serif;
     --root-font-size: 16px;
-    --scale-h1: 2.5;
     --scale-h2: 1.75;
     --scale-h3: 1.5;
     --scale-credit: 1;
@@ -81,8 +80,8 @@
 
   header img,
   aside img {
-    width: 25px;
-    height: 25px;
+    width: 1.5em;
+    height: 1.5em;
   }
 
   #keyboard {
