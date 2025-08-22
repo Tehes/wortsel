@@ -385,6 +385,7 @@ function resetGame() {
 function initGame() {
 	if (firstVisit === true) {
 		howToSection.classList.remove("hidden");
+		backdrop.classList.remove("hidden");
 	}
 
 	const gameBoard = document.querySelector("main");
@@ -424,7 +425,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-08-21-v4"; // Increment this version to force browsers to fetch a new service-worker.js
+const serviceWorkerVersion = "2025-08-22-v1"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
