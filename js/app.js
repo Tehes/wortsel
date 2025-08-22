@@ -349,11 +349,7 @@ function solve() {
  * Saves settings to localStorage when the window is unloaded.
  */
 function saveSettings() {
-	localStorage.setItem("wortsel_firstVisit", JSON.stringify(false));
-	localStorage.setItem(
-		"wortsel_wholeWords",
-		JSON.stringify(wholeWordsCheckbox.checked),
-	);
+	localStorage.setItem("wortsel_wholeWords", JSON.stringify(wholeWordsCheckbox.checked));
 }
 
 /**
@@ -386,6 +382,7 @@ function initGame() {
 	if (firstVisit === true) {
 		howToSection.classList.remove("hidden");
 		backdrop.classList.remove("hidden");
+		localStorage.setItem("wortsel_firstVisit", JSON.stringify(false));
 	}
 
 	const gameBoard = document.querySelector("main");
@@ -404,7 +401,7 @@ function initGame() {
 	settingsIcon.addEventListener("click", () => toggleWindow(settingsSection), false);
 	closeIcons[1].addEventListener("click", () => toggleWindow(settingsSection), false);
 
-	globalThis.addEventListener("beforeunload", saveSettings, false);
+	wholeWordsCheckbox.addEventListener("change", saveSettings, false);
 
 	console.log(`curated words: ${curatedWords.length}`);
 	console.log(`additional words: ${additionalWords.length}`);
@@ -425,7 +422,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-08-22-v2"; // Increment this version to force browsers to fetch a new service-worker.js
+const serviceWorkerVersion = "2025-08-22-v3"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
