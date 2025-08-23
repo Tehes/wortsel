@@ -4,6 +4,7 @@
 import additionalWords from "../data/additional_words.json" with { type: "json" };
 import curatedWords from "../data/curated_words.json" with { type: "json" };
 
+const gameBoardEl = document.querySelector("main");
 const keyboardElement = document.querySelector("#keyboard");
 const rowElements = document.querySelectorAll(".row");
 const modalElement = document.querySelector("aside.modal");
@@ -42,6 +43,9 @@ let lockedLetters = [null, null, null, null, null]; // fixed, correct letters ca
 // Key: position index (0..4), Value: Set of letters banned at that position
 let yellowBans = new Map();
 
+// Game state: block all input when true
+let isGameOver = false;
+
 /* --------------------------------------------------------------------------------------------------
  * Functions
  ---------------------------------------------------------------------------------------------------*/
@@ -57,6 +61,7 @@ function getRandomInteger(min, max) {
  * Sets the current letter index based on the clicked element.
  */
 function setLetterIndex(event) {
+	if (isGameOver) return;
 	if (event.target.parentElement === rowElements[activeRow]) {
 		const letters = Array.from(
 			rowElements[activeRow].querySelectorAll(".letter"),
@@ -99,6 +104,7 @@ function updateActiveLetter() {
  * Handles key presses from both physical and on-screen keyboards.
  */
 function typeKey(event) {
+	if (isGameOver) return;
 	const keyEl = event.target?.closest(".key");
 	const pressedKey = (keyEl?.textContent || event.key || "").trim().toLowerCase();
 	if (!pressedKey) return;
@@ -226,6 +232,7 @@ function typeKey(event) {
  * Adds visual feedback on on-screen keys when physical keys are pressed.
  */
 function handleVirtualKeyFeedback(event) {
+	if (isGameOver) return;
 	let key = event.key.toLowerCase();
 	if (key === "backspace") {
 		key = "back";
@@ -411,6 +418,7 @@ function checkEndCondition() {
 	}
 
 	if (gameEnded) {
+		isGameOver = true;
 		removeInputListeners();
 		globalThis.umami.track("Wortsel_setting_wholeWords", wholeWordsCheckbox.checked);
 		globalThis.umami.track("Wortsel_setting_hardMode", hardModeCheckbox.checked);
@@ -490,6 +498,7 @@ function saveSettings() {
  * Resets the game board for a new round.
  */
 function resetGame() {
+	isGameOver = false;
 	removeInputListeners();
 	const letters = document.querySelectorAll("main .letter");
 	const keys = document.querySelectorAll(".key");
@@ -518,14 +527,18 @@ function resetGame() {
 // Manage keyboard input listeners (to disable input after game end)
 let inputController;
 function addInputListeners() {
+	// Avoid duplicates
+	if (inputController) return;
 	inputController = new AbortController();
 	const { signal } = inputController;
 	document.addEventListener("keyup", typeKey, { signal });
 	document.addEventListener("keydown", handleVirtualKeyFeedback, { signal });
 	document.addEventListener("keyup", handleVirtualKeyFeedback, { signal });
-	keyboardElement?.addEventListener("click", typeKey, { signal });
+	keyboardElement.addEventListener("click", typeKey, { signal });
+	gameBoardEl.addEventListener("click", setLetterIndex, { signal });
 }
 function removeInputListeners() {
+	// Abort (modern browsers, including iOS Safari)
 	inputController?.abort();
 	inputController = null;
 }
@@ -543,9 +556,7 @@ function initGame() {
 	document.addEventListener("touchstart", () => {}, false);
 	addInputListeners();
 
-	const gameBoard = document.querySelector("main");
-	gameBoard.addEventListener("animationend", stopAnyAnimation, false);
-	gameBoard.addEventListener("click", setLetterIndex, false);
+	gameBoardEl.addEventListener("animationend", stopAnyAnimation, false);
 	if (headlineElement) headlineElement.addEventListener("click", resetGame, false);
 
 	howToSection.addEventListener("click", () => toggleWindow(howToSection), false);
