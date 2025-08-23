@@ -516,22 +516,24 @@ function resetGame() {
 }
 
 // Manage keyboard input listeners (to disable input after game end)
-let listenersActive = false;
+let inputController;
 function addInputListeners() {
-	if (listenersActive) return;
-	document.addEventListener("keyup", typeKey, false);
-	document.addEventListener("keydown", handleVirtualKeyFeedback);
-	document.addEventListener("keyup", handleVirtualKeyFeedback);
-	keyboardElement?.addEventListener("click", typeKey, false);
-	listenersActive = true;
+		inputController = new AbortController();
+		document.addEventListener("keyup", typeKey, {
+				signal: inputController.signal,
+		});
+		document.addEventListener("keydown", handleVirtualKeyFeedback, {
+				signal: inputController.signal,
+		});
+		document.addEventListener("keyup", handleVirtualKeyFeedback, {
+				signal: inputController.signal,
+		});
+		keyboardElement?.addEventListener("click", typeKey, {
+				signal: inputController.signal,
+		});
 }
 function removeInputListeners() {
-	if (!listenersActive) return;
-	document.removeEventListener("keyup", typeKey, false);
-	document.removeEventListener("keydown", handleVirtualKeyFeedback);
-	document.removeEventListener("keyup", handleVirtualKeyFeedback);
-	keyboardElement?.removeEventListener("click", typeKey, false);
-	listenersActive = false;
+		inputController?.abort();
 }
 
 /**
