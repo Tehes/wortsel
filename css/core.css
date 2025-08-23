@@ -237,10 +237,12 @@
   aside {
     position: absolute;
     z-index: 1000;
-    top: 12vmin;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     width: 63vmin;
+    max-height: 90dvh;
+    overflow-y: auto;
     background-color: var(--letter-bg-color);
     padding: 2vmin;
     box-shadow: var(--box-shadow);
