@@ -38,6 +38,9 @@ let solution = curatedWords[getRandomInteger(0, curatedWords.length - 1)]
 
 // Hard mode state
 let lockedLetters = [null, null, null, null, null]; // fixed, correct letters carried over
+// In hard mode, prevent reusing yellow letters at the same position
+// Key: position index (0..4), Value: Set of letters banned at that position
+let yellowBans = new Map();
 
 /* --------------------------------------------------------------------------------------------------
  * Functions
@@ -103,7 +106,7 @@ function typeKey(event) {
 	if (hardModeCheckbox.checked) {
 		const domKey = keyEl || [...document.querySelectorAll(".key")]
 			.find((k) => k.textContent.trim().toLowerCase() === pressedKey);
-		if (domKey?.classList.contains("absent")) return;
+		if (domKey?.classList.contains("disabled")) return;
 	}
 
 	const letters = [...rowElements[activeRow].querySelectorAll(".letter")];
@@ -197,10 +200,15 @@ function typeKey(event) {
 	}
 	// Type a letter
 	if (i < letters.length && pressedKey.length === 1) {
-		// In hard mode block locked positions here
+		// In hard mode: block locked positions and yellow-banned (pos, char)
 		if (hardModeCheckbox.checked) {
 			const currentCellLocked = letters[i].dataset.locked === "true";
 			if (currentCellLocked) return;
+			const bannedAtPos = yellowBans.get(i);
+			if (bannedAtPos && bannedAtPos.has(pressedKey)) {
+				showModal("Gelb ≠ diese Position", 1000);
+				return;
+			}
 		}
 		letters[i].textContent = pressedKey;
 
@@ -282,6 +290,16 @@ function colorizeRow(letters) {
 			letter.classList.remove("active");
 		}
 	});
+	// In hard mode, remember yellow bans: the same (pos, letter) is invalid in future guesses
+	if (hardModeCheckbox.checked) {
+		letters.forEach((letter, i) => {
+			if (letter.classList.contains("present")) {
+				const ch = (letter.textContent || "").toLowerCase();
+				if (!yellowBans.has(i)) yellowBans.set(i, new Set());
+				yellowBans.get(i).add(ch);
+			}
+		});
+	}
 	// After coloring, capture correct letters for hard mode
 	if (hardModeCheckbox.checked) {
 		letters.forEach((letter, i) => {
@@ -309,6 +327,10 @@ function colorizeKeyboard(letters) {
 			!keys[j].classList.contains("present")
 		) {
 			keys[j].classList.add("absent");
+			// only style as disabled in hard mode
+			if (hardModeCheckbox.checked) {
+				keys[j].classList.add("disabled");
+			}
 		}
 		if (
 			letter.classList.contains("present") &&
@@ -359,6 +381,7 @@ function checkEndCondition() {
 		"Yay, gewonnen!",
 		"Puh, das war knapp.",
 	];
+	let gameEnded = false;
 
 	if (correctLetters.length === 5) {
 		showModal(winText[activeRow], 3000);
@@ -366,6 +389,7 @@ function checkEndCondition() {
 		globalThis.umami.track("Wortsel", {
 			roundsUntilWin: activeRow + 1,
 		});
+		gameEnded = true;
 	} else {
 		letterIndex = 0;
 		activeRow++;
@@ -383,6 +407,13 @@ function checkEndCondition() {
 		globalThis.umami.track("Wortsel", {
 			failedWord: solution.toUpperCase(),
 		});
+		gameEnded = true;
+	}
+
+	if (gameEnded) {
+		removeInputListeners();
+		globalThis.umami.track("Wortsel_setting_wholeWords", wholeWordsCheckbox.checked);
+		globalThis.umami.track("Wortsel_setting_hardMode", hardModeCheckbox.checked);
 	}
 }
 
@@ -459,6 +490,7 @@ function saveSettings() {
  * Resets the game board for a new round.
  */
 function resetGame() {
+	removeInputListeners();
 	const letters = document.querySelectorAll("main .letter");
 	const keys = document.querySelectorAll(".key");
 
@@ -468,17 +500,38 @@ function resetGame() {
 		letter.dataset.locked = "false";
 	});
 	keys.forEach((key) => {
-		key.classList.remove("correct", "present", "absent");
+		key.classList.remove("correct", "present", "absent", "disabled");
 	});
 
 	lockedLetters = [null, null, null, null, null];
+	yellowBans = new Map();
 
 	solution = curatedWords[getRandomInteger(0, curatedWords.length - 1)]
 		.toLowerCase();
 	activeRow = 0;
 	letterIndex = 0;
 	updateActiveLetter();
+	addInputListeners();
 	showModal("Neue Runde, neues Glück", 1000);
+}
+
+// Manage keyboard input listeners (to disable input after game end)
+let listenersActive = false;
+function addInputListeners() {
+	if (listenersActive) return;
+	document.addEventListener("keyup", typeKey, false);
+	document.addEventListener("keydown", handleVirtualKeyFeedback);
+	document.addEventListener("keyup", handleVirtualKeyFeedback);
+	keyboardElement?.addEventListener("click", typeKey, false);
+	listenersActive = true;
+}
+function removeInputListeners() {
+	if (!listenersActive) return;
+	document.removeEventListener("keyup", typeKey, false);
+	document.removeEventListener("keydown", handleVirtualKeyFeedback);
+	document.removeEventListener("keyup", handleVirtualKeyFeedback);
+	keyboardElement?.removeEventListener("click", typeKey, false);
+	listenersActive = false;
 }
 
 /**
@@ -495,11 +548,8 @@ function initGame() {
 
 	document.addEventListener("touchstart", () => {}, false);
 	gameBoard.addEventListener("animationend", stopAnyAnimation, false);
-	keyboardElement.addEventListener("click", typeKey, false);
+	addInputListeners();
 	gameBoard.addEventListener("click", setLetterIndex, false);
-	document.addEventListener("keyup", typeKey, false);
-	document.addEventListener("keydown", handleVirtualKeyFeedback);
-	document.addEventListener("keyup", handleVirtualKeyFeedback);
 	if (headlineElement) headlineElement.addEventListener("click", resetGame, false);
 
 	howToSection.addEventListener("click", () => toggleWindow(howToSection), false);

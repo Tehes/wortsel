@@ -29,7 +29,9 @@ FAZ). All brand assets in such deployments belong to their respective owners.
   internet connection.
 - **Responsive Design**: Optimized for both desktop and mobile devices.
 - **Settings Persistence**: Last game options are stored in `localStorage`.
-- **Hard Mode**: Locks correct letters and blocks absent keys for a tougher challenge.
+- **Hard Mode (strict)**: Once enabled, green letters are locked in place, gray keys cannot be used
+  again, and yellow letters may not be placed again at the same position. This stricter variant
+  reduces trial‑and‑error and forces more deduction, going beyond Wordle’s hard mode.
 
 ## How to Play
 
@@ -40,6 +42,13 @@ FAZ). All brand assets in such deployments belong to their respective owners.
    - **Yellow**: Letter is in the word but in the wrong position.
    - **Gray**: Letter is not in the word.
 4. Solve the word within six attempts.
+
+### Settings
+
+- **Whole words only** (`wholeWords`): If enabled, guesses must be valid dictionary words; invalid
+  guesses are rejected.
+- **Hard Mode (strict)** (`hardMode`): Locks green letters, disables gray keys, and forbids
+  repeating a yellow letter at the same position in later guesses.
 
 ## Install as a PWA
 
@@ -79,3 +88,10 @@ Custom white-label deployments (e.g. the FAZ version of Wortsel) are based on th
 but the branding layers are **proprietary** and excluded from open-source distribution.
 
 Enjoy playing! 🎉
+
+## FAQ
+
+**How is Hard Mode different from Wordle’s?**\
+NYT Wordle’s hard mode requires using revealed hints but still allows reusing gray letters and
+placing yellow letters again at the same position. Wortsel’s **strict Hard Mode** disables gray keys
+and also forbids repeating a yellow letter at the same position, making it intentionally tougher.

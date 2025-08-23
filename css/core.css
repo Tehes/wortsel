@@ -146,6 +146,18 @@
     transform: translateY(1px);
   }
 
+  .key.disabled {
+    background-color: var(--color-absent);
+    cursor: not-allowed;
+    color: inherit;
+  }
+
+  .key.disabled:active,
+  .key.disabled.pressed {
+    transform: none;
+    color: inherit;
+  }
+
   .row {
     display: flex;
     margin: 0 auto;
