@@ -516,22 +516,18 @@ function resetGame() {
 }
 
 // Manage keyboard input listeners (to disable input after game end)
-let listenersActive = false;
+let inputController;
 function addInputListeners() {
-	if (listenersActive) return;
-	document.addEventListener("keyup", typeKey, false);
-	document.addEventListener("keydown", handleVirtualKeyFeedback);
-	document.addEventListener("keyup", handleVirtualKeyFeedback);
-	keyboardElement?.addEventListener("click", typeKey, false);
-	listenersActive = true;
+	inputController = new AbortController();
+	const { signal } = inputController;
+	document.addEventListener("keyup", typeKey, { signal });
+	document.addEventListener("keydown", handleVirtualKeyFeedback, { signal });
+	document.addEventListener("keyup", handleVirtualKeyFeedback, { signal });
+	keyboardElement?.addEventListener("click", typeKey, { signal });
 }
 function removeInputListeners() {
-	if (!listenersActive) return;
-	document.removeEventListener("keyup", typeKey, false);
-	document.removeEventListener("keydown", handleVirtualKeyFeedback);
-	document.removeEventListener("keyup", handleVirtualKeyFeedback);
-	keyboardElement?.removeEventListener("click", typeKey, false);
-	listenersActive = false;
+	inputController?.abort();
+	inputController = null;
 }
 
 /**
@@ -544,11 +540,11 @@ function initGame() {
 		localStorage.setItem("wortsel_firstVisit", JSON.stringify(false));
 	}
 
-	const gameBoard = document.querySelector("main");
-
 	document.addEventListener("touchstart", () => {}, false);
-	gameBoard.addEventListener("animationend", stopAnyAnimation, false);
 	addInputListeners();
+
+	const gameBoard = document.querySelector("main");
+	gameBoard.addEventListener("animationend", stopAnyAnimation, false);
 	gameBoard.addEventListener("click", setLetterIndex, false);
 	if (headlineElement) headlineElement.addEventListener("click", resetGame, false);
 
