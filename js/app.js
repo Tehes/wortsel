@@ -326,6 +326,27 @@ function colorizeKeyboard(letters) {
 }
 
 /**
+ * Applies hard mode locked letters and disables to the given row element.
+ */
+function applyHardModeStateToRow(rowEl) {
+	if (!hardModeCheckbox.checked) return;
+	const cells = [...rowEl.querySelectorAll(".letter")];
+	cells.forEach((cell, i) => {
+		if (lockedLetters[i]) {
+			cell.textContent = lockedLetters[i];
+			cell.classList.add("correct");
+			cell.dataset.locked = "true"; // prevent editing
+		} else {
+			cell.dataset.locked = "false";
+		}
+	});
+	// Move cursor to first editable
+	const firstEditable = cells.findIndex((c) => c.dataset.locked !== "true");
+	letterIndex = firstEditable >= 0 ? firstEditable : 0;
+	updateActiveLetter();
+}
+
+/**
  * Checks if the user has won or lost after a guess.
  */
 function checkEndCondition() {
@@ -489,30 +510,26 @@ function initGame() {
 	wholeWordsCheckbox.addEventListener("change", saveSettings, false);
 	hardModeCheckbox.addEventListener("change", saveSettings, false);
 
+	// Persist as a safety net even if 'change' didn't fire
+	globalThis.addEventListener("pagehide", saveSettings, { capture: true });
+	globalThis.addEventListener("beforeunload", saveSettings, { capture: true });
+	document.addEventListener("visibilitychange", () => {
+		if (document.visibilityState === "hidden") saveSettings();
+	});
+
+	// Keep UI in sync across tabs/windows
+	globalThis.addEventListener("storage", (e) => {
+		if (e.key === "wortsel_wholeWords" && wholeWordsCheckbox) {
+			wholeWordsCheckbox.checked = JSON.parse(e.newValue || "true");
+		}
+		if (e.key === "wortsel_hardMode" && hardModeCheckbox) {
+			hardModeCheckbox.checked = JSON.parse(e.newValue || "false");
+		}
+	});
+
 	console.log(`curated words: ${curatedWords.length}`);
 	console.log(`additional words: ${additionalWords.length}`);
 	console.log(`altogether: ${wordList.length}`);
-}
-
-/**
- * Applies hard mode locked letters and disables to the given row element.
- */
-function applyHardModeStateToRow(rowEl) {
-	if (!hardModeCheckbox.checked) return;
-	const cells = [...rowEl.querySelectorAll(".letter")];
-	cells.forEach((cell, i) => {
-		if (lockedLetters[i]) {
-			cell.textContent = lockedLetters[i];
-			cell.classList.add("correct");
-			cell.dataset.locked = "true"; // prevent editing
-		} else {
-			cell.dataset.locked = "false";
-		}
-	});
-	// Move cursor to first editable
-	const firstEditable = cells.findIndex((c) => c.dataset.locked !== "true");
-	letterIndex = firstEditable >= 0 ? firstEditable : 0;
-	updateActiveLetter();
 }
 
 /* --------------------------------------------------------------------------------------------------
@@ -528,7 +545,7 @@ globalThis.wortsel.initGame();
 /* --------------------------------------------------------------------------------------------------
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
-const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
+const useServiceWorker = false; // Set to "true" if you want to register the Service Worker, "false" to unregister
 const serviceWorkerVersion = "2025-08-23-v1"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
