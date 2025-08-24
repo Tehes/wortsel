@@ -389,13 +389,12 @@ function checkEndCondition() {
 		"Puh, das war knapp.",
 	];
 	let gameEnded = false;
+	let analyticsPayload = null;
 
 	if (correctLetters.length === 5) {
 		showModal(winText[activeRow], 3000);
 		playWinAnimation(correctLetters);
-		globalThis.umami.track("Wortsel", {
-			roundsUntilWin: activeRow + 1,
-		});
+		analyticsPayload = { roundsUntilWin: activeRow + 1 };
 		gameEnded = true;
 	} else {
 		letterIndex = 0;
@@ -411,17 +410,20 @@ function checkEndCondition() {
 			`Leider verloren. Gesucht wurde '${solution.toUpperCase()}'.`,
 			3000,
 		);
-		globalThis.umami.track("Wortsel", {
-			failedWord: solution.toUpperCase(),
-		});
+		analyticsPayload = { failedWord: solution.toUpperCase() };
 		gameEnded = true;
 	}
 
 	if (gameEnded) {
 		isGameOver = true;
 		removeInputListeners();
-		globalThis.umami.track("Wortsel_setting_wholeWords", wholeWordsCheckbox.checked);
-		globalThis.umami.track("Wortsel_setting_hardMode", hardModeCheckbox.checked);
+		if (analyticsPayload) {
+			globalThis.umami.track("Wortsel", {
+				...analyticsPayload,
+				usedDictionary: wholeWordsCheckbox.checked,
+				activatedHardMode: hardModeCheckbox.checked,
+			});
+		}
 	}
 }
 
@@ -602,8 +604,8 @@ globalThis.wortsel.initGame();
 /* --------------------------------------------------------------------------------------------------
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
-const useServiceWorker = false; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-08-23-v1"; // Increment this version to force browsers to fetch a new service-worker.js
+const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
+const serviceWorkerVersion = "2025-08-24-v1"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
