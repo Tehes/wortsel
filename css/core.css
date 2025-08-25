@@ -226,6 +226,7 @@
     height: 100vh;
     background-color: var(--backdrop-bg-color);
     overflow: hidden;
+    pointer-events: none
   }
 
   .close {
