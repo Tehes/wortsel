@@ -1,16 +1,8 @@
 /* --------------------------------------------------------------------------------------------------
  * Variables
  ---------------------------------------------------------------------------------------------------*/
-let additionalWords, curatedWords;
-try {
-  ({ default: additionalWords } =
-    await import("../data/additional_words.json", { with: { type: "json" } }));
-  ({ default: curatedWords } =
-    await import("../data/curated_words.json",  { with: { type: "json" } }));
-} catch {
-  additionalWords = await (await fetch("../data/additional_words.json")).json();
-  curatedWords    = await (await fetch("../data/curated_words.json")).json();
-}
+import additionalWords from "../data/additional_words.json" with { type: "json" };
+import curatedWords from "../data/curated_words.json" with { type: "json" };
 
 const gameBoardEl = document.querySelector("main");
 const keyboardElement = document.querySelector("#keyboard");
@@ -613,7 +605,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-08-25-v2"; // Increment this version to force browsers to fetch a new service-worker.js
+const serviceWorkerVersion = "2025-08-25-v3"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
