@@ -418,14 +418,15 @@ function checkEndCondition() {
 	if (gameEnded) {
 		isGameOver = true;
 		removeInputListeners();
+		restartButton.classList.remove("hidden");
+
 		if (analyticsPayload) {
-			globalThis.umami.track("Wortsel", {
+			globalThis.umami?.track("Wortsel", {
 				...analyticsPayload,
 				usedDictionary: wholeWordsCheckbox.checked,
 				activatedHardMode: hardModeCheckbox.checked,
 			});
 		}
-		restartButton.classList.remove("hidden");
 	}
 }
 
