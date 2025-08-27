@@ -6,6 +6,7 @@ import curatedWords from "../data/curated_words.json" with { type: "json" };
 
 const gameBoardEl = document.querySelector("main");
 const keyboardElement = document.querySelector("#keyboard");
+const restartButton = document.querySelector("#restartButton");
 const rowElements = document.querySelectorAll(".row");
 const modalElement = document.querySelector("aside.modal");
 const headlineElement = document.querySelector("h1");
@@ -424,6 +425,7 @@ function checkEndCondition() {
 				activatedHardMode: hardModeCheckbox.checked,
 			});
 		}
+		restartButton.classList.remove("hidden");
 	}
 }
 
@@ -513,6 +515,7 @@ function resetGame() {
 	keys.forEach((key) => {
 		key.classList.remove("correct", "present", "absent", "disabled");
 	});
+	restartButton.classList.add("hidden");
 
 	lockedLetters = [null, null, null, null, null];
 	yellowBans = new Map();
@@ -560,6 +563,7 @@ function initGame() {
 
 	gameBoardEl.addEventListener("animationend", stopAnyAnimation, false);
 	if (headlineElement) headlineElement.addEventListener("click", resetGame, false);
+	restartButton.addEventListener("click", resetGame, false);
 
 	howToSection.addEventListener("click", () => toggleWindow(howToSection), false);
 	howToIcon.addEventListener("click", () => toggleWindow(howToSection), false);
@@ -604,7 +608,7 @@ globalThis.wortsel.initGame();
 /* --------------------------------------------------------------------------------------------------
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
-const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
+const useServiceWorker = false; // Set to "true" if you want to register the Service Worker, "false" to unregister
 const serviceWorkerVersion = "2025-08-25-v3"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
