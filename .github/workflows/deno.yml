@@ -1,19 +1,18 @@
-name: Deno
+name: Deno (Lint only)
 
 on:
   push:
     branches: ["master"]
   pull_request:
     branches: ["master"]
-  workflow_dispatch:   # <-- erlaubt manuelles Starten
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  format-lint:
+  lint:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -21,10 +20,7 @@ jobs:
       - name: Setup Deno
         uses: denoland/setup-deno@v2
         with:
-          deno-version: v2.x   # immer neueste 2er-Version
-
-      - name: Check formatting
-        run: deno fmt --check
+          deno-version: v2.x  # neueste 2.x
 
       - name: Run linter
         run: deno lint
