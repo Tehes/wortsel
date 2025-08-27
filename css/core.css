@@ -131,14 +131,14 @@
     color: var(--highlight-font-color);
     box-shadow: var(--box-shadow);
     cursor: pointer;
-}
+  }
 
   #restartButton:hover {
     filter: brightness(1.1);
   }
 
   #restartButton:active {
-    transform: translate(-50%,-48%);
+    transform: translate(-50%, -48%);
   }
 
   #keyboard:has(#restartButton:not(.hidden)) .key {
@@ -419,7 +419,7 @@
     #restartButton {
       font-size: 5vmin;
       padding: 3vmin;
-    } 
+    }
 
     .key {
       font-size: 5vmin;
