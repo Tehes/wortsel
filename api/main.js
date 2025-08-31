@@ -4,6 +4,7 @@ const kv = await Deno.openKv();
 const json = (obj, status = 200) =>
 	new Response(JSON.stringify(obj), { status, headers: { "Content-Type": "application/json" } });
 
+const ALLOW_ORIGIN = "https://tehes.github.io";
 const withCORS = (res) => {
 	const h = new Headers(res.headers);
 	h.set("Access-Control-Allow-Origin", ALLOW_ORIGIN);
