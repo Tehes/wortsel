@@ -50,6 +50,7 @@ Deno.serve(async (req) => {
 		return withCORS(req, json({ ok: true }));
 	}
 
+	// https://wortsel.tehes.deno.net/stats?solution=REIHE
 	if (req.method === "GET") {
 		const SOL = norm(url.searchParams.get("solution"));
 		if (!SOL || SOL.length !== 5) return withCORS(req, json({ error: "bad solution" }, 400));
