@@ -1,4 +1,4 @@
-// Deno Deploy endpoint for Wortsel community stats (plaintext keys)
+// Deno Deploy endpoint for Wortsel community stats
 const kv = await Deno.openKv();
 
 const json = (obj, status = 200) =>
@@ -8,6 +8,7 @@ const ALLOW_ORIGINS = new Set([
 	"https://tehes.github.io", // production (GitHub Pages)
 	"http://127.0.0.1:5500", // local live server
 ]);
+
 const withCORS = (req, res) => {
 	const origin = req.headers.get("origin") || "";
 	const allow = ALLOW_ORIGINS.has(origin) ? origin : "https://tehes.github.io";
@@ -21,6 +22,7 @@ const withCORS = (req, res) => {
 
 // Normalize to keep Ä/Ö/Ü stable and uppercase
 const norm = (s) => (s ?? "").toString().trim().toUpperCase().normalize("NFC");
+
 const emptyDist = () => ({
 	total: 0,
 	counts: { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "fail": 0 },
@@ -41,16 +43,46 @@ Deno.serve(async (req) => {
 			: "fail";
 		const key = ["w", SOL];
 
-		const r = await kv.get(key);
-		const data = r.value ?? emptyDist();
-		data.total += 1;
-		data.counts[bucket] += 1;
+		let stats;
+		let success = false;
+		let retries = 0;
+		const maxRetries = 10;
 
-		await kv.set(key, data);
-		return withCORS(req, json({ ok: true }));
+		while (!success && retries < maxRetries) {
+			const current = await kv.get(key);
+			const data = current.value ?? emptyDist();
+
+			// Increment counters
+			data.total += 1;
+			data.counts[bucket] += 1;
+
+			// Atomic compare-and-set
+			const result = await kv.atomic()
+				.check(current) // Fails if data changed between get() and now
+				.set(key, data)
+				.commit();
+
+			if (result.ok) {
+				stats = data;
+				success = true;
+			} else {
+				retries++;
+				// Exponential backoff with jitter
+				const delay = Math.min(100, Math.pow(2, retries) * 10) + Math.random() * 10;
+				await new Promise((resolve) => setTimeout(resolve, delay));
+			}
+		}
+
+		if (!success) {
+			console.error(`Failed to update stats for ${SOL} after ${maxRetries} retries`);
+			return withCORS(req, json({ error: "too much contention, try again" }, 503));
+		}
+
+		return withCORS(req, json({ ok: true, stats }));
 	}
 
-	// https://wortsel.tehes.deno.net/stats?solution=REIHE
+	// GET: Retrieve stats
+	// https://wortsel.tehes.deno.net/stats?solution=FASER
 	if (req.method === "GET") {
 		const SOL = norm(url.searchParams.get("solution"));
 		if (!SOL || SOL.length !== 5) return withCORS(req, json({ error: "bad solution" }, 400));

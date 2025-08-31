@@ -21,8 +21,6 @@ const wholeWordsCheckbox = document.querySelector("#wholeWords");
 
 const hardModeCheckbox = document.querySelector("#hardMode");
 
-const STATS_ORDER = ["1", "2", "3", "4", "5", "6", "fail"];
-
 wholeWordsCheckbox.checked = JSON.parse(
 	localStorage.getItem("wortsel_wholeWords") || "true",
 );
@@ -567,21 +565,26 @@ function renderCommunityStats(dist, { myResult } = {}) {
 	// headline
 	meta.textContent = `Dieses Wort wurde ${dist.total}-mal gespielt`;
 
-	const counts = STATS_ORDER.map((k) => Number(dist.counts?.[k] || 0));
+	const rows = Array.from(list.querySelectorAll(".stats-row"));
+	const counts = rows.map((r) => Number(dist.counts?.[r.dataset.key] || 0));
 	const max = Math.max(0, ...counts);
 
-	STATS_ORDER.forEach((key) => {
-		const row = list.querySelector(`.stats-row[data-key="${key}"]`);
-		if (!row) return;
+	// reset highlighting
+	rows.forEach((r) => r.classList.remove("mine"));
+
+	rows.forEach((row) => {
+		const key = row.dataset.key;
 		const count = Number(dist.counts?.[key] || 0);
 
 		const fill = row.querySelector(".stats-fill");
 		fill.style.width = max && count ? (count / max) * 100 + "%" : "0%";
 
 		const pct = dist.total ? Math.round((count / dist.total) * 100) : 0;
-		row.querySelector(".stats-count").textContent = `${pct}%`;
+		const cntEl = row.querySelector(".stats-count");
+		cntEl.textContent = `${pct}%`;
 
-		row.classList.toggle("mine", String(myResult) === key);
+		const isMine = String(myResult) === key;
+		row.classList.toggle("mine", isMine);
 	});
 
 	statsSection.classList.remove("hidden");
@@ -600,8 +603,7 @@ async function postCommunityStats({ solution, attempts }) {
 		const SOL = normalizeWord(solution);
 		const endpoint = "https://wortsel.tehes.deno.net/stats";
 
-		// write (count this result)
-		await fetch(endpoint, {
+		const res = await fetch(endpoint, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
@@ -612,20 +614,19 @@ async function postCommunityStats({ solution, attempts }) {
 			keepalive: true,
 		});
 
-		// read (get distribution to display)
-		const res = await fetch(`${endpoint}?solution=${encodeURIComponent(SOL)}`, {
-			mode: "cors",
-		});
-		if (!res.ok) return;
-		const dist = await res.json(); // { total, counts: { "1":n,...,"fail":n } }
+		if (!res.ok) {
+			console.warn("Community stats request failed:", res.status);
+			return;
+		}
 
-		// Render community distribution (highlight own result)
-		if (typeof renderCommunityStats === "function") {
-			renderCommunityStats(dist, {
+		const response = await res.json(); // { ok: true, stats: {...} }
+
+		if (response.stats && typeof renderCommunityStats === "function") {
+			renderCommunityStats(response.stats, {
 				myResult: (attempts >= 1 && attempts <= 6) ? String(attempts) : "fail",
 			});
 		} else {
-			console.log("Community stats:", dist);
+			console.log("Community stats:", response.stats);
 		}
 	} catch (e) {
 		console.warn("community stats failed", e);
@@ -696,6 +697,11 @@ globalThis.wortsel = {
 	initGame,
 	solve,
 	renderCommunityStats,
+	/* Test with:
+	wortsel.renderCommunityStats(
+	  { total: 100, counts: { "1":5,"2":10,"3":20,"4":25,"5":20,"6":10,"fail":10 } },
+	  { myResult: "3" }
+	); */
 };
 
 globalThis.wortsel.initGame();
