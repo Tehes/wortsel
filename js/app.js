@@ -192,7 +192,7 @@ function typeKey(event) {
 			if (!inDatabase(letters) && wholeWordsCheckbox.checked) {
 				playErrorAnimation();
 				showModal("Kein zulässiges Wort", 1000);
-				globalThis.umami.track("Wortsel", {
+				globalThis.umami?.track("Wortsel", {
 					illegalWord: letters.map((l) => l.textContent).join(""),
 				});
 			} else {
@@ -427,6 +427,11 @@ function checkEndCondition() {
 				activatedHardMode: hardModeCheckbox.checked,
 			});
 		}
+
+		postCommunityStats({
+			solution,
+			attempts: (activeRow < 6) ? activeRow + 1 : "fail",
+		});
 	}
 }
 
@@ -549,6 +554,48 @@ function removeInputListeners() {
 	inputController = null;
 }
 
+// --- Community stats (Deno Deploy) -----------------------------------------
+// Normalize to match server (uppercase + NFC)
+function normalizeWord(s) {
+	return (s ?? "").toString().trim().toUpperCase().normalize("NFC");
+}
+
+// Send result and fetch distribution
+async function postCommunityStats({ solution, attempts }) {
+	try {
+		const SOL = normalizeWord(solution);
+		const endpoint = "https://wortsel.tehes.deno.net/stats";
+
+		// write (count this result)
+		await fetch(endpoint, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				solution: SOL,
+				attempts: (attempts >= 1 && attempts <= 6) ? attempts : "fail",
+			}),
+			mode: "cors",
+			keepalive: true,
+		});
+
+		// read (get distribution to display)
+		const res = await fetch(`${endpoint}?solution=${encodeURIComponent(SOL)}`, {
+			mode: "cors",
+		});
+		if (!res.ok) return;
+		const dist = await res.json(); // { total, counts: { "1":n,...,"fail":n } }
+
+		// TODO: call your renderer
+		if (typeof renderCommunityStats === "function") {
+			renderCommunityStats(dist);
+		} else {
+			console.log("Community stats:", dist);
+		}
+	} catch (e) {
+		console.warn("community stats failed", e);
+	}
+}
+
 /**
  * Initializes the game and sets up event listeners.
  */
@@ -609,7 +656,7 @@ globalThis.wortsel.initGame();
 /* --------------------------------------------------------------------------------------------------
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
-const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
+const useServiceWorker = false; // Set to "true" if you want to register the Service Worker, "false" to unregister
 const serviceWorkerVersion = "2025-08-27-v4"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
