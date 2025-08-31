@@ -648,7 +648,7 @@ function initGame() {
 	addInputListeners();
 
 	gameBoardEl.addEventListener("animationend", stopAnyAnimation, false);
-	if (headlineElement) headlineElement.addEventListener("click", resetGame, false);
+	headlineElement?.addEventListener("click", resetGame, false);
 	restartButton.addEventListener("click", resetGame, false);
 
 	howToIcon.addEventListener("click", () => toggleWindow(howToSection), false);
@@ -705,8 +705,8 @@ globalThis.wortsel.initGame();
 /* --------------------------------------------------------------------------------------------------
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
-const useServiceWorker = false; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-08-27-v4"; // Increment this version to force browsers to fetch a new service-worker.js
+const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
+const serviceWorkerVersion = "2025-08-31-v1"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
