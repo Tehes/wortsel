@@ -575,8 +575,6 @@ function renderCommunityStats(dist, { myResult } = {}) {
 		if (!row) return;
 		const count = Number(dist.counts?.[key] || 0);
 
-		row.querySelector(".stats-label").textContent = key === "fail" ? "X" : key;
-
 		const fill = row.querySelector(".stats-fill");
 		fill.style.width = max && count ? (count / max) * 100 + "%" : "0%";
 
@@ -706,7 +704,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-08-31-v1"; // Increment this version to force browsers to fetch a new service-worker.js
+const serviceWorkerVersion = "2025-08-31-v2"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
