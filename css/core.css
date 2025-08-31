@@ -118,35 +118,6 @@
     max-width: 95vmin;
   }
 
-  #restartButton {
-    position: absolute;
-    top: 22%;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 2vmin;
-    font-size: 3vmin;
-    border: none;
-    border-radius: 1vmin;
-    background-color: var(--color-correct);
-    color: var(--highlight-font-color);
-    box-shadow: var(--box-shadow);
-    cursor: pointer;
-  }
-
-  #restartButton:hover {
-    filter: brightness(1.1);
-  }
-
-  #restartButton:active {
-    transform: translate(-50%, 1px);
-  }
-
-  #keyboard:has(#restartButton:not(.hidden)) .key {
-    filter: grayscale(1);
-    transition: filter 1s ease;
-    cursor: initial;
-  }
-
   .key {
     cursor: pointer;
     flex-grow: 1;
@@ -252,7 +223,6 @@
     inset: 0;
     z-index: 500;
     background-color: var(--backdrop-bg-color);
-    pointer-events: none;
   }
 
   .close {
@@ -277,6 +247,70 @@
 
   aside .row {
     justify-content: flex-start;
+  }
+
+  #stats .stats-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .stats-row {
+    display: flex;
+    align-items: center;
+    gap: 1vmin;
+    margin: 1.5vmin 0;
+  }
+
+  .stats-label {
+    width: 1.5em;
+  }
+
+  .stats-bar {
+    position: relative;
+    flex: 1;
+    height: 3vmin;
+    background-color: var(--key-bg-color);
+    border-radius: 0.5vmin;
+    overflow: hidden;
+  }
+
+  .stats-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 0%;
+    background-color: var(--color-absent);
+  }
+
+  .stats-count {
+    min-width: 2.5em;
+    text-align: right;
+  }
+
+  .stats-row.mine .stats-fill {
+    background-color: var(--color-correct);
+  }
+
+  #restartButton {
+    display: block;
+    margin: 1em auto 0 auto;
+    padding: 2vmin;
+    font-size: 1em;
+    border: none;
+    border-radius: 1vmin;
+    background-color: var(--color-correct);
+    color: var(--highlight-font-color);
+    box-shadow: var(--box-shadow);
+    cursor: pointer;
+  }
+
+  #restartButton:hover {
+    filter: brightness(1.1);
+  }
+
+  #restartButton:active {
+    transform: translateY(1px);
   }
 
   aside .letter {
@@ -432,6 +466,10 @@
     aside {
       width: 88vmin;
       padding: 3vmin;
+    }
+
+    .stats-bar {
+      height: 7vmin;
     }
   }
 }

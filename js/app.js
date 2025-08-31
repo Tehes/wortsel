@@ -14,10 +14,14 @@ const howToIcon = document.querySelector("#howToIcon");
 const howToSection = document.querySelector("#howTo");
 const settingsIcon = document.querySelector("#settingsIcon");
 const settingsSection = document.querySelector("#settings");
+const statsSection = document.querySelector("#stats");
 const backdrop = document.querySelector(".backdrop");
 const closeIcons = document.querySelectorAll(".close");
 const wholeWordsCheckbox = document.querySelector("#wholeWords");
+
 const hardModeCheckbox = document.querySelector("#hardMode");
+
+const STATS_ORDER = ["1", "2", "3", "4", "5", "6", "fail"];
 
 wholeWordsCheckbox.checked = JSON.parse(
 	localStorage.getItem("wortsel_wholeWords") || "true",
@@ -418,7 +422,6 @@ function checkEndCondition() {
 	if (gameEnded) {
 		isGameOver = true;
 		removeInputListeners();
-		restartButton.classList.remove("hidden");
 
 		if (analyticsPayload) {
 			globalThis.umami?.track("Wortsel", {
@@ -521,10 +524,12 @@ function resetGame() {
 	keys.forEach((key) => {
 		key.classList.remove("correct", "present", "absent", "disabled");
 	});
-	restartButton.classList.add("hidden");
 
 	lockedLetters = [null, null, null, null, null];
 	yellowBans = new Map();
+
+	statsSection.classList.add("hidden");
+	backdrop.classList.add("hidden");
 
 	solution = curatedWords[getRandomInteger(0, curatedWords.length - 1)]
 		.toLowerCase();
@@ -552,6 +557,37 @@ function removeInputListeners() {
 	// Abort (modern browsers, including iOS Safari)
 	inputController?.abort();
 	inputController = null;
+}
+
+// --- Community stats (UI renderer) -----------------------------------------
+function renderCommunityStats(dist, { myResult } = {}) {
+	const meta = statsSection.querySelector(".stats-meta");
+	const list = statsSection.querySelector(".stats-list");
+
+	// headline
+	meta.textContent = `Dieses Wort wurde ${dist.total}-mal gespielt`;
+
+	const counts = STATS_ORDER.map((k) => Number(dist.counts?.[k] || 0));
+	const max = Math.max(0, ...counts);
+
+	STATS_ORDER.forEach((key) => {
+		const row = list.querySelector(`.stats-row[data-key="${key}"]`);
+		if (!row) return;
+		const count = Number(dist.counts?.[key] || 0);
+
+		row.querySelector(".stats-label").textContent = key === "fail" ? "X" : key;
+
+		const fill = row.querySelector(".stats-fill");
+		fill.style.width = max && count ? (count / max) * 100 + "%" : "0%";
+
+		const pct = dist.total ? Math.round((count / dist.total) * 100) : 0;
+		row.querySelector(".stats-count").textContent = `${pct}%`;
+
+		row.classList.toggle("mine", String(myResult) === key);
+	});
+
+	statsSection.classList.remove("hidden");
+	backdrop.classList.remove("hidden");
 }
 
 // --- Community stats (Deno Deploy) -----------------------------------------
@@ -585,9 +621,11 @@ async function postCommunityStats({ solution, attempts }) {
 		if (!res.ok) return;
 		const dist = await res.json(); // { total, counts: { "1":n,...,"fail":n } }
 
-		// TODO: call your renderer
+		// Render community distribution (highlight own result)
 		if (typeof renderCommunityStats === "function") {
-			renderCommunityStats(dist);
+			renderCommunityStats(dist, {
+				myResult: (attempts >= 1 && attempts <= 6) ? String(attempts) : "fail",
+			});
 		} else {
 			console.log("Community stats:", dist);
 		}
@@ -613,15 +651,25 @@ function initGame() {
 	if (headlineElement) headlineElement.addEventListener("click", resetGame, false);
 	restartButton.addEventListener("click", resetGame, false);
 
-	howToSection.addEventListener("click", () => toggleWindow(howToSection), false);
 	howToIcon.addEventListener("click", () => toggleWindow(howToSection), false);
 	settingsIcon.addEventListener("click", () => toggleWindow(settingsSection), false);
-	closeIcons[1].addEventListener("click", () => toggleWindow(settingsSection), false);
+	closeIcons.forEach((icon) => {
+		icon.addEventListener("click", () => {
+			toggleWindow(icon.parentElement);
+		}, false);
+	});
+
+	backdrop.addEventListener("click", () => {
+		[howToSection, settingsSection, statsSection].forEach((section) => {
+			if (section && !section.classList.contains("hidden")) {
+				toggleWindow(section);
+			}
+		});
+	}, false);
 
 	wholeWordsCheckbox.addEventListener("change", saveSettings, false);
 	hardModeCheckbox.addEventListener("change", saveSettings, false);
 
-	// Persist as a safety net even if 'change' didn't fire
 	globalThis.addEventListener("pagehide", saveSettings, { capture: true });
 	globalThis.addEventListener("beforeunload", saveSettings, { capture: true });
 	document.addEventListener("visibilitychange", () => {
@@ -649,6 +697,7 @@ function initGame() {
 globalThis.wortsel = {
 	initGame,
 	solve,
+	renderCommunityStats,
 };
 
 globalThis.wortsel.initGame();
