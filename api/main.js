@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
 		// --- admin dump: https://wortsel.tehes.deno.net/stats?all=1
 		if (url.searchParams.get("all")) {
 			const entries = [];
-			for await (const entry of kv.list({ prefix: [] })) {
+			for await (const entry of kv.list({ prefix: ["w"] })) {
 				entries.push({
 					key: entry.key,
 					value: entry.value
