@@ -32,6 +32,8 @@ FAZ). All brand assets in such deployments belong to their respective owners.
 - **Hard Mode (strict)**: Once enabled, green letters are locked in place, gray keys cannot be used
   again, and yellow letters may not be placed again at the same position. This stricter variant
   reduces trial‑and‑error and forces more deduction, going beyond Wordle’s hard mode.
+  * **Community stats** — after each game, a dialog shows the global attempt distribution (1–6 and **X**). Your own result row is highlighted.
+
 
 ## How to Play
 
@@ -49,6 +51,15 @@ FAZ). All brand assets in such deployments belong to their respective owners.
   guesses are rejected.
 - **Hard Mode (strict)** (`hardMode`): Locks green letters, disables gray keys, and forbids
   repeating a yellow letter at the same position in later guesses.
+
+## Community Statistics (Privacy‑friendly)
+
+* After game end, Wortsel sends the outcome (attempt **1–6** or **fail**) and fetches the aggregated distribution for the specific solution.
+* The server replies **atomically with the updated stats**.
+* The modal shows seven rows (1–6 and **X**), scaled by the largest bucket; your row is highlighted.
+* **No personal data** is transmitted; only the normalized solution key and bucket counts are stored.
+
+> **Offline:** When offline, the game works normally but stats cannot be updated or displayed. (Optional backlog/flush can be added in future.)
 
 ## Install as a PWA
 
@@ -95,3 +106,9 @@ Enjoy playing! 🎉
 NYT Wordle’s hard mode requires using revealed hints but still allows reusing gray letters and
 placing yellow letters again at the same position. Wortsel’s **strict Hard Mode** disables gray keys
 and also forbids repeating a yellow letter at the same position, making it intentionally tougher.
+
+**What data does the community stats feature store?**
+Only aggregated counts per solution (attempt buckets 1–6 and fail). No user IDs, IPs, or timestamps are published. The server updates counts atomically and returns the new distribution immediately for display.
+
+**Does everything work offline?**
+Gameplay does. Stats and analytics require a connection and are skipped when offline.
