@@ -81,14 +81,24 @@ Deno.serve(async (req) => {
 		return withCORS(req, json({ ok: true, stats }));
 	}
 
-	// GET: Retrieve stats
-	// https://wortsel.tehes.deno.net/stats?solution=FASER
+	// GET: Retrieve stats or dump all
 	if (req.method === "GET") {
+		// --- admin dump: https://wortsel.tehes.deno.net/stats?all=1
+		if (url.searchParams.get("all")) {
+			const entries = [];
+			for await (const entry of kv.list({ prefix: [] })) {
+				entries.push({
+					key: entry.key,
+					value: entry.value
+				});
+			}
+			return withCORS(req, json(entries));
+		}
+
+		// --- normal single retrieval: https://wortsel.tehes.deno.net/stats?solution=FASER
 		const SOL = norm(url.searchParams.get("solution"));
 		if (!SOL || SOL.length !== 5) return withCORS(req, json({ error: "bad solution" }, 400));
 		const r = await kv.get(["w", SOL]);
 		return withCORS(req, json(r.value ?? emptyDist()));
 	}
-
-	return withCORS(req, new Response("Method not allowed", { status: 405 }));
 });
