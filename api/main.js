@@ -56,10 +56,13 @@ Deno.serve(async (req) => {
 			data.total += 1;
 			data.counts[bucket] += 1;
 
+			const now = new Date().toISOString();
+
 			// Atomic compare-and-set
 			const result = await kv.atomic()
 				.check(current) // Fails if data changed between get() and now
 				.set(key, data)
+				.set(["meta", "lastUpdate"], now)
 				.commit();
 
 			if (result.ok) {
@@ -92,14 +95,19 @@ Deno.serve(async (req) => {
 					value: entry.value
 				});
 			}
-			return withCORS(req, json({ count: entries.length, entries }));
+			const meta = await kv.get(["meta", "lastUpdate"]);
+			return withCORS(req, json({ count: entries.length, lastUpdate: meta.value ?? null, entries }));
 		}
 
 		// --- normal single retrieval: https://wortsel.tehes.deno.net/stats?solution=FASER
 		const SOL = norm(url.searchParams.get("solution"));
 		if (!SOL || SOL.length !== 5) return withCORS(req, json({ error: "bad solution" }, 400));
 		const r = await kv.get(["w", SOL]);
-		return withCORS(req, json(r.value ?? emptyDist()));
+		const meta = await kv.get(["meta", "lastUpdate"]);
+		return withCORS(req, json({
+			...(r.value ?? emptyDist()),
+			lastUpdate: meta.value ?? null
+		}));
 	}
 
 	return new Response("Method not allowed", { status: 405 });
