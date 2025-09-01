@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
 					value: entry.value
 				});
 			}
-			return withCORS(req, json(entries));
+			return withCORS(req, json({ count: entries.length, entries }));
 		}
 
 		// --- normal single retrieval: https://wortsel.tehes.deno.net/stats?solution=FASER
