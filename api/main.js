@@ -101,4 +101,6 @@ Deno.serve(async (req) => {
 		const r = await kv.get(["w", SOL]);
 		return withCORS(req, json(r.value ?? emptyDist()));
 	}
+
+	return new Response("Method not allowed", { status: 405 });
 });
