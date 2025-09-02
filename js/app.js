@@ -563,7 +563,7 @@ function renderCommunityStats(dist, { myResult } = {}) {
 	const list = statsSection.querySelector(".stats-list");
 
 	// headline
-	meta.textContent = `Dieses Wort wurde ${dist.total}-mal gespielt`;
+	meta.textContent = `Das Wort "${solution.toUpperCase()}" wurde ${dist.total}-mal gespielt`;
 
 	const rows = Array.from(list.querySelectorAll(".stats-row"));
 	const counts = rows.map((r) => Number(dist.counts?.[r.dataset.key] || 0));
@@ -710,7 +710,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-08-31-v3"; // Increment this version to force browsers to fetch a new service-worker.js
+const serviceWorkerVersion = "2025-09-02-v1"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
