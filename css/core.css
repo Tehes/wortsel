@@ -292,24 +292,39 @@
     background-color: var(--color-correct);
   }
 
-  #restartButton {
-    display: block;
-    margin: 1em auto 0 auto;
-    padding: 2vmin;
+  .stats-actions {
+    display: flex;
+    gap: 2vmin;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 1em 0 0.5em 0;
+  }
+
+  .button {
+    margin: 0;
+    padding: 1.5vmin;
     font-size: 1em;
     border: none;
     border-radius: 1vmin;
-    background-color: var(--color-correct);
-    color: var(--highlight-font-color);
     box-shadow: var(--box-shadow);
     cursor: pointer;
+    color: var(--highlight-font-color);
   }
 
-  #restartButton:hover {
+ #restartButton {
+  background-color: var(--color-correct);
+}
+
+#shareChallengeButton {
+  background-color: var(--color-present);
+}
+
+  #restartButton:hover, #shareChallengeButton:hover {
     filter: brightness(1.1);
   }
 
-  #restartButton:active {
+  #restartButton:active, #shareChallengeButton:active {
     transform: translateY(1px);
   }
 
@@ -451,8 +466,8 @@
       max-width: 99vmin;
     }
 
-    #restartButton {
-      font-size: 5vmin;
+    #restartButton, #shareChallengeButton {
+      font-size: 4vmin;
       padding: 3vmin;
     }
 

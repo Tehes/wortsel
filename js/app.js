@@ -7,6 +7,7 @@ import curatedWords from "../data/curated_words.json" with { type: "json" };
 const gameBoardEl = document.querySelector("main");
 const keyboardElement = document.querySelector("#keyboard");
 const restartButton = document.querySelector("#restartButton");
+const shareBtn = document.getElementById("shareChallengeButton");
 const rowElements = document.querySelectorAll(".row");
 const modalElement = document.querySelector("aside.modal");
 const headlineElement = document.querySelector("h1");
@@ -651,6 +652,33 @@ async function postCommunityStats({ solution, attempts }) {
 	}
 }
 
+async function shareChallenge() {
+  const idx = curatedWords.findIndex(w => w.toLowerCase() === solution.toLowerCase());
+
+  const url = new URL(location.href);
+  url.searchParams.set("idx", String(idx));
+  const shareUrl = url.toString();
+
+  const data = {
+    title: "Wortsel Challenge",
+    text: "Schaffst du mein Wort?",
+    url: shareUrl
+  };
+
+  try {
+    if (navigator.share) {
+      await navigator.share(data);
+    } else if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(shareUrl);
+      alert("Challenge-Link kopiert!");
+    } else {
+      prompt("Challenge-Link kopieren:", shareUrl);
+    }
+  } catch (err) {
+    console.warn("[challenge] share failed/cancelled:", err); 
+	}
+}
+
 /**
  * Initializes the game and sets up event listeners.
  */
@@ -667,6 +695,7 @@ function initGame() {
 	gameBoardEl.addEventListener("animationend", stopAnyAnimation, false);
 	headlineElement?.addEventListener("click", resetGame, false);
 	restartButton.addEventListener("click", resetGame, false);
+	shareBtn?.addEventListener("click", shareChallenge, false);
 
 	howToIcon.addEventListener("click", () => toggleWindow(howToSection), false);
 	settingsIcon.addEventListener("click", () => toggleWindow(settingsSection), false);
@@ -728,7 +757,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-09-03-v1"; // Increment this version to force browsers to fetch a new service-worker.js
+const serviceWorkerVersion = "2025-09-03-v2"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
