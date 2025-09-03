@@ -40,6 +40,23 @@ const wordSet = new Set(wordList.map((w) => w.toLowerCase()));
 let solution = curatedWords[getRandomInteger(0, curatedWords.length - 1)]
 	.toLowerCase();
 
+// Allow overriding the solution via a URL parameter (?idx=<index>)
+const currentUrl = new URL(globalThis.location?.href);
+const idxParam = currentUrl.searchParams.get("idx");
+let viaChallenge = false;
+
+if (idxParam) {
+	const idx = parseInt(idxParam, 10);
+	if (idx >= 0 && idx < curatedWords.length) {
+		solution = curatedWords[idx].toLowerCase();
+		viaChallenge = true;
+		currentUrl.searchParams.delete("idx");
+		history.replaceState(null, "", currentUrl);
+	} else {
+		console.warn(`Invalid puzzle index: ${idxParam}`);
+	}
+}
+
 // Hard mode state
 let lockedLetters = [null, null, null, null, null]; // fixed, correct letters carried over
 // In hard mode, prevent reusing yellow letters at the same position
@@ -426,6 +443,7 @@ function checkEndCondition() {
 				...analyticsPayload,
 				usedDictionary: wholeWordsCheckbox.checked,
 				activatedHardMode: hardModeCheckbox.checked,
+				viaChallenge: viaChallenge,
 			});
 		}
 
