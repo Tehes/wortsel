@@ -652,30 +652,44 @@ async function postCommunityStats({ solution, attempts }) {
 	}
 }
 
-async function shareChallenge() {
-  const idx = curatedWords.findIndex(w => w.toLowerCase() === solution.toLowerCase());
+// Build Wordle-like emoji grid from played rows
+function buildEmojiGrid() {
+	// Collect rows that were actually played (0..activeRow-1 if win earlier)
+	const rows = Array.from(document.querySelectorAll("main .row")).slice(
+		0,
+		Math.min(activeRow + 1, 6),
+	);
+	const mapCell = (el) => {
+		if (el.classList.contains("correct")) return "🟩";
+		if (el.classList.contains("present")) return "🟨";
+		return "⬛";
+	};
+	return rows
+		// only include rows that have 5 filled letters
+		.filter((r) => Array.from(r.querySelectorAll(".letter")).every((c) => c.textContent !== ""))
+		.map((r) => Array.from(r.querySelectorAll(".letter")).map(mapCell).join(""))
+		.join("\n");
+}
 
-  const url = new URL(location.href);
-  url.searchParams.set("idx", String(idx));
-  const shareUrl = url.toString();
+function shareChallenge() {
+	const idx = curatedWords.findIndex((w) => w.toLowerCase() === solution.toLowerCase());
 
-  const data = {
-    title: "Wortsel Challenge",
-    text: "Schaffst du mein Wort?",
-    url: shareUrl
-  };
+	const url = new URL(location.href);
+	url.searchParams.set("idx", String(idx));
+	const shareUrl = url.toString();
 
-  try {
-    if (navigator.share) {
-      await navigator.share(data);
-    } else if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(shareUrl);
-      alert("Challenge-Link kopiert!");
-    } else {
-      prompt("Challenge-Link kopieren:", shareUrl);
-    }
-  } catch (err) {
-    console.warn("[challenge] share failed/cancelled:", err); 
+	const grid = buildEmojiGrid();
+	const msg = `Wortsel Challenge: Kannst du mich bei diesem Wort schlagen?
+${grid}
+${shareUrl}`;
+
+	if (navigator.share) {
+		navigator.share({ text: msg })
+			.catch(() => navigator.share({ url: shareUrl }));
+	} else if (navigator.clipboard?.writeText) {
+		navigator.clipboard.writeText(shareUrl).then(() => {
+			showModal("Challenge-Link kopiert", 1000);
+		});
 	}
 }
 
@@ -757,7 +771,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-09-03-v2"; // Increment this version to force browsers to fetch a new service-worker.js
+const serviceWorkerVersion = "2025-09-03-v3"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
