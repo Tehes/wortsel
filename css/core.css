@@ -324,6 +324,7 @@
 
   .modal {
     top: 22%;
+    z-index: 1500;
     width: initial;
     background-color: var(--modal-bg-color);
     color: var(--modal-font-color);
