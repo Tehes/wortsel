@@ -29,6 +29,8 @@ FAZ). All brand assets in such deployments belong to their respective owners.
   internet connection.
 - **Responsive Design**: Optimized for both desktop and mobile devices.
 - **Settings Persistence**: Last game options are stored in `localStorage`.
+- **Shareable Puzzles**: Append `?word=<index>` to the URL to set a specific solution,
+  useful for custom challenges.
 - **Hard Mode (strict)**: Once enabled, green letters are locked in place, gray keys cannot be used
   again, and yellow letters may not be placed again at the same position. This stricter variant
   reduces trial‑and‑error and forces more deduction, going beyond Wordle’s hard mode.

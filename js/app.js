@@ -40,6 +40,16 @@ const wordSet = new Set(wordList.map((w) => w.toLowerCase()));
 let solution = curatedWords[getRandomInteger(0, curatedWords.length - 1)]
 	.toLowerCase();
 
+// Allow overriding the solution via a URL parameter (?word=<index>)
+const urlParams = new URLSearchParams(globalThis.location?.search || "");
+const wordIndex = urlParams.get("word");
+if (wordIndex !== null) {
+	const idx = parseInt(wordIndex, 10);
+	if (!Number.isNaN(idx) && idx >= 0 && idx < curatedWords.length) {
+		solution = curatedWords[idx].toLowerCase();
+	}
+}
+
 // Hard mode state
 let lockedLetters = [null, null, null, null, null]; // fixed, correct letters carried over
 // In hard mode, prevent reusing yellow letters at the same position
