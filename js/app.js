@@ -41,20 +41,48 @@ const wordSet = new Set(wordList.map((w) => w.toLowerCase()));
 let solution = curatedWords[getRandomInteger(0, curatedWords.length - 1)]
 	.toLowerCase();
 
-// Allow overriding the solution via a URL parameter (?idx=<index>)
+/* Allow overriding the solution via a URL parameter (?t=<token>) */
 const currentUrl = new URL(globalThis.location?.href);
-const idxParam = currentUrl.searchParams.get("idx");
+const tokenParam = currentUrl.searchParams.get("t");
 let viaChallenge = false;
 
-if (idxParam) {
-	const idx = parseInt(idxParam, 10);
-	if (idx >= 0 && idx < curatedWords.length) {
+/* --- Base32 token encoding with offset ----------------------------------- */
+const B32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+const MAP32 = Object.fromEntries([...B32].map((c, i) => [c, i]));
+const TOKEN_OFFSET = 10000;
+
+function encodeIdx(index) {
+	let n = index + TOKEN_OFFSET;
+	if (n === 0) return "0";
+	let s = "";
+	while (n > 0) {
+		s = B32[n % 32] + s;
+		n = Math.floor(n / 32);
+	}
+	return s;
+}
+
+function decodeIdx(token) {
+	let n = 0;
+	for (const c of token.toUpperCase()) {
+		const v = MAP32[c];
+		if (v == null) throw new Error("bad b32");
+		n = n * 32 + v;
+	}
+	const x = n - TOKEN_OFFSET;
+	if (x < 0 || x >= curatedWords.length) throw new Error("token out of range");
+	return x;
+}
+
+if (tokenParam) {
+	try {
+		const idx = decodeIdx(tokenParam);
 		solution = curatedWords[idx].toLowerCase();
 		viaChallenge = true;
-		currentUrl.searchParams.delete("idx");
+		currentUrl.searchParams.delete("t");
 		history.replaceState(null, "", currentUrl);
-	} else {
-		console.warn(`Invalid puzzle index: ${idxParam}`);
+	} catch {
+		console.warn(`Invalid challenge token: ${tokenParam}`);
 	}
 }
 
@@ -673,9 +701,10 @@ function buildEmojiGrid() {
 
 function shareChallenge() {
 	const idx = curatedWords.findIndex((w) => w.toLowerCase() === solution.toLowerCase());
+	const token = encodeIdx(idx);
 
 	const url = new URL(location.href);
-	url.searchParams.set("idx", String(idx));
+	url.searchParams.set("t", token);
 	const shareUrl = url.toString();
 
 	const grid = buildEmojiGrid();
@@ -770,7 +799,7 @@ globalThis.wortsel.initGame();
 /* --------------------------------------------------------------------------------------------------
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
-const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
+const useServiceWorker = false; // Set to "true" if you want to register the Service Worker, "false" to unregister
 const serviceWorkerVersion = "2025-09-03-v3"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
