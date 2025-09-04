@@ -81,6 +81,7 @@ if (tokenParam) {
 		viaChallenge = true;
 		currentUrl.searchParams.delete("t");
 		history.replaceState(null, "", currentUrl);
+		showModal("Herausforderung angenommen!", 1500);
 	} catch {
 		console.warn(`Invalid challenge token: ${tokenParam}`);
 	}
@@ -800,7 +801,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-09-04-v1"; // Increment this version to force browsers to fetch a new service-worker.js
+const serviceWorkerVersion = "2025-09-04-v2"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
