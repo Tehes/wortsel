@@ -283,6 +283,7 @@
     bottom: 0;
     width: 0%;
     background-color: var(--stats-fill-color);
+    transition: width 1s ease-in-out;
   }
 
   .stats-count {
@@ -296,7 +297,7 @@
 
   .stats-actions {
     display: flex;
-    gap: 1em;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
@@ -307,21 +308,23 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 0.5em;
     margin: 0;
     padding: 1em;
     font-size: inherit;
     border: none;
     border-radius: var(--border-radius);
     cursor: pointer;
-    color: var(--highlight-font-color);
+    min-width: 250px
   }
 
   #restartButton {
     background-color: var(--color-correct);
+    color: var(--highlight-font-color);
   }
 
   #shareChallengeButton {
-    background-color: var(--color-present);
+    background-color: transparent;
   }
 
   #restartButton:hover,

@@ -86,6 +86,11 @@
     height: 1.5em;
   }
 
+  .close img {
+    width: 2em;
+    height: auto;
+  }
+
   h2 {
     text-align: center;
   }
@@ -100,24 +105,13 @@
     width: 4.5em;
   }
 
-  .stats-actions {
-    gap: 0;
-    flex-direction: column;
-  }
-
   .button {
-    gap: 0.5em;
-    color: var(--key-font-color);
     width: 300px;
   }
 
   #restartButton {
     background-color: #E8EDEE;
-  }
-
-  #shareChallengeButton {
-    background-color: transparent;
-    color: var(--main-font-color);
+    color: inherit;
   }
 
   #restartButton:hover,

@@ -610,20 +610,27 @@ function renderCommunityStats(dist, { myResult } = {}) {
 	const meta = statsSection.querySelector(".stats-meta");
 	const list = statsSection.querySelector(".stats-list");
 
-	// headline
 	meta.textContent = `Das Wort "${solution.toUpperCase()}" wurde ${dist.total}-mal gespielt`;
 
 	const rows = Array.from(list.querySelectorAll(".stats-row"));
 	const counts = rows.map((r) => Number(dist.counts?.[r.dataset.key] || 0));
 	const max = Math.max(0, ...counts);
 
-	// reset highlighting
 	rows.forEach((r) => r.classList.remove("mine"));
+
+	rows.forEach((row) => {
+		const fill = row.querySelector(".stats-fill");
+		fill.style.width = "0%";
+	});
+
+	statsSection.classList.remove("hidden");
+	backdrop.classList.remove("hidden");
+
+	void statsSection.offsetWidth;
 
 	rows.forEach((row) => {
 		const key = row.dataset.key;
 		const count = Number(dist.counts?.[key] || 0);
-
 		const fill = row.querySelector(".stats-fill");
 		fill.style.width = max && count ? (count / max) * 100 + "%" : "0%";
 
@@ -634,9 +641,6 @@ function renderCommunityStats(dist, { myResult } = {}) {
 		const isMine = String(myResult) === key;
 		row.classList.toggle("mine", isMine);
 	});
-
-	statsSection.classList.remove("hidden");
-	backdrop.classList.remove("hidden");
 }
 
 // --- Community stats (Deno Deploy) -----------------------------------------
@@ -801,7 +805,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-09-04-v3"; // Increment this version to force browsers to fetch a new service-worker.js
+const serviceWorkerVersion = "2025-09-04-v4"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
