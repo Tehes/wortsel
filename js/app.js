@@ -690,7 +690,7 @@ function buildEmojiGrid() {
 	const mapCell = (el) => {
 		if (el.classList.contains("correct")) return "🟩";
 		if (el.classList.contains("present")) return "🟨";
-		return "⬛";
+		return "⬜";
 	};
 	return rows
 		// only include rows that have 5 filled letters
@@ -716,8 +716,8 @@ ${shareUrl}`;
 		navigator.share({ text: msg })
 			.catch(() => navigator.share({ url: shareUrl }));
 	} else if (navigator.clipboard?.writeText) {
-		navigator.clipboard.writeText(shareUrl).then(() => {
-			showModal("Challenge-Link kopiert", 1000);
+		navigator.clipboard.writeText(msg).then(() => {
+			showModal("Challenge-Text kopiert", 1000);
 		});
 	}
 }
@@ -800,7 +800,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-09-03-v4"; // Increment this version to force browsers to fetch a new service-worker.js
+const serviceWorkerVersion = "2025-09-04-v1"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
