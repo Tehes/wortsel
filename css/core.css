@@ -14,6 +14,7 @@
     --border-highlight: 2px solid #999;
     --border-active: 2px dashed #999;
     --border-thin: 1px solid #ccc;
+    --border-radius: 5px;
     --key-font-color: #333;
     --key-highlight-bg-color: #aaa;
     --key-bg-color: #cdcdcd;
@@ -30,6 +31,8 @@
     --checkmark-border-color: #fff;
     --box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
     --animation-delay: 0.15s;
+    --stats-bar-color: var(--key-bg-color);
+    --stats-fill-color: var(--color-absent);
   }
 
   *,
@@ -269,8 +272,7 @@
     position: relative;
     flex: 1;
     height: 3vmin;
-    background-color: var(--key-bg-color);
-    border-radius: 0.5vmin;
+    background-color: var(--stats-bar-color);
     overflow: hidden;
   }
 
@@ -280,7 +282,7 @@
     left: 0;
     bottom: 0;
     width: 0%;
-    background-color: var(--color-absent);
+    background-color: var(--stats-fill-color);
   }
 
   .stats-count {
@@ -294,7 +296,7 @@
 
   .stats-actions {
     display: flex;
-    gap: 2vmin;
+    gap: 1em;
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
@@ -302,29 +304,33 @@
   }
 
   .button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin: 0;
-    padding: 1.5vmin;
-    font-size: 1em;
+    padding: 1em;
+    font-size: inherit;
     border: none;
-    border-radius: 1vmin;
-    box-shadow: var(--box-shadow);
+    border-radius: var(--border-radius);
     cursor: pointer;
     color: var(--highlight-font-color);
   }
 
- #restartButton {
-  background-color: var(--color-correct);
-}
+  #restartButton {
+    background-color: var(--color-correct);
+  }
 
-#shareChallengeButton {
-  background-color: var(--color-present);
-}
+  #shareChallengeButton {
+    background-color: var(--color-present);
+  }
 
-  #restartButton:hover, #shareChallengeButton:hover {
+  #restartButton:hover,
+  #shareChallengeButton:hover {
     filter: brightness(1.1);
   }
 
-  #restartButton:active, #shareChallengeButton:active {
+  #restartButton:active,
+  #shareChallengeButton:active {
     transform: translateY(1px);
   }
 
@@ -343,7 +349,7 @@
     width: initial;
     background-color: var(--modal-bg-color);
     color: var(--modal-font-color);
-    border-radius: 0.5vmin;
+    border-radius: var(--border-radius);
     font-size: calc(1rem * var(--scale-modal));
     text-align: center;
   }
@@ -464,11 +470,6 @@
       gap: 1vmin;
       padding: 1vmin;
       max-width: 99vmin;
-    }
-
-    #restartButton, #shareChallengeButton {
-      font-size: 4vmin;
-      padding: 3vmin;
     }
 
     .key {
