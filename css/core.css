@@ -320,7 +320,7 @@
     color: inherit;
   }
 
-  #restartButton {
+  .restart {
     background-color: var(--color-correct);
     color: var(--highlight-font-color);
   }
@@ -329,22 +329,22 @@
     background-color: transparent;
   }
 
-  #restartButton:hover,
+  .restart:hover,
   #shareChallengeButton:hover {
     filter: brightness(1.1);
   }
 
-  #restartButton:active,
+  .restart:active,
   #shareChallengeButton:active {
     transform: translateY(1px);
   }
 
   aside .letter {
-    width: 6vmin;
-    height: 6vmin;
-    margin: 0.5vmin;
-    padding: 0.5vmin;
-    font-size: 4vmin;
+    width: 1.5em;
+    height: 1.5em;
+    margin: 0.2em;
+    padding: 0.1em;
+    font-size: 1.8em;
     line-height: 1.1;
   }
 
@@ -450,15 +450,6 @@
       margin: 1vmin;
       padding: 1vmin;
       font-size: 11vmin;
-    }
-
-    aside .letter {
-      width: 10vmin;
-      height: 10vmin;
-      margin: 1vmin;
-      padding: 1vmin;
-      font-size: 8vmin;
-      line-height: 0.9;
     }
 
     h2 {

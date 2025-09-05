@@ -86,6 +86,10 @@
     height: 1.5em;
   }
 
+  aside {
+    max-width: 335px;
+  }
+
   .close img {
     width: 2em;
     height: auto;
@@ -106,15 +110,16 @@
   }
 
   button {
-    width: 300px;
+    max-width: 300px;
+    width: 100%;
   }
 
-  #restartButton {
+  .restart {
     background-color: #E8EDEE;
     color: #212529;
   }
 
-  #restartButton:hover,
+  .restart:hover,
   #shareChallengeButton:hover {
     filter: none;
   }

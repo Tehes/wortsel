@@ -6,7 +6,7 @@ import curatedWords from "../data/curated_words.json" with { type: "json" };
 
 const gameBoardEl = document.querySelector("main");
 const keyboardElement = document.querySelector("#keyboard");
-const restartButton = document.querySelector("#restartButton");
+const restartButtons = document.querySelectorAll(".restart");
 const shareBtn = document.querySelector("#shareChallengeButton");
 const rowElements = document.querySelectorAll(".row");
 const modalElement = document.querySelector("aside.modal");
@@ -562,6 +562,11 @@ function resetGame() {
 	const letters = document.querySelectorAll("main .letter");
 	const keys = document.querySelectorAll(".key");
 
+	howToSection.classList.add("hidden");
+	settingsSection.classList.add("hidden");
+	statsSection.classList.add("hidden");
+	backdrop.classList.add("hidden");
+
 	letters.forEach((letter) => {
 		letter.textContent = "";
 		letter.classList.remove("correct", "present", "absent", "active");
@@ -606,7 +611,7 @@ function removeInputListeners() {
 }
 
 function getTextTemplate(element, replacements = {}) {
-	const template = element.dataset.text || element.textContent;
+	const template = element.dataset.text;
 	return Object.entries(replacements).reduce(
 		(text, [placeholder, value]) => text.replace(`{{${placeholder}}}`, value),
 		template,
@@ -758,7 +763,7 @@ function initGame() {
 
 	gameBoardEl.addEventListener("animationend", stopAnyAnimation, false);
 	headlineElement?.addEventListener("click", resetGame, false);
-	restartButton.addEventListener("click", resetGame, false);
+	restartButtons.forEach((btn) => btn.addEventListener("click", resetGame, false));
 	shareBtn?.addEventListener("click", shareChallenge, false);
 
 	howToIcon.addEventListener("click", () => toggleWindow(howToSection), false);
@@ -821,7 +826,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-09-05-v2"; // Increment this version to force browsers to fetch a new service-worker.js
+const serviceWorkerVersion = "2025-09-05-v3"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
