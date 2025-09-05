@@ -68,7 +68,7 @@
 	<aside class="modal hidden"></aside>
 	<aside id="stats" class="hidden">
 		<h2>Spiel beendet</h2>
-		<p class="stats-meta"></p>
+		<p class="stats-meta" data-text="Das Lösungswort &quot;{{SOLUTION}}&quot; wurde {{TOTAL}}-mal gespielt. So schnitten Sie im Vergleich zu anderen F.A.Z.-Lesern ab:"></p>
 		<p>Anzahl der Versuche</p>
 		<ul class="stats-list">
 			<li class="stats-row" data-key="1">
@@ -122,7 +122,7 @@
 			</li>
 		</ul>
 		<div class="stats-actions">
-			<button id="shareChallengeButton" class="button"><img src="img/faz/Share.svg" alt="">Freunde
+			<button id="shareChallengeButton" class="button" data-text="F.A.Z. Wörtchen: Kannst du mein Ergebnis bei diesem Wort übertreffen?"><img src="img/faz/Share.svg" alt="">Freunde
 				herausfordern</button>
 			<button id="restartButton" class="button">Neues Spiel starten</button>
 		</div>

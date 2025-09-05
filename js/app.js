@@ -605,12 +605,23 @@ function removeInputListeners() {
 	inputController = null;
 }
 
+function getTextTemplate(element, replacements = {}) {
+	const template = element.dataset.text || element.textContent;
+	return Object.entries(replacements).reduce(
+		(text, [placeholder, value]) => text.replace(`{{${placeholder}}}`, value),
+		template,
+	);
+}
+
 // --- Community stats (UI renderer) -----------------------------------------
 function renderCommunityStats(dist, { myResult } = {}) {
 	const meta = statsSection.querySelector(".stats-meta");
 	const list = statsSection.querySelector(".stats-list");
 
-	meta.textContent = `Das Wort "${solution.toUpperCase()}" wurde ${dist.total}-mal gespielt`;
+	meta.textContent = getTextTemplate(meta, {
+		SOLUTION: solution.toUpperCase(),
+		TOTAL: dist.total,
+	});
 
 	const rows = Array.from(list.querySelectorAll(".stats-row"));
 	const counts = rows.map((r) => Number(dist.counts?.[r.dataset.key] || 0));
@@ -713,22 +724,23 @@ function shareChallenge() {
 	const shareUrl = url.toString();
 
 	const grid = buildEmojiGrid();
-	const msg = `Wortsel Challenge: Kannst du mich bei diesem Wort schlagen?
+	const msgtext = getTextTemplate(shareBtn, {});
+	const msg = `${msgtext}
 ${grid}
-${shareUrl}`;
+Jetzt Herausforderung annehmen: ${shareUrl}`;
 
 	if (navigator.share) {
-        navigator.share({ text: msg })
-            .catch((error) => {
-                if (error.name !== 'AbortError') {
-                    return navigator.share({ url: shareUrl });
-                }
-            });
-    } else if (navigator.clipboard?.writeText) {
-        navigator.clipboard.writeText(msg).then(() => {
-            showModal("Challenge-Text kopiert", 1000);
-        });
-    }
+		navigator.share({ text: msg })
+			.catch((error) => {
+				if (error.name !== "AbortError") {
+					return navigator.share({ url: shareUrl });
+				}
+			});
+	} else if (navigator.clipboard?.writeText) {
+		navigator.clipboard.writeText(msg).then(() => {
+			showModal("Challenge-Text kopiert", 1000);
+		});
+	}
 }
 
 /**
@@ -809,7 +821,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-09-05-v1"; // Increment this version to force browsers to fetch a new service-worker.js
+const serviceWorkerVersion = "2025-09-05-v2"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
