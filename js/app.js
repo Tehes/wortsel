@@ -408,7 +408,6 @@ function colorizeKeyboard(letters) {
  * Applies hard mode locked letters and disables to the given row element.
  */
 function applyHardModeStateToRow(rowEl) {
-	if (!hardModeCheckbox.checked) return;
 	const cells = [...rowEl.querySelectorAll(".letter")];
 	cells.forEach((cell, i) => {
 		if (lockedLetters[i]) {
@@ -422,7 +421,6 @@ function applyHardModeStateToRow(rowEl) {
 	// Move cursor to first editable
 	const firstEditable = cells.findIndex((c) => c.dataset.locked !== "true");
 	letterIndex = firstEditable >= 0 ? firstEditable : 0;
-	updateActiveLetter();
 }
 
 /**
@@ -451,7 +449,10 @@ function checkEndCondition() {
 		activeRow++;
 		// Prefill & lock correct letters for the new row in hard mode (only if a next row exists)
 		if (activeRow < rowElements.length) {
-			applyHardModeStateToRow(rowElements[activeRow]);
+			if (hardModeCheckbox.checked) {
+				applyHardModeStateToRow(rowElements[activeRow]);
+			} 
+			updateActiveLetter();
 		}
 	}
 
@@ -816,8 +817,8 @@ globalThis.wortsel = {
 	/* Test with:
 	wortsel.renderCommunityStats(
 	  { total: 100, counts: { "1":5,"2":10,"3":20,"4":25,"5":20,"6":10,"fail":10 } },
-	  { myResult: "3" })
-	); */
+	  { myResult: "3" }); 
+	*/
 };
 
 globalThis.wortsel.initGame();
@@ -826,7 +827,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-09-05-v3"; // Increment this version to force browsers to fetch a new service-worker.js
+const serviceWorkerVersion = "2025-09-05-v4"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
