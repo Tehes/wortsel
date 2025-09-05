@@ -7,7 +7,7 @@ import curatedWords from "../data/curated_words.json" with { type: "json" };
 const gameBoardEl = document.querySelector("main");
 const keyboardElement = document.querySelector("#keyboard");
 const restartButton = document.querySelector("#restartButton");
-const shareBtn = document.getElementById("shareChallengeButton");
+const shareBtn = document.querySelector("#shareChallengeButton");
 const rowElements = document.querySelectorAll(".row");
 const modalElement = document.querySelector("aside.modal");
 const headlineElement = document.querySelector("h1");
@@ -809,7 +809,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-09-04-v7"; // Increment this version to force browsers to fetch a new service-worker.js
+const serviceWorkerVersion = "2025-09-05-v1"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
