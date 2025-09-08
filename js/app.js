@@ -508,7 +508,8 @@ function toggleWindow(element) {
 		activeRow > 0 &&
 		activeRow < 6 &&
 		correctLetters.length !== 5 &&
-		element.id === "settings"
+		element.id === "settings" &&
+		settingsIcon.dataset.allowDuringGame !== "true"
 	) {
 		showModal("Nicht während des Spiels möglich", 1000);
 	} else {
@@ -827,7 +828,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-09-05-v4"; // Increment this version to force browsers to fetch a new service-worker.js
+const serviceWorkerVersion = "2025-09-08-v1"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
