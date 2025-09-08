@@ -51,6 +51,8 @@
     --stats-bar-color: #e3e3e3;
     --stats-fill-color: #717171;
     --maxScreen: 1000px;
+    --button-bg-color: #E8EDEE;
+    --button-font-color: #212529;
   }
 
   :where(h2, h3, .letter) {
@@ -115,8 +117,8 @@
   }
 
   .restart {
-    background-color: #E8EDEE;
-    color: #212529;
+    background-color: var(--button-bg-color);
+    color: var(--button-font-color);
   }
 
   .restart:hover,
@@ -138,6 +140,10 @@
       --key-highlight-bg-color: #aaaaaa;
       --key-bg-color: #8e8e8e;
       --header-img-filter: invert(1);
+      --stats-bar-color: #555555;
+      --stats-fill-color: #c6c6c6;
+      --button-bg-color: #323D46;
+      --button-font-color: #ffffff;
     }
   }
 

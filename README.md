@@ -76,8 +76,8 @@ Besides the public version, Wortsel has also been adapted as a white-label solut
 For example, a custom build was created for the German newspaper **Frankfurter Allgemeine Zeitung
 (FAZ)**, embedded via `<iframe>` on their site.
 
-The codebase is structured with a **core layer** (shared game logic and neutral styles) and **theme
-layers** (e.g. `theme-wortsel.css` and `theme-faz.css`).\
+The codebase is structured with a **core layer** (shared game logic and Wortsel’s default styles) and **theme
+layers** (e.g. `theme-faz.css`).\
 This separation allows different skins (branding, typography, colors, icons) while keeping one
 maintainable codebase.
 

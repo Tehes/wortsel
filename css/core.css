@@ -2,14 +2,14 @@
 
 @layer base {
   :root {
-    --main-bg-color: #fff;
-    --letter-bg-color: #fff;
+    --main-bg-color: hsl(0, 0%, 100%);
+    --letter-bg-color: hsl(0, 0%, 100%);
     --modal-bg-color: #444;
     --main-font-color: #333;
     --highlight-font-color: #eee;
-    --color-correct: hsl(120, 50%, 50%);
-    --color-present: hsl(50, 60%, 50%);
-    --color-absent: hsl(0, 0%, 50%);
+    --color-correct: rgb(106, 170, 100);
+    --color-present: rgb(201, 180, 88);
+    --color-absent: rgb(120, 124, 126);
     --border-standard: 2px solid #ccc;
     --border-highlight: 2px solid #999;
     --border-active: 2px dashed #999;
@@ -19,12 +19,12 @@
     --key-highlight-bg-color: #aaa;
     --key-bg-color: #cdcdcd;
     --key-width: 7.5%;
-    --font-family: sans-serif;
-    --root-font-size: 16px;
+    --font-family: 'Work Sans', sans-serif;
+    --root-font-size: clamp(15px, 1.2vw + 12px, 18px);
     --scale-h2: 1.5;
     --scale-h3: 1.25;
-    --scale-credit: 0.75;
-    --scale-modal: 1;
+    --scale-credit: 0.9;
+    --scale-modal: 1.1;
     --header-img-filter: none;
     --modal-font-color: #ddd;
     --backdrop-bg-color: hsla(0, 0%, 0%, 0.2);
@@ -33,6 +33,21 @@
     --animation-delay: 0.15s;
     --stats-bar-color: var(--key-bg-color);
     --stats-fill-color: var(--color-absent);
+  }
+
+   @media (prefers-color-scheme: dark) {
+    :root {
+      --main-bg-color: hsl(0, 0%, 14%);
+      --letter-bg-color: hsl(0, 0%, 25%);
+      --modal-bg-color: #666;
+      --main-font-color: #ccc;
+      --border-standard: 2px solid #aaa;
+      --border-highlight: 2px solid #ddd;
+      --key-font-color: #111;
+      --key-highlight-bg-color: #ccc;
+      --key-bg-color: #aaa;
+      --header-img-filter: invert(.75);
+    }
   }
 
   *,
@@ -318,6 +333,7 @@
     cursor: pointer;
     min-width: 250px;
     color: inherit;
+    font-weight: 600;
   }
 
   .restart {
