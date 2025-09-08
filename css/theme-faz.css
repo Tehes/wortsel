@@ -114,6 +114,7 @@
   button {
     max-width: 300px;
     width: 100%;
+    font-weight: 600;
   }
 
   .restart {
