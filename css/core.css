@@ -18,7 +18,7 @@
     --border-radius: 5px;
     --key-font-color: #333;
     --key-highlight-bg-color: #aaa;
-    --key-bg-color: #cdcdcd;
+    --key-bg-color: hsl(0, 0%, 80%);
     --key-width: 7.5%;
     --font-family: 'Work Sans', sans-serif;
     --root-font-size: clamp(15px, 1.2vw + 12px, 18px);
@@ -32,8 +32,8 @@
     --checkmark-border-color: #fff;
     --box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
     --animation-delay: 0.15s;
-    --stats-bar-color: var(--key-bg-color);
-    --stats-fill-color: var(--color-absent);
+    --stats-bar-color: hsl(0, 0%, 90%);
+    --stats-fill-color: hsl(0, 0%, 70%);
   }
 
   @media (prefers-color-scheme: dark) {
@@ -46,7 +46,9 @@
       --border-highlight: 2px solid #ddd;
       --key-font-color: #111;
       --key-highlight-bg-color: #ccc;
-      --key-bg-color: #aaa;
+      --key-bg-color: hsl(0, 0%, 67%);
+      --stats-bar-color: hsl(0, 0%, 35%);
+      --stats-fill-color: hsl(0, 0%, 55%);
       --header-img-filter: invert(.75);
     }
   }
@@ -342,17 +344,16 @@
   }
 
   .restart {
-    background-color: var(--color-correct);
-    color: var(--highlight-font-color);
+    background-color: var(--key-bg-color);
+    color: var(--key-font-color);
   }
 
   #shareChallengeButton {
     background-color: transparent;
   }
 
-  .restart:hover,
-  #shareChallengeButton:hover {
-    filter: brightness(1.1);
+  .restart:active {
+    background-color: var(--key-highlight-bg-color);
   }
 
   .restart:active,
