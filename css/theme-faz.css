@@ -25,28 +25,27 @@
     --letter-bg-color: hsl(0, 0%, 100%);
     --modal-bg-color: #393939;
     --main-font-color: #212529;
-    --highlight-font-color: #F7F7F7;
+    --highlight-font-color: #FFF;
     --color-correct: #478517;
     --color-present: #D8B118;
-    --color-absent: #717171;
+    --color-absent: #555555;
     --color-fail: #C60000;
-    --border-standard: 2px solid #c6c6c6;
-    --border-highlight: 2px solid #8e8e8e;
-    --border-active: 2px dashed #8e8e8e;
-    --border-thin: 1px solid #c6c6c6;
+    --border-standard: 1px solid #c6c6c6;
+    --border-highlight: 1px solid #8e8e8e;
+    --border-active: 1px dashed #8e8e8e;
     --key-font-color: #393939;
     --key-highlight-bg-color: #aaa;
     --key-bg-color: #c6c6c6;
     --key-width: 7.8%;
     --font-family: "DV Source Sans 3", Helvetica, Arial, sans-serif;
-    --root-font-size: 16px;
-    --scale-h2: 1.75;
-    --scale-h3: 1.5;
+    --root-font-size: 14px;
+    --scale-h2: 20px;
+    --scale-h3: 18px;
     --scale-credit: 1;
     --scale-modal: 1.125;
     --header-img-filter: none;
     --modal-font-color: #ddd;
-    --backdrop-bg-color: hsla(0, 0%, 0%, 0.2);
+    --backdrop-bg-color: hsla(0, 0%, 0%, 0.6);
     --checkmark-border-color: #fff;
     --box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
     --stats-bar-color: #e3e3e3;
@@ -64,9 +63,8 @@
       --color-fail: #FF4242;
       --modal-bg-color: #555555;
       --main-font-color: #fff;
-      --border-standard: 2px solid #717171;
-      --border-highlight: 2px solid #aaaaaa;
-      --border-thin: 1px solid #717171;
+      --border-standard: 1px solid #717171;
+      --border-highlight: 1px solid #aaaaaa;
       --key-font-color: #212529;
       --key-highlight-bg-color: #aaaaaa;
       --key-bg-color: #8e8e8e;
@@ -86,11 +84,11 @@
     width: 100vw;
     max-width: var(--maxScreen);
     padding: 3vmin;
-    border: var(--border-thin);
+    border: var(--border-standard);
   }
 
   header {
-    border: var(--border-thin);
+    border: var(--border-standard);
     border-bottom: none;
     width: 100vw;
     max-width: var(--maxScreen);
