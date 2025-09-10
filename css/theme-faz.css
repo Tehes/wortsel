@@ -29,6 +29,7 @@
     --color-correct: #478517;
     --color-present: #D8B118;
     --color-absent: #717171;
+    --color-fail: #C60000;
     --border-standard: 2px solid #c6c6c6;
     --border-highlight: 2px solid #8e8e8e;
     --border-active: 2px dashed #8e8e8e;
@@ -122,6 +123,10 @@
     color: var(--button-font-color);
   }
 
+  #settings .restart {
+    margin: 0 auto;
+  }
+
   .restart:hover,
   #shareChallengeButton:hover {
     filter: none;
@@ -132,6 +137,7 @@
       --main-bg-color: #212529;
       --letter-bg-color: #212529;
       --color-correct: #55AC26;
+      --color-fail: #FF4242;
       --modal-bg-color: #555555;
       --main-font-color: #fff;
       --border-standard: 2px solid #717171;
