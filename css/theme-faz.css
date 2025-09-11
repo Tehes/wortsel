@@ -151,6 +151,25 @@
     margin: 0 auto;
   }
 
+  .checkmark {
+    background-color: transparent;
+    border: 1px solid var(--key-highlight-bg-color);
+    border-radius: 2px;
+  }
+
+  .option input:checked~.checkmark {
+    background-color: transparent;
+  }
+
+  .option .checkmark:after {
+    left: 0.5em;
+    top: 0.2em;
+    width: 0.4em;
+    height: 0.8em;
+    border: solid var(--main-font-color);
+    border-width: 0 1px 1px 0;
+  }
+
   @media only screen and (max-width: 450px) and (orientation: portrait) {
     header {
       width: 100vw;
