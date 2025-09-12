@@ -51,7 +51,8 @@
     --stats-bar-color: #e3e3e3;
     --stats-fill-color: #717171;
     --maxScreen: 1000px;
-    --button-bg-color: #E8EDEE;
+    --button-opacity: 1;
+    --button-rgb: 232, 237, 238;
     --button-font-color: #212529;
   }
 
@@ -71,13 +72,18 @@
       --header-img-filter: invert(1);
       --stats-bar-color: #555555;
       --stats-fill-color: #c6c6c6;
-      --button-bg-color: #323D46;
+      --button-rgb: 50, 61, 70;
       --button-font-color: #ffffff;
     }
   }
 
   :where(h2, h3, .letter) {
     font-weight: 600;
+  }
+
+  a:hover {
+    color: inherit;
+    opacity: 0.7;
   }
 
   main {
@@ -101,6 +107,10 @@
     align-items: center;
     gap: 1vmin;
     cursor: pointer;
+  }
+
+  header div:hover {
+    opacity: 0.7;
   }
 
   header img,
@@ -139,8 +149,12 @@
   }
 
   .restart {
-    background-color: var(--button-bg-color);
+    background-color: rgba(var(--button-rgb), var(--button-opacity));
     color: var(--button-font-color);
+  }
+
+  .restart:hover {
+    --button-opacity: 0.7;
   }
 
   .restart:active {

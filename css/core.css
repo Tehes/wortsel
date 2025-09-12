@@ -371,7 +371,7 @@
   }
 
   .modal {
-    top: 22%;
+    top: 8%;
     z-index: 1500;
     width: initial;
     background-color: var(--modal-bg-color);
