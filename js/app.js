@@ -451,7 +451,7 @@ function checkEndCondition() {
 		if (activeRow < rowElements.length) {
 			if (hardModeCheckbox.checked) {
 				applyHardModeStateToRow(rowElements[activeRow]);
-			} 
+			}
 			updateActiveLetter();
 		}
 	}
@@ -470,11 +470,24 @@ function checkEndCondition() {
 		removeInputListeners();
 
 		if (analyticsPayload) {
+			// UMAMI ANALYTICS
 			globalThis.umami?.track("Wortsel", {
 				...analyticsPayload,
 				usedDictionary: wholeWordsCheckbox.checked,
 				activatedHardMode: hardModeCheckbox.checked,
 				viaChallenge: viaChallenge,
+			});
+			//ADOBE ANALYTICS
+			globalThis._satellite?.track("ctEvent", {
+				ctEvent: {
+					name: "Spiele::Wörtchen::Ende",
+					position: "Spiele::Wörtchen",
+					subPosition: (viaChallenge ? "Shared::" : "") + (hardModeCheckbox.checked
+						? "Schwer"
+						: (wholeWordsCheckbox.checked ? "Standard" : "Leicht")),
+					element: "End",
+					label: analyticsPayload.roundsUntilWin ? "Completed" : "Game over",
+				},
 			});
 		}
 
@@ -818,7 +831,7 @@ globalThis.wortsel = {
 	/* Test with:
 	wortsel.renderCommunityStats(
 	  { total: 100, counts: { "1":5,"2":10,"3":20,"4":25,"5":20,"6":10,"fail":10 } },
-	  { myResult: "3" }); 
+	  { myResult: "3" });
 	*/
 };
 
@@ -828,7 +841,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-09-11-v1"; // Increment this version to force browsers to fetch a new service-worker.js
+const serviceWorkerVersion = "2025-09-12-v1"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {

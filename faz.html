@@ -1,218 +1,255 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+		<meta name="theme-color" content="#212529" media="(prefers-color-scheme: dark)">
 
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-	<meta name="theme-color" content="#212529" media="(prefers-color-scheme: dark)">
+		<title>F.A.Z. Wörtchen</title>
 
-	<title>F.A.Z. Wörtchen</title>
+		<link rel="stylesheet" href="css/core.css">
+		<link rel="stylesheet" href="css/theme-faz.css">
+		<script
+			defer
+			src="https://cloud.umami.is/script.js"
+			data-website-id="2392a451-203c-4d8a-a4f5-bd7d06f832af"
+		></script>
+		<script>
+			globalThis.digitalData = {
+				site: {
+					digitalAsset: "faz.net",
+				},
+				page: {
+					name: "2.5304",
+					type: "artikel.text",
+					title: "Wörtchen",
+					ressort: "Spiele",
+					subressort1: "Wörtchen",
+					subressort2: "Wörtchen-Spiel",
+					seoTitle: "Wörtchen",
+					adBlockerEnabled: false,
+				},
+			};
+		</script>
+		<script
+			src="https://assets.adobedtm.com/101b76c36d9a/3e3b81cff9aa/launch-ae2dd1b4fde7.min.js"
+		></script>
+	</head>
 
-	<link rel="stylesheet" href="css/core.css">
-	<link rel="stylesheet" href="css/theme-faz.css">
-	<script defer src="https://cloud.umami.is/script.js"
-		data-website-id="2392a451-203c-4d8a-a4f5-bd7d06f832af"></script>
-</head>
-
-<body>
-	<header>
-		<div id="howToIcon"><img alt="Hilfe-Symbol" src="img/faz/Icon-Anleitung.svg">Anleitung</div>
-		<div id="settingsIcon" data-allow-during-game="true">Einstellungen<img alt="Einstellungen-Symbol" src="img/faz/Setting.svg"></div>
-	</header>
-	<main>
-		<div class="row">
-			<div class="letter active"></div>
-			<div class="letter"></div>
-			<div class="letter"></div>
-			<div class="letter"></div>
-			<div class="letter"></div>
-		</div>
-		<div class="row">
-			<div class="letter"></div>
-			<div class="letter"></div>
-			<div class="letter"></div>
-			<div class="letter"></div>
-			<div class="letter"></div>
-		</div>
-		<div class="row">
-			<div class="letter"></div>
-			<div class="letter"></div>
-			<div class="letter"></div>
-			<div class="letter"></div>
-			<div class="letter"></div>
-		</div>
-		<div class="row">
-			<div class="letter"></div>
-			<div class="letter"></div>
-			<div class="letter"></div>
-			<div class="letter"></div>
-			<div class="letter"></div>
-		</div>
-		<div class="row">
-			<div class="letter"></div>
-			<div class="letter"></div>
-			<div class="letter"></div>
-			<div class="letter"></div>
-			<div class="letter"></div>
-		</div>
-		<div class="row">
-			<div class="letter"></div>
-			<div class="letter"></div>
-			<div class="letter"></div>
-			<div class="letter"></div>
-			<div class="letter"></div>
-		</div>
-	</main>
-	<div class="backdrop hidden"></div>
-	<aside class="modal hidden"></aside>
-	<aside id="stats" class="hidden">
-		<h2>Spiel beendet</h2>
-		<p class="stats-meta" data-text="Das Lösungswort &quot;{{SOLUTION}}&quot; wurde {{TOTAL}}-mal gespielt. So schnitten Sie im Vergleich zu anderen F.A.Z.-Lesern ab:"></p>
-		<ul class="stats-list">
-			<li class="stats-row" data-key="1">
-				<div class="stats-label">1. Versuch</div>
-				<div class="stats-bar">
-					<div class="stats-fill"></div>
-				</div>
-				<div class="stats-count">0</div>
-			</li>
-			<li class="stats-row" data-key="2">
-				<div class="stats-label">2. Versuch</div>
-				<div class="stats-bar">
-					<div class="stats-fill"></div>
-				</div>
-				<div class="stats-count">0</div>
-			</li>
-			<li class="stats-row" data-key="3">
-				<div class="stats-label">3. Versuch</div>
-				<div class="stats-bar">
-					<div class="stats-fill"></div>
-				</div>
-				<div class="stats-count">0</div>
-			</li>
-			<li class="stats-row" data-key="4">
-				<div class="stats-label">4. Versuch</div>
-				<div class="stats-bar">
-					<div class="stats-fill"></div>
-				</div>
-				<div class="stats-count">0</div>
-			</li>
-			<li class="stats-row" data-key="5">
-				<div class="stats-label">5. Versuch</div>
-				<div class="stats-bar">
-					<div class="stats-fill"></div>
-				</div>
-				<div class="stats-count">0</div>
-			</li>
-			<li class="stats-row" data-key="6">
-				<div class="stats-label">6. Versuch</div>
-				<div class="stats-bar">
-					<div class="stats-fill"></div>
-				</div>
-				<div class="stats-count">0</div>
-			</li>
-			<li class="stats-row fail" data-key="fail">
-				<div class="stats-label">Verloren</div>
-				<div class="stats-bar">
-					<div class="stats-fill"></div>
-				</div>
-				<div class="stats-count">0</div>
-			</li>
-		</ul>
-		<div class="stats-actions">
-			<button id="shareChallengeButton" class="button" data-text="F.A.Z. Wörtchen: Kannst du mein Ergebnis bei diesem Wort übertreffen?"><img src="img/faz/Share.svg" alt="">Freunde
-				herausfordern</button>
-			<button class="button restart">Neues Spiel starten</button>
-		</div>
-		<div class="close"><img src="img/faz/close.svg" alt=""></div>
-	</aside>
-	<aside id="howTo" class="hidden">
-		<h2>Anleitung</h2>
-		<p>Erraten Sie das gesuchte Wort in 6 Versuchen.
-			Tippen Sie ein Wort mit 5 Buchstaben auf der virtuellen Tastatur ein und drücken dann "Eingabe".
-			Nach jedem Versuch werden die Buchstaben eingefärbt und zeigen Ihnen, wie nah Sie am Ergebnis sind.
-		</p>
-		<h3>Beispiele</h3>
-		<div class="row">
-			<div class="letter correct">e</div>
-			<div class="letter">s</div>
-			<div class="letter">s</div>
-			<div class="letter">i</div>
-			<div class="letter">g</div>
-		</div>
-		<p>Der Buchstabe "E" ist im Wort und an der richtigen Stelle.</p>
-		<div class="row">
-			<div class="letter">f</div>
-			<div class="letter present">u</div>
-			<div class="letter">c</div>
-			<div class="letter">h</div>
-			<div class="letter">s</div>
-		</div>
-		<p>Der Buchstabe "U" ist im Wort aber an einer anderen Stelle.</p>
-		<div class="row">
-			<div class="letter">w</div>
-			<div class="letter">ü</div>
-			<div class="letter">s</div>
-			<div class="letter absent">t</div>
-			<div class="letter">e</div>
-		</div>
-		<p>Der Buchstabe "T" ist nicht im Wort enthalten.</p>
-		<div class="close"><img src="img/faz/close.svg" alt=""></div>
-	</aside>
-	<aside id="settings" class="hidden">
-		<h2>Einstellungen</h2>
-		<label class="option">Erlaube nur zulässige Wörter
-			<input id="wholeWords" type="checkbox">
-			<span class="checkmark"></span>
-		</label>
-		<label class="option">Strenger Modus (fixe Treffer & gesperrte Buchstaben)
-			<input id="hardMode" type="checkbox">
-			<span class="checkmark"></span>
-		</label>
-		<button class="button restart">Neues Spiel</button>
-		<hr />
-		<p class="credit">Entwicklung/Umsetzung: Tino Sabetta</p>
-		<a href="https://www.threads.net/@tehes83">https://www.threads.net/@tehes83</a><br>
-		<a href="https://github.com/tehes">https://github.com/tehes</a>
-		<div class="close"><img src="img/faz/close.svg" alt=""></div>
-	</aside>
-	<section id="keyboard">
-		<div class="key">q</div>
-		<div class="key">w</div>
-		<div class="key">e</div>
-		<div class="key">r</div>
-		<div class="key">t</div>
-		<div class="key">z</div>
-		<div class="key">u</div>
-		<div class="key">i</div>
-		<div class="key">o</div>
-		<div class="key">p</div>
-		<div class="key">ü</div>
-		<div class="key">a</div>
-		<div class="key">s</div>
-		<div class="key">d</div>
-		<div class="key">f</div>
-		<div class="key">g</div>
-		<div class="key">h</div>
-		<div class="key">j</div>
-		<div class="key">k</div>
-		<div class="key">l</div>
-		<div class="key">ö</div>
-		<div class="key">ä</div>
-		<div class="key input">Zurück</div>
-		<div class="key">y</div>
-		<div class="key">x</div>
-		<div class="key">c</div>
-		<div class="key">v</div>
-		<div class="key">b</div>
-		<div class="key">n</div>
-		<div class="key">m</div>
-		<div class="key input">Eingabe</div>
-		<button id="restartButton" class="hidden">Neue Runde</button>
-	</section>
-
-	<script type="module" src="./js/app.js"></script>
-</body>
-
+	<body>
+		<header>
+			<div id="howToIcon">
+				<img alt="Hilfe-Symbol" src="img/faz/Icon-Anleitung.svg">Anleitung
+			</div>
+			<div id="settingsIcon" data-allow-during-game="true">
+				Einstellungen<img alt="Einstellungen-Symbol" src="img/faz/Setting.svg">
+			</div>
+		</header>
+		<main>
+			<div class="row">
+				<div class="letter active"></div>
+				<div class="letter"></div>
+				<div class="letter"></div>
+				<div class="letter"></div>
+				<div class="letter"></div>
+			</div>
+			<div class="row">
+				<div class="letter"></div>
+				<div class="letter"></div>
+				<div class="letter"></div>
+				<div class="letter"></div>
+				<div class="letter"></div>
+			</div>
+			<div class="row">
+				<div class="letter"></div>
+				<div class="letter"></div>
+				<div class="letter"></div>
+				<div class="letter"></div>
+				<div class="letter"></div>
+			</div>
+			<div class="row">
+				<div class="letter"></div>
+				<div class="letter"></div>
+				<div class="letter"></div>
+				<div class="letter"></div>
+				<div class="letter"></div>
+			</div>
+			<div class="row">
+				<div class="letter"></div>
+				<div class="letter"></div>
+				<div class="letter"></div>
+				<div class="letter"></div>
+				<div class="letter"></div>
+			</div>
+			<div class="row">
+				<div class="letter"></div>
+				<div class="letter"></div>
+				<div class="letter"></div>
+				<div class="letter"></div>
+				<div class="letter"></div>
+			</div>
+		</main>
+		<div class="backdrop hidden"></div>
+		<aside class="modal hidden"></aside>
+		<aside id="stats" class="hidden">
+			<h2>Spiel beendet</h2>
+			<p
+				class="stats-meta"
+				data-text="Das Lösungswort &quot;{{SOLUTION}}&quot; wurde {{TOTAL}}-mal gespielt. So schnitten Sie im Vergleich zu anderen F.A.Z.-Lesern ab:"
+			>
+			</p>
+			<ul class="stats-list">
+				<li class="stats-row" data-key="1">
+					<div class="stats-label">1. Versuch</div>
+					<div class="stats-bar">
+						<div class="stats-fill"></div>
+					</div>
+					<div class="stats-count">0</div>
+				</li>
+				<li class="stats-row" data-key="2">
+					<div class="stats-label">2. Versuch</div>
+					<div class="stats-bar">
+						<div class="stats-fill"></div>
+					</div>
+					<div class="stats-count">0</div>
+				</li>
+				<li class="stats-row" data-key="3">
+					<div class="stats-label">3. Versuch</div>
+					<div class="stats-bar">
+						<div class="stats-fill"></div>
+					</div>
+					<div class="stats-count">0</div>
+				</li>
+				<li class="stats-row" data-key="4">
+					<div class="stats-label">4. Versuch</div>
+					<div class="stats-bar">
+						<div class="stats-fill"></div>
+					</div>
+					<div class="stats-count">0</div>
+				</li>
+				<li class="stats-row" data-key="5">
+					<div class="stats-label">5. Versuch</div>
+					<div class="stats-bar">
+						<div class="stats-fill"></div>
+					</div>
+					<div class="stats-count">0</div>
+				</li>
+				<li class="stats-row" data-key="6">
+					<div class="stats-label">6. Versuch</div>
+					<div class="stats-bar">
+						<div class="stats-fill"></div>
+					</div>
+					<div class="stats-count">0</div>
+				</li>
+				<li class="stats-row fail" data-key="fail">
+					<div class="stats-label">Verloren</div>
+					<div class="stats-bar">
+						<div class="stats-fill"></div>
+					</div>
+					<div class="stats-count">0</div>
+				</li>
+			</ul>
+			<div class="stats-actions">
+				<button
+					id="shareChallengeButton"
+					class="button"
+					data-text="F.A.Z. Wörtchen: Kannst du mein Ergebnis bei diesem Wort übertreffen?"
+				>
+					<img src="img/faz/Share.svg" alt="">Freunde herausfordern
+				</button>
+				<button class="button restart">Neues Spiel starten</button>
+			</div>
+			<div class="close"><img src="img/faz/close.svg" alt=""></div>
+		</aside>
+		<aside id="howTo" class="hidden">
+			<h2>Anleitung</h2>
+			<p>
+				Erraten Sie das gesuchte Wort in 6 Versuchen. Tippen Sie ein Wort mit 5 Buchstaben
+				auf der virtuellen Tastatur ein und drücken dann "Eingabe". Nach jedem Versuch
+				werden die Buchstaben eingefärbt und zeigen Ihnen, wie nah Sie am Ergebnis sind.
+			</p>
+			<h3>Beispiele</h3>
+			<div class="row">
+				<div class="letter correct">e</div>
+				<div class="letter">s</div>
+				<div class="letter">s</div>
+				<div class="letter">i</div>
+				<div class="letter">g</div>
+			</div>
+			<p>Der Buchstabe "E" ist im Wort und an der richtigen Stelle.</p>
+			<div class="row">
+				<div class="letter">f</div>
+				<div class="letter present">u</div>
+				<div class="letter">c</div>
+				<div class="letter">h</div>
+				<div class="letter">s</div>
+			</div>
+			<p>Der Buchstabe "U" ist im Wort aber an einer anderen Stelle.</p>
+			<div class="row">
+				<div class="letter">w</div>
+				<div class="letter">ü</div>
+				<div class="letter">s</div>
+				<div class="letter absent">t</div>
+				<div class="letter">e</div>
+			</div>
+			<p>Der Buchstabe "T" ist nicht im Wort enthalten.</p>
+			<div class="close"><img src="img/faz/close.svg" alt=""></div>
+		</aside>
+		<aside id="settings" class="hidden">
+			<h2>Einstellungen</h2>
+			<label class="option">Erlaube nur zulässige Wörter
+				<input id="wholeWords" type="checkbox">
+				<span class="checkmark"></span>
+			</label>
+			<label class="option">Strenger Modus (fixe Treffer & gesperrte Buchstaben)
+				<input id="hardMode" type="checkbox">
+				<span class="checkmark"></span>
+			</label>
+			<button class="button restart">Neues Spiel</button>
+			<hr />
+			<p class="credit">Entwicklung/Umsetzung: Tino Sabetta</p>
+			<a href="https://www.threads.net/@tehes83">https://www.threads.net/@tehes83</a><br>
+			<a href="https://github.com/tehes">https://github.com/tehes</a>
+			<div class="close"><img src="img/faz/close.svg" alt=""></div>
+		</aside>
+		<section id="keyboard">
+			<div class="key">q</div>
+			<div class="key">w</div>
+			<div class="key">e</div>
+			<div class="key">r</div>
+			<div class="key">t</div>
+			<div class="key">z</div>
+			<div class="key">u</div>
+			<div class="key">i</div>
+			<div class="key">o</div>
+			<div class="key">p</div>
+			<div class="key">ü</div>
+			<div class="key">a</div>
+			<div class="key">s</div>
+			<div class="key">d</div>
+			<div class="key">f</div>
+			<div class="key">g</div>
+			<div class="key">h</div>
+			<div class="key">j</div>
+			<div class="key">k</div>
+			<div class="key">l</div>
+			<div class="key">ö</div>
+			<div class="key">ä</div>
+			<div class="key input">Zurück</div>
+			<div class="key">y</div>
+			<div class="key">x</div>
+			<div class="key">c</div>
+			<div class="key">v</div>
+			<div class="key">b</div>
+			<div class="key">n</div>
+			<div class="key">m</div>
+			<div class="key input">Eingabe</div>
+			<button id="restartButton" class="hidden">Neue Runde</button>
+		</section>
+		<script>
+			globalThis._satellite && _satellite.pageBottom();
+		</script>
+		<script type="module" src="./js/app.js"></script>
+	</body>
 </html>
