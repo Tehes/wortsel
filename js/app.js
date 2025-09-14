@@ -482,9 +482,10 @@ function checkEndCondition() {
 				ctEvent: {
 					name: "Spiele::Wörtchen::Ende",
 					position: "Spiele::Wörtchen",
-					subPosition: (viaChallenge ? "Shared::" : "") + (hardModeCheckbox.checked
-						? "Schwer"
-						: (wholeWordsCheckbox.checked ? "Standard" : "Leicht")),
+					subPosition: (viaChallenge ? "Shared::" : "") +
+						(hardModeCheckbox.checked
+							? "Schwer"
+							: (wholeWordsCheckbox.checked ? "Standard" : "Leicht")),
 					element: "End",
 					label: analyticsPayload.roundsUntilWin ? "Completed" : "Game over",
 				},
@@ -841,7 +842,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-09-12-v2"; // Increment this version to force browsers to fetch a new service-worker.js
+const serviceWorkerVersion = "2025-09-14-v1"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
