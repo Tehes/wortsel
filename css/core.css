@@ -22,8 +22,8 @@
     --key-width: 7.5%;
     --font-family: 'Work Sans', sans-serif;
     --root-font-size: clamp(15px, 1.2vw + 12px, 18px);
-    --scale-h2: calc(1rem * var(1.5));
-    --scale-h3: calc(1rem * var(1.25));
+    --scale-h2: 1.5rem;
+    --scale-h3: 1.25rem;
     --scale-credit: 0.9;
     --scale-modal: 1.1;
     --header-img-filter: none;
