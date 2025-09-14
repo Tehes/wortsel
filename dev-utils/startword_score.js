@@ -23,8 +23,7 @@ const score = (w) => {
 	const uniq = [...new Set(letters)];
 	const coverage = uniq.reduce((a, c) => a + (freq[c] || 0), 0);
 	const positional = letters.reduce((a, c, i) => a + (posFreq[i][c] || 0), 0);
-	const repeatPenalty = letters.length - uniq.length;
-	return coverage + 0.5 * positional - repeatPenalty;
+	return coverage + 0.5 * positional;
 };
 
 const rankedRaw = words
@@ -36,4 +35,4 @@ const ranked = rankedRaw.map(({ w, s }) => ({
 	w,
 	score: max ? +((s / max) * 100).toFixed(2) : 0,
 }));
-console.table(ranked.slice(0, 100).map(({ w, score }) => ({ w, score })));
+console.table(ranked.slice(0, 25).map(({ w, score }) => ({ w, score })));
