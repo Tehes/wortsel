@@ -20,8 +20,7 @@ for (const w of words) {
 
 const score = (w) => {
 	const letters = [...w.toLowerCase()];
-	const uniq = [...new Set(letters)];
-	const coverage = uniq.reduce((a, c) => a + (freq[c] || 0), 0);
+	const coverage = letters.reduce((a, c) => a + (freq[c] || 0), 0);
 	const positional = letters.reduce((a, c, i) => a + (posFreq[i][c] || 0), 0);
 	return coverage + 0.5 * positional;
 };
