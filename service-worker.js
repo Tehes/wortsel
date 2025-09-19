@@ -18,6 +18,11 @@ self.addEventListener("fetch", (event) => {
 	if (event.request.method !== "GET") return;
 	// Skip requests with unsupported schemes (e.g., chrome-extension://)
 	if (!event.request.url.startsWith("http")) return;
+	// Bypass SW cache for wortsel.tehes.deno.net
+	const url = new URL(event.request.url);
+	if (url.hostname === "wortsel.tehes.deno.net") {
+		return; // bypass SW cache, let network handle it
+	}
 
 	event.respondWith(
 		caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
