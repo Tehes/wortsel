@@ -26,6 +26,39 @@ const withCORS = (req, res) => {
 // Normalize to keep Ä/Ö/Ü stable and uppercase
 const norm = (s) => (s ?? "").toString().trim().toUpperCase().normalize("NFC");
 
+const CURATED_WORDS_URL = "https://tehes.github.io/wortsel/data/curated_words.json";
+let curatedWords = [];
+let curatedWordsError = null;
+const MAX_KV_BATCH_SIZE = 128;
+
+const totalFromValue = (value) => {
+	const total = value?.total;
+	return Number.isFinite(total) && total >= 0 ? total : 0;
+};
+
+try {
+	const response = await fetch(CURATED_WORDS_URL);
+	if (!response.ok) {
+		throw new Error(`Failed to fetch curated words: ${response.status} ${response.statusText}`);
+	}
+
+	const data = await response.json();
+	if (!Array.isArray(data)) {
+		throw new Error("Curated words payload must be an array");
+	}
+
+	const normalized = new Set();
+	for (const entry of data) {
+		const word = norm(entry);
+		if (word && word.length === 5) normalized.add(word);
+	}
+
+	curatedWords = [...normalized];
+} catch (error) {
+	curatedWordsError = error;
+	console.error("Unable to initialize curated words list", error);
+}
+
 const emptyDist = () => ({
 	total: 0,
 	counts: { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "fail": 0 },
@@ -33,6 +66,49 @@ const emptyDist = () => ({
 
 Deno.serve(async (req) => {
 	const url = new URL(req.url);
+
+	// GET /next: Get the next word to play (the one with the lowest total count)
+	if (url.pathname === "/next") {
+		if (req.method === "OPTIONS") return withCORS(req, new Response(null, { status: 204 }));
+		if (req.method !== "GET") return new Response("Method not allowed", { status: 405 });
+
+		if (curatedWordsError || curatedWords.length === 0) {
+			return withCORS(req, json({ error: "curated words unavailable" }, 503));
+		}
+
+		let minTotal = Infinity;
+		const candidates = [];
+
+		for (let start = 0; start < curatedWords.length; start += MAX_KV_BATCH_SIZE) {
+			const slice = curatedWords.slice(start, start + MAX_KV_BATCH_SIZE);
+			const keys = slice.map((word) => ["w", word]);
+			const entries = await kv.getMany(keys);
+
+			entries.forEach((entry, offset) => {
+				const idx = start + offset;
+				const total = totalFromValue(entry.value);
+
+				if (total < minTotal) {
+					minTotal = total;
+					candidates.length = 0;
+				}
+
+				if (total === minTotal) {
+					candidates.push({ idx, total });
+				}
+			});
+		}
+
+		if (candidates.length === 0) {
+			console.error("No candidates found for /next despite curated list");
+			return withCORS(req, json({ error: "no candidates" }, 500));
+		}
+
+		const pick = candidates[Math.floor(Math.random() * candidates.length)];
+		const word = curatedWords[pick.idx];
+		return withCORS(req, json({ idx: pick.idx, word, total: pick.total }));
+	}
+
 	if (url.pathname !== "/stats") return new Response("Not found", { status: 404 });
 	if (req.method === "OPTIONS") return withCORS(req, new Response(null, { status: 204 }));
 
@@ -95,11 +171,14 @@ Deno.serve(async (req) => {
 			for await (const entry of kv.list({ prefix: ["w"] })) {
 				entries.push({
 					key: entry.key,
-					value: entry.value
+					value: entry.value,
 				});
 			}
 			const meta = await kv.get(["meta", "lastUpdate"]);
-			return withCORS(req, json({ count: entries.length, lastUpdate: meta.value ?? null, entries }));
+			return withCORS(
+				req,
+				json({ count: entries.length, lastUpdate: meta.value ?? null, entries }),
+			);
 		}
 
 		// --- normal single retrieval: https://wortsel.tehes.deno.net/stats?solution=FASER
@@ -107,10 +186,13 @@ Deno.serve(async (req) => {
 		if (!SOL || SOL.length !== 5) return withCORS(req, json({ error: "bad solution" }, 400));
 		const r = await kv.get(["w", SOL]);
 		const meta = await kv.get(["meta", "lastUpdate"]);
-		return withCORS(req, json({
-			...(r.value ?? emptyDist()),
-			lastUpdate: meta.value ?? null
-		}));
+		return withCORS(
+			req,
+			json({
+				...(r.value ?? emptyDist()),
+				lastUpdate: meta.value ?? null,
+			}),
+		);
 	}
 
 	return new Response("Method not allowed", { status: 405 });
