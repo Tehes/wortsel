@@ -32,7 +32,7 @@ let curatedWordsError = null;
 
 async function ensureCuratedWords() {
 	// Load once per runtime; keep minimal and fast
-	if (curatedWords.length > 0 || curatedWordsError) return;
+	if (curatedWords.length > 0) return;
 	try {
 		const response = await fetch(CURATED_WORDS_URL);
 		if (!response.ok) {
@@ -103,15 +103,13 @@ Deno.serve(async (req) => {
 		}
 
 		if (candidates.length === 0) {
-			console.error("No candidates found for /next; falling back to random");
-			const idx = Math.floor(Math.random() * curatedWords.length);
-			const word = curatedWords[idx];
-			return withCORS(req, json({ idx, word, total: 0 }));
+			console.error("No candidates found for /next");
+			return withCORS(req, new Response(null, { status: 204 }));
 		}
 
 		const pick = candidates[Math.floor(Math.random() * candidates.length)];
 		const word = curatedWords[pick.idx];
-		return withCORS(req, json({ idx: pick.idx, word, total: pick.total }));
+		return withCORS(req, json({ word, total: pick.total, candidates: candidates.length }));
 	}
 
 	if (url.pathname !== "/stats") return new Response("Not found", { status: 404 });
