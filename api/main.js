@@ -29,7 +29,7 @@ const norm = (s) => (s ?? "").toString().trim().toUpperCase().normalize("NFC");
 const CURATED_WORDS_URL = "https://tehes.github.io/wortsel/data/curated_words.json";
 let curatedWords = [];
 let curatedWordsError = null;
-const MAX_KV_BATCH_SIZE = 128;
+const MAX_KV_BATCH_SIZE = 10;
 
 const totalFromValue = (value) => {
 	const total = value?.total;
