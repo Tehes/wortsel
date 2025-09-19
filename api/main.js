@@ -29,6 +29,12 @@ const norm = (s) => (s ?? "").toString().trim().toUpperCase().normalize("NFC");
 const CURATED_WORDS_URL = "https://tehes.github.io/wortsel/data/curated_words.json";
 let curatedWords = [];
 let curatedWordsError = null;
+const MAX_KV_BATCH_SIZE = 128;
+
+const totalFromValue = (value) => {
+        const total = value?.total;
+        return Number.isFinite(total) && total >= 0 ? total : 0;
+};
 
 try {
         const response = await fetch(CURATED_WORDS_URL);
@@ -70,17 +76,48 @@ Deno.serve(async (req) => {
                 }
 
                 const idxParam = url.searchParams.get("idx");
-                let idx;
                 if (idxParam !== null) {
-                        idx = Number.parseInt(idxParam, 10);
+                        const idx = Number.parseInt(idxParam, 10);
                         if (!Number.isInteger(idx) || idx < 0 || idx >= curatedWords.length) {
                                 return withCORS(req, json({ error: "bad idx" }, 400));
                         }
-                } else {
-                        idx = Math.floor(Math.random() * curatedWords.length);
+
+                        const entry = await kv.get(["w", curatedWords[idx]]);
+                        const total = totalFromValue(entry.value);
+                        return withCORS(req, json({ idx, word: curatedWords[idx], total }));
                 }
 
-                return withCORS(req, json({ idx, word: curatedWords[idx] }));
+                let minTotal = Infinity;
+                const candidates = [];
+
+                for (let start = 0; start < curatedWords.length; start += MAX_KV_BATCH_SIZE) {
+                        const slice = curatedWords.slice(start, start + MAX_KV_BATCH_SIZE);
+                        const keys = slice.map((word) => ["w", word]);
+                        const entries = await kv.getMany(keys);
+
+                        entries.forEach((entry, offset) => {
+                                const idx = start + offset;
+                                const total = totalFromValue(entry.value);
+
+                                if (total < minTotal) {
+                                        minTotal = total;
+                                        candidates.length = 0;
+                                }
+
+                                if (total === minTotal) {
+                                        candidates.push({ idx, total });
+                                }
+                        });
+                }
+
+                if (candidates.length === 0) {
+                        console.error("No candidates found for /next despite curated list");
+                        return withCORS(req, json({ error: "no candidates" }, 500));
+                }
+
+                const pick = candidates[Math.floor(Math.random() * candidates.length)];
+                const word = curatedWords[pick.idx];
+                return withCORS(req, json({ idx: pick.idx, word, total: pick.total }));
         }
 
         if (url.pathname !== "/stats") return new Response("Not found", { status: 404 });
