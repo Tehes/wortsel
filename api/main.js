@@ -2,7 +2,10 @@
 const kv = await Deno.openKv();
 
 const json = (obj, status = 200) =>
-	new Response(JSON.stringify(obj), { status, headers: { "Content-Type": "application/json" } });
+	new Response(JSON.stringify(obj), {
+		status,
+		headers: { "Content-Type": "application/json; charset=utf-8" },
+	});
 
 const ALLOW_ORIGINS = new Set([
 	"https://tehes.github.io", // production (GitHub Pages)
