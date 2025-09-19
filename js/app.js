@@ -89,7 +89,9 @@ if (tokenParam) {
 
 // Least‑played solution (Deno Deploy)
 const NEXT_ENDPOINT = "https://wortsel.tehes.deno.net/next";
-let solutionFinalized = false; // lock solution once user submits a guess
+
+// Controller for current /next request so we can cancel it on reset
+let nextFetchController = null;
 
 // Hard mode state
 let lockedLetters = [null, null, null, null, null]; // fixed, correct letters carried over
@@ -115,12 +117,13 @@ function getRandomInteger(min, max) {
  * Tries to replace the fallback-random solution with a least‑played pick from the server.
  * Non-blocking: safe to call and ignore failures/timeouts. Only updates if not finalized.
  */
-async function fetchLeastPlayedSolution({ timeoutMs = 3000 } = {}) {
+async function fetchLeastPlayedSolution() {
 	if (viaChallenge) return; // keep challenge solution
 	if (typeof navigator !== "undefined" && navigator.onLine === false) return; // offline
 
+	// Create a controller and expose it globally so resetGame() can abort in-flight requests
 	const ac = new AbortController();
-	const to = setTimeout(() => ac.abort("timeout"), timeoutMs);
+	nextFetchController = ac;
 	try {
 		const res = await fetch(NEXT_ENDPOINT, { method: "GET", mode: "cors", signal: ac.signal });
 		// 204 No Content → server had no candidate; keep fallback
@@ -129,17 +132,18 @@ async function fetchLeastPlayedSolution({ timeoutMs = 3000 } = {}) {
 		const data = await res.json(); // { word, total, candidates }
 		const w = (data && typeof data.word === "string") ? data.word.toLowerCase() : null;
 		if (!w) return;
-		// Only swap if user hasn't submitted a guess yet; otherwise log why we didn't replace
-		if (!solutionFinalized) {
-			solution = w;
+		// Replace fallback with server-provided solution (submit will abort in-flight requests)
+		solution = w;
+	} catch (e) {
+		if (e?.name === "AbortError") {
+			console.log("[Next] Solution fetch aborted (reset)");
 		} else {
-			console.log("[Next] Solution NOT replaced (already finalized)");
+			console.log("[Next] Solution fetch failed");
 		}
-	} catch (_) {
-		console.log("[Next] Solution fetch timed out or failed");
 		// ignore; keep fallback
 	} finally {
-		clearTimeout(to);
+		// Clear only if this call is still the active one
+		if (nextFetchController === ac) nextFetchController = null;
 	}
 }
 
@@ -281,7 +285,10 @@ function typeKey(event) {
 					illegalWord: letters.map((l) => l.textContent).join(""),
 				});
 			} else {
-				solutionFinalized = true;
+				if (nextFetchController) {
+					nextFetchController.abort();
+					nextFetchController = null;
+				}
 				colorizeRow(letters);
 				colorizeKeyboard(letters);
 				checkEndCondition();
@@ -637,12 +644,15 @@ function resetGame() {
 
 	solution = curatedWords[getRandomInteger(0, curatedWords.length - 1)]
 		.toLowerCase();
-	solutionFinalized = false;
 	viaChallenge = false;
 	activeRow = 0;
 	letterIndex = 0;
 	updateActiveLetter();
 	addInputListeners();
+	if (nextFetchController) {
+		nextFetchController.abort();
+		nextFetchController = null;
+	}
 	fetchLeastPlayedSolution();
 	showModal("Neue Runde, neues Glück", 1000);
 }
