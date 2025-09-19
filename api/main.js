@@ -76,32 +76,33 @@ Deno.serve(async (req) => {
 			return withCORS(req, json({ error: "curated words unavailable" }, 503));
 		}
 
+		// Build a totals map by streaming existing keys once
+		const totals = new Map();
+		for await (const entry of kv.list({ prefix: ["w"] })) {
+			const w = String(entry.key?.[1] ?? "");
+			if (w) totals.set(w, totalFromValue(entry.value));
+		}
+
+		// Determine least-played among all curated words (missing ⇒ 0)
 		let minTotal = Infinity;
 		const candidates = [];
-
-		for (let start = 0; start < curatedWords.length; start += MAX_KV_BATCH_SIZE) {
-			const slice = curatedWords.slice(start, start + MAX_KV_BATCH_SIZE);
-			const keys = slice.map((word) => ["w", word]);
-			const entries = await kv.getMany(keys);
-
-			entries.forEach((entry, offset) => {
-				const idx = start + offset;
-				const total = totalFromValue(entry.value);
-
-				if (total < minTotal) {
-					minTotal = total;
-					candidates.length = 0;
-				}
-
-				if (total === minTotal) {
-					candidates.push({ idx, total });
-				}
-			});
+		for (let i = 0; i < curatedWords.length; i++) {
+			const w = curatedWords[i];
+			const t = totals.get(w) ?? 0;
+			if (t < minTotal) {
+				minTotal = t;
+				candidates.length = 0;
+				candidates.push({ idx: i, total: t });
+			} else if (t === minTotal) {
+				candidates.push({ idx: i, total: t });
+			}
 		}
 
 		if (candidates.length === 0) {
-			console.error("No candidates found for /next despite curated list");
-			return withCORS(req, json({ error: "no candidates" }, 500));
+			console.error("No candidates found for /next; falling back to random");
+			const idx = Math.floor(Math.random() * curatedWords.length);
+			const word = curatedWords[idx];
+			return withCORS(req, json({ idx, word, total: 0 }));
 		}
 
 		const pick = candidates[Math.floor(Math.random() * candidates.length)];
