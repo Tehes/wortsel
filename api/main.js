@@ -2,7 +2,7 @@
 const kv = await Deno.openKv();
 
 const json = (obj, status = 200) =>
-	new Response(JSON.stringify(obj), { status, headers: { "Content-Type": "application/json" } });
+        new Response(JSON.stringify(obj), { status, headers: { "Content-Type": "application/json" } });
 
 const ALLOW_ORIGINS = new Set([
 	"https://tehes.github.io", // production (GitHub Pages)
@@ -13,33 +13,83 @@ const ALLOW_ORIGINS = new Set([
 ]);
 
 const withCORS = (req, res) => {
-	const origin = req.headers.get("origin") || "";
-	const allow = ALLOW_ORIGINS.has(origin) ? origin : "https://tehes.github.io";
-	const h = new Headers(res.headers);
-	h.set("Access-Control-Allow-Origin", allow);
-	h.set("Vary", "Origin");
-	h.set("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-	h.set("Access-Control-Allow-Headers", "Content-Type");
-	return new Response(res.body, { status: res.status, headers: h });
+        const origin = req.headers.get("origin") || "";
+        const allow = ALLOW_ORIGINS.has(origin) ? origin : "https://tehes.github.io";
+        const h = new Headers(res.headers);
+        h.set("Access-Control-Allow-Origin", allow);
+        h.set("Vary", "Origin");
+        h.set("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+        h.set("Access-Control-Allow-Headers", "Content-Type");
+        return new Response(res.body, { status: res.status, headers: h });
 };
 
 // Normalize to keep Ä/Ö/Ü stable and uppercase
 const norm = (s) => (s ?? "").toString().trim().toUpperCase().normalize("NFC");
 
+const CURATED_WORDS_URL = "https://tehes.github.io/wortsel/data/curated_words.json";
+let curatedWords = [];
+let curatedWordsError = null;
+
+try {
+        const response = await fetch(CURATED_WORDS_URL);
+        if (!response.ok) {
+                throw new Error(`Failed to fetch curated words: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        if (!Array.isArray(data)) {
+                throw new Error("Curated words payload must be an array");
+        }
+
+        const normalized = new Set();
+        for (const entry of data) {
+                const word = norm(entry);
+                if (word && word.length === 5) normalized.add(word);
+        }
+
+        curatedWords = [...normalized];
+} catch (error) {
+        curatedWordsError = error;
+        console.error("Unable to initialize curated words list", error);
+}
+
 const emptyDist = () => ({
-	total: 0,
-	counts: { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "fail": 0 },
+        total: 0,
+        counts: { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "fail": 0 },
 });
 
 Deno.serve(async (req) => {
-	const url = new URL(req.url);
-	if (url.pathname !== "/stats") return new Response("Not found", { status: 404 });
-	if (req.method === "OPTIONS") return withCORS(req, new Response(null, { status: 204 }));
+        const url = new URL(req.url);
 
-	if (req.method === "POST") {
-		const { solution, attempts } = await req.json().catch(() => ({}));
-		const SOL = norm(solution);
-		if (!SOL || SOL.length !== 5) return withCORS(req, json({ error: "bad solution" }, 400));
+        if (url.pathname === "/next") {
+                if (req.method === "OPTIONS") return withCORS(req, new Response(null, { status: 204 }));
+                if (req.method !== "GET") return new Response("Method not allowed", { status: 405 });
+
+                if (curatedWordsError || curatedWords.length === 0) {
+                        return withCORS(req, json({ error: "curated words unavailable" }, 503));
+                }
+
+                const idxParam = url.searchParams.get("idx");
+                let idx;
+                if (idxParam !== null) {
+                        idx = Number.parseInt(idxParam, 10);
+                        if (!Number.isInteger(idx) || idx < 0 || idx >= curatedWords.length) {
+                                return withCORS(req, json({ error: "bad idx" }, 400));
+                        }
+                } else {
+                        idx = Math.floor(Math.random() * curatedWords.length);
+                }
+
+                return withCORS(req, json({ idx, word: curatedWords[idx] }));
+        }
+
+        if (url.pathname !== "/stats") return new Response("Not found", { status: 404 });
+        if (req.method === "OPTIONS") return withCORS(req, new Response(null, { status: 204 }));
+
+        if (req.method === "POST") {
+                const { solution, attempts } = await req.json().catch(() => ({}));
+                const SOL = norm(solution);
+                if (!SOL || SOL.length !== 5) return withCORS(req, json({ error: "bad solution" }, 400));
 
 		const bucket = ["1", "2", "3", "4", "5", "6"].includes(String(attempts))
 			? String(attempts)
