@@ -87,6 +87,10 @@ if (tokenParam) {
 	}
 }
 
+// Least‑played solution (Deno Deploy)
+const NEXT_ENDPOINT = "https://wortsel.tehes.deno.net/next";
+let solutionFinalized = false; // lock solution once user submits a guess
+
 // Hard mode state
 let lockedLetters = [null, null, null, null, null]; // fixed, correct letters carried over
 // In hard mode, prevent reusing yellow letters at the same position
@@ -105,6 +109,38 @@ let isGameOver = false;
  */
 function getRandomInteger(min, max) {
 	return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+/**
+ * Tries to replace the fallback-random solution with a least‑played pick from the server.
+ * Non-blocking: safe to call and ignore failures/timeouts. Only updates if not finalized.
+ */
+async function fetchLeastPlayedSolution({ timeoutMs = 3000 } = {}) {
+	if (viaChallenge) return; // keep challenge solution
+	if (typeof navigator !== "undefined" && navigator.onLine === false) return; // offline
+
+	const ac = new AbortController();
+	const to = setTimeout(() => ac.abort("timeout"), timeoutMs);
+	try {
+		const res = await fetch(NEXT_ENDPOINT, { method: "GET", mode: "cors", signal: ac.signal });
+		// 204 No Content → server had no candidate; keep fallback
+		if (res.status === 204) return;
+		if (!res.ok) return;
+		const data = await res.json(); // { word, total, candidates }
+		const w = (data && typeof data.word === "string") ? data.word.toLowerCase() : null;
+		if (!w) return;
+		// Only swap if user hasn't submitted a guess yet; otherwise log why we didn't replace
+		if (!solutionFinalized) {
+			solution = w;
+		} else {
+			console.log("[Next] Solution NOT replaced (already finalized)");
+		}
+	} catch (_) {
+		console.log("[Next] Solution fetch timed out or failed");
+		// ignore; keep fallback
+	} finally {
+		clearTimeout(to);
+	}
 }
 
 /**
@@ -245,6 +281,7 @@ function typeKey(event) {
 					illegalWord: letters.map((l) => l.textContent).join(""),
 				});
 			} else {
+				solutionFinalized = true;
 				colorizeRow(letters);
 				colorizeKeyboard(letters);
 				checkEndCondition();
@@ -600,10 +637,13 @@ function resetGame() {
 
 	solution = curatedWords[getRandomInteger(0, curatedWords.length - 1)]
 		.toLowerCase();
+	solutionFinalized = false;
+	viaChallenge = false;
 	activeRow = 0;
 	letterIndex = 0;
 	updateActiveLetter();
 	addInputListeners();
+	fetchLeastPlayedSolution();
 	showModal("Neue Runde, neues Glück", 1000);
 }
 
@@ -817,6 +857,8 @@ function initGame() {
 		}
 	});
 
+	fetchLeastPlayedSolution();
+
 	console.log(`curated words: ${curatedWords.length}`);
 	console.log(`additional words: ${additionalWords.length}`);
 	console.log(`altogether: ${wordList.length}`);
@@ -842,7 +884,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-09-19-v1"; // Increment this version to force browsers to fetch a new service-worker.js
+const serviceWorkerVersion = "2025-09-19-v3"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
