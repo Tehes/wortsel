@@ -9,11 +9,16 @@ const json = (obj, status = 200) =>
 
 const ALLOW_ORIGINS = new Set([
 	"https://tehes.github.io", // production (GitHub Pages)
-	"http://127.0.0.1:5500", // local live server
+	//"http://127.0.0.1:5500", // local dev (uncomment if needed)
 	"https://faz-sta.fastconnect.ai", // FAZ DEV
 	"https://www.testfaz.net", // FAZ TEST
 	"https://www.faz.net", // FAZ PROD
 ]);
+
+const isAllowedOrigin = (req) => {
+	const origin = req.headers.get("origin");
+	return origin ? ALLOW_ORIGINS.has(origin) : false;
+};
 
 const withCORS = (req, res) => {
 	const origin = req.headers.get("origin") || "";
@@ -119,6 +124,17 @@ Deno.serve(async (req) => {
 	if (req.method === "OPTIONS") return withCORS(req, new Response(null, { status: 204 }));
 
 	if (req.method === "POST") {
+		// --- security: only accept writes from allowed frontends
+		if (!isAllowedOrigin(req)) {
+			return withCORS(req, json({ error: "origin not allowed" }, 403));
+		}
+
+		// --- enforce JSON to avoid simple cross-site form posts
+		const ct = (req.headers.get("content-type") || "").toLowerCase();
+		if (!ct.startsWith("application/json")) {
+			return withCORS(req, json({ error: "content-type must be application/json" }, 415));
+		}
+
 		const { solution, attempts } = await req.json().catch(() => ({}));
 		const SOL = norm(solution);
 		if (!SOL || SOL.length !== 5) return withCORS(req, json({ error: "bad solution" }, 400));
