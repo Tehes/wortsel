@@ -34,34 +34,24 @@ const withCORS = (req, res) => {
 // Normalize to keep Ä/Ö/Ü stable and uppercase
 const norm = (s) => (s ?? "").toString().trim().toUpperCase().normalize("NFC");
 
-const CURATED_WORDS_URL = "https://tehes.github.io/wortsel/data/curated_words.json";
 let curatedWords = [];
 let curatedWordsError = null;
-
-async function ensureCuratedWords() {
-	// Load once per runtime; keep minimal and fast
-	if (curatedWords.length > 0) return;
-	try {
-		const response = await fetch(CURATED_WORDS_URL);
-		if (!response.ok) {
-			throw new Error(
-				`Failed to fetch curated words: ${response.status} ${response.statusText}`,
-			);
+try {
+	const { default: curatedRaw } = await import(
+		"https://tehes.github.io/wortsel/data/curated_words.json",
+		{
+			with: { type: "json" },
 		}
-		const data = await response.json();
-		if (!Array.isArray(data)) {
-			throw new Error("Curated words payload must be an array");
-		}
-		const normalized = new Set();
-		for (const entry of data) {
-			const word = norm(entry);
-			if (word && word.length === 5) normalized.add(word);
-		}
-		curatedWords = [...normalized];
-	} catch (error) {
-		curatedWordsError = error;
-		console.error("Unable to initialize curated words list", error);
+	);
+	const normalized = new Set();
+	for (const entry of curatedRaw) {
+		const word = norm(entry);
+		if (word && word.length === 5) normalized.add(word);
 	}
+	curatedWords = [...normalized];
+} catch (e) {
+	curatedWordsError = e;
+	console.error("Unable to import curated words list", e);
 }
 
 const totalFromValue = (value) => {
@@ -81,8 +71,6 @@ Deno.serve(async (req) => {
 	if (url.pathname === "/next") {
 		if (req.method === "OPTIONS") return withCORS(req, new Response(null, { status: 204 }));
 		if (req.method !== "GET") return new Response("Method not allowed", { status: 405 });
-
-		await ensureCuratedWords();
 
 		if (curatedWordsError || curatedWords.length === 0) {
 			return withCORS(req, json({ error: "curated words unavailable" }, 503));
