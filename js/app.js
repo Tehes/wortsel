@@ -1,9 +1,12 @@
 /* --------------------------------------------------------------------------------------------------
- * Variables
+ * Imports & data sources
  ---------------------------------------------------------------------------------------------------*/
 import additionalWords from "../data/additional_words.json" with { type: "json" };
 import curatedWords from "../data/curated_words.json" with { type: "json" };
 
+/* --------------------------------------------------------------------------------------------------
+ * DOM references
+ ---------------------------------------------------------------------------------------------------*/
 const gameBoardEl = document.querySelector("main");
 const keyboardElement = document.querySelector("#keyboard");
 const restartButtons = document.querySelectorAll(".restart");
@@ -20,6 +23,9 @@ const backdrop = document.querySelector(".backdrop");
 const closeIcons = document.querySelectorAll(".close");
 const wholeWordsCheckbox = document.querySelector("#wholeWords");
 
+/* --------------------------------------------------------------------------------------------------
+ * Settings
+ ---------------------------------------------------------------------------------------------------*/
 const hardModeCheckbox = document.querySelector("#hardMode");
 
 wholeWordsCheckbox.checked = JSON.parse(
@@ -30,23 +36,37 @@ hardModeCheckbox.checked = JSON.parse(
 	localStorage.getItem("wortsel_hardMode") || "false",
 );
 
+/* --------------------------------------------------------------------------------------------------
+ * Game state (runtime)
+ ---------------------------------------------------------------------------------------------------*/
 let activeRow = 0;
 let letterIndex = 0;
 const firstVisit = JSON.parse(
 	localStorage.getItem("wortsel_firstVisit") || "true",
 );
+let isGameOver = false; // blocks input
 
+let lockedLetters = [null, null, null, null, null]; // fixed, correct letters carried over
+// In hard mode, prevent reusing yellow letters at the same position
+// Key: position index (0..4), Value: Set of letters banned at that position
+let yellowBans = new Map();
+
+/* --------------------------------------------------------------------------------------------------
+ * Dictionary and solution selection
+ ---------------------------------------------------------------------------------------------------*/
 const wordList = [...curatedWords, ...additionalWords];
 const wordSet = new Set(wordList.map((w) => w.toLowerCase()));
 let solution = curatedWords[getRandomInteger(0, curatedWords.length - 1)]
 	.toLowerCase();
 
-/* Allow overriding the solution via a URL parameter (?t=<token>) */
+/* --------------------------------------------------------------------------------------------------
+ * Challenge token from URL (if any)
+ ---------------------------------------------------------------------------------------------------*/
 const currentUrl = new URL(globalThis.location?.href);
 const tokenParam = currentUrl.searchParams.get("t");
 let viaChallenge = false;
 
-/* --- Base32 token encoding with offset ----------------------------------- */
+// (helper) Base32 token encoding with offset
 const B32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 const MAP32 = Object.fromEntries([...B32].map((c, i) => [c, i]));
 const TOKEN_OFFSET = 10000;
@@ -87,28 +107,18 @@ if (tokenParam) {
 	}
 }
 
-// Least‑played solution (Deno Deploy)
+/* --------------------------------------------------------------------------------------------------
+ * Remote least-played endpoint
+ ---------------------------------------------------------------------------------------------------*/
 const NEXT_ENDPOINT = "https://wortsel.tehes.deno.net/next";
 
 // Controller for current /next request so we can cancel it on reset
 let nextFetchController = null;
 
-// Hard mode state
-let lockedLetters = [null, null, null, null, null]; // fixed, correct letters carried over
-// In hard mode, prevent reusing yellow letters at the same position
-// Key: position index (0..4), Value: Set of letters banned at that position
-let yellowBans = new Map();
-
-// Game state: block all input when true
-let isGameOver = false;
-
 /* --------------------------------------------------------------------------------------------------
- * Functions
+ * Functions (utilities and game logic)
  ---------------------------------------------------------------------------------------------------*/
 
-/**
- * Returns a random integer between min and max (inclusive).
- */
 function getRandomInteger(min, max) {
 	return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -147,9 +157,6 @@ async function fetchLeastPlayedSolution() {
 	}
 }
 
-/**
- * Sets the current letter index based on the clicked element.
- */
 function setLetterIndex(event) {
 	if (isGameOver) return;
 	if (event.target.parentElement === rowElements[activeRow]) {
@@ -177,9 +184,6 @@ function setLetterIndex(event) {
 	}
 }
 
-/**
- * Highlights the active letter in the current row.
- */
 function updateActiveLetter() {
 	const letters = Array.from(
 		rowElements[activeRow].querySelectorAll(".letter"),
@@ -208,7 +212,7 @@ function typeKey(event) {
 	const letters = [...rowElements[activeRow].querySelectorAll(".letter")];
 	const i = letterIndex;
 
-	// Move cursor left (skip locked cells in hard mode)
+	// caret left (skip locked in hard mode)
 	if (pressedKey === "arrowleft") {
 		if (letterIndex > 0) {
 			let j = letterIndex - 1;
@@ -222,7 +226,7 @@ function typeKey(event) {
 		}
 		return;
 	}
-	// Move cursor right (skip locked cells in hard mode)
+	// caret right (skip locked in hard mode)
 	if (pressedKey === "arrowright") {
 		if (letterIndex < letters.length - 1) {
 			let j = letterIndex + 1;
@@ -275,7 +279,7 @@ function typeKey(event) {
 		}
 		return;
 	}
-	// Submit the word
+	// Submit current row
 	if (pressedKey === "enter" || pressedKey === "eingabe") {
 		if (letters.every((l) => l.textContent !== "")) {
 			if (!inDatabase(letters) && wholeWordsCheckbox.checked) {
@@ -298,7 +302,7 @@ function typeKey(event) {
 		}
 		return;
 	}
-	// Type a letter
+	// Type a single character
 	if (i < letters.length && pressedKey.length === 1) {
 		// In hard mode: block locked positions and yellow-banned (pos, char)
 		if (hardModeCheckbox.checked) {
@@ -322,9 +326,6 @@ function typeKey(event) {
 	}
 }
 
-/**
- * Adds visual feedback on on-screen keys when physical keys are pressed.
- */
 function handleVirtualKeyFeedback(event) {
 	if (isGameOver) return;
 	let key = event.key.toLowerCase();
@@ -346,17 +347,11 @@ function handleVirtualKeyFeedback(event) {
 	}
 }
 
-/**
- * Checks if the entered word is in the database.
- */
 function inDatabase(letters) {
 	const entered = letters.map((l) => l.textContent).join("").toLowerCase();
 	return wordSet.has(entered);
 }
 
-/**
- * Colors each letter cell based on its relation to the solution.
- */
 function colorizeRow(letters) {
 	const tempSolution = solution.split("");
 
@@ -411,9 +406,6 @@ function colorizeRow(letters) {
 	}
 }
 
-/**
- * Applies color states (correct/present/absent) to the on-screen keys.
- */
 function colorizeKeyboard(letters) {
 	const keys = document.querySelectorAll(".key");
 	const arrKeys = [...keys].map((key) => key.textContent.trim().toLowerCase());
@@ -448,9 +440,6 @@ function colorizeKeyboard(letters) {
 	});
 }
 
-/**
- * Applies hard mode locked letters and disables to the given row element.
- */
 function applyHardModeStateToRow(rowEl) {
 	const cells = [...rowEl.querySelectorAll(".letter")];
 	cells.forEach((cell, i) => {
@@ -467,9 +456,6 @@ function applyHardModeStateToRow(rowEl) {
 	letterIndex = firstEditable >= 0 ? firstEditable : 0;
 }
 
-/**
- * Checks if the user has won or lost after a guess.
- */
 function checkEndCondition() {
 	const correctLetters = rowElements[activeRow].querySelectorAll(".correct");
 	const winText = [
@@ -543,9 +529,6 @@ function checkEndCondition() {
 	}
 }
 
-/**
- * Displays a message in the modal for a set duration (ms).
- */
 function showModal(text, duration) {
 	modalElement.textContent = text;
 	modalElement.classList.remove("hidden");
@@ -557,9 +540,6 @@ function showModal(text, duration) {
 	}
 }
 
-/**
- * Toggles visibility of a given window (e.g. settings or how-to).
- */
 function toggleWindow(element) {
 	const correctLetters = rowElements[activeRow].querySelectorAll(".correct");
 	if (
@@ -576,46 +556,28 @@ function toggleWindow(element) {
 	}
 }
 
-/**
- * Adds a jump animation for the winning row.
- */
 function playWinAnimation(letters) {
 	letters.forEach((letter) => letter.classList.add("jump"));
 }
 
-/**
- * Adds a shake animation if the word is invalid or not found.
- */
 function playErrorAnimation() {
 	rowElements[activeRow].classList.add("shake");
 }
 
-/**
- * Removes jump/shake classes at the end of the animation.
- */
 function stopAnyAnimation(event) {
 	event.target.classList.remove("jump");
 	event.target.classList.remove("shake");
 }
 
-/**
- * Shows the solution (for debugging or cheat).
- */
 function solve() {
 	showModal(`Die Lösung lautet '${solution.toUpperCase()}'.`, 2000);
 }
 
-/**
- * Saves settings to localStorage when the window is unloaded.
- */
 function saveSettings() {
 	localStorage.setItem("wortsel_wholeWords", JSON.stringify(wholeWordsCheckbox.checked));
 	localStorage.setItem("wortsel_hardMode", JSON.stringify(hardModeCheckbox.checked));
 }
 
-/**
- * Resets the game board for a new round.
- */
 function resetGame() {
 	isGameOver = false;
 	removeInputListeners();
@@ -660,7 +622,7 @@ function resetGame() {
 // Manage keyboard input listeners (to disable input after game end)
 let inputController;
 function addInputListeners() {
-	// Avoid duplicates
+	// prevent duplicate listeners
 	if (inputController) return;
 	inputController = new AbortController();
 	const { signal } = inputController;
@@ -671,7 +633,7 @@ function addInputListeners() {
 	gameBoardEl.addEventListener("click", setLetterIndex, { signal });
 }
 function removeInputListeners() {
-	// Abort (modern browsers, including iOS Safari)
+	// remove listeners
 	inputController?.abort();
 	inputController = null;
 }
@@ -684,7 +646,52 @@ function getTextTemplate(element, replacements = {}) {
 	);
 }
 
-// --- Community stats (UI renderer) -----------------------------------------
+/* --------------------------------------------------------------------------------------------------
+ * Community stats (UI + POST)
+ ---------------------------------------------------------------------------------------------------*/
+
+// Normalizes a word for consistent server communication.
+function normalizeWord(s) {
+	return (s ?? "").toString().trim().toUpperCase().normalize("NFC");
+}
+
+// Posts the result to the community stats endpoint and renders the returned stats.
+async function postCommunityStats({ solution, attempts }) {
+	try {
+		const SOL = normalizeWord(solution);
+		const endpoint = "https://wortsel.tehes.deno.net/stats";
+
+		const res = await fetch(endpoint, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				solution: SOL,
+				attempts: (attempts >= 1 && attempts <= 6) ? attempts : "fail",
+			}),
+			mode: "cors",
+			keepalive: true,
+		});
+
+		if (!res.ok) {
+			console.warn("Community stats request failed:", res.status);
+			return;
+		}
+
+		const response = await res.json(); // { ok: true, stats: {...} }
+
+		if (response.stats && typeof renderCommunityStats === "function") {
+			renderCommunityStats(response.stats, {
+				myResult: (attempts >= 1 && attempts <= 6) ? String(attempts) : "fail",
+			});
+		} else {
+			console.log("Community stats:", response.stats);
+		}
+	} catch (e) {
+		console.warn("community stats failed", e);
+	}
+}
+
+// Renders the community stats in the stats section.
 function renderCommunityStats(dist, { myResult } = {}) {
 	const meta = statsSection.querySelector(".stats-meta");
 	const list = statsSection.querySelector(".stats-list");
@@ -725,49 +732,11 @@ function renderCommunityStats(dist, { myResult } = {}) {
 	});
 }
 
-// --- Community stats (Deno Deploy) -----------------------------------------
-// Normalize to match server (uppercase + NFC)
-function normalizeWord(s) {
-	return (s ?? "").toString().trim().toUpperCase().normalize("NFC");
-}
+/* --------------------------------------------------------------------------------------------------
+ * Sharing (challenge)
+ ---------------------------------------------------------------------------------------------------*/
 
-// Send result and fetch distribution
-async function postCommunityStats({ solution, attempts }) {
-	try {
-		const SOL = normalizeWord(solution);
-		const endpoint = "https://wortsel.tehes.deno.net/stats";
-
-		const res = await fetch(endpoint, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({
-				solution: SOL,
-				attempts: (attempts >= 1 && attempts <= 6) ? attempts : "fail",
-			}),
-			mode: "cors",
-			keepalive: true,
-		});
-
-		if (!res.ok) {
-			console.warn("Community stats request failed:", res.status);
-			return;
-		}
-
-		const response = await res.json(); // { ok: true, stats: {...} }
-
-		if (response.stats && typeof renderCommunityStats === "function") {
-			renderCommunityStats(response.stats, {
-				myResult: (attempts >= 1 && attempts <= 6) ? String(attempts) : "fail",
-			});
-		} else {
-			console.log("Community stats:", response.stats);
-		}
-	} catch (e) {
-		console.warn("community stats failed", e);
-	}
-}
-
-// Build Wordle-like emoji grid from played rows
+// Builds an emoji grid representing the played rows.
 function buildEmojiGrid() {
 	// Collect rows that were actually played (0..activeRow-1 if win earlier)
 	const rows = Array.from(document.querySelectorAll("main .row")).slice(
@@ -786,6 +755,7 @@ function buildEmojiGrid() {
 		.join("\n");
 }
 
+// Shares the challenge URL and emoji grid via Web Share API or clipboard.
 function shareChallenge() {
 	const idx = curatedWords.findIndex((w) => w.toLowerCase() === solution.toLowerCase());
 	const token = encodeIdx(idx);
@@ -814,9 +784,9 @@ Jetzt Herausforderung annehmen: ${shareUrl}`;
 	}
 }
 
-/**
- * Initializes the game and sets up event listeners.
- */
+/* --------------------------------------------------------------------------------------------------
+ * Initialization
+ ---------------------------------------------------------------------------------------------------*/
 function initGame() {
 	if (firstVisit === true) {
 		howToSection.classList.remove("hidden");
@@ -894,7 +864,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-09-21-v1"; // Increment this version to force browsers to fetch a new service-worker.js
+const serviceWorkerVersion = "2025-09-21-v2"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {
