@@ -29,15 +29,19 @@ FAZ). All brand assets in such deployments belong to their respective owners.
   internet connection.
 - **Responsive Design**: Optimized for both desktop and mobile devices.
 - **Settings Persistence**: Last game options are stored in `localStorage`.
-- **Shareable Puzzles**:  
-  - Append `?idx=<index>` to the URL to set a specific solution, useful for custom challenges.  
-  - After loading, the parameter is removed so that refreshes start a random puzzle again.  
-  - In the stats dialog there is a **Share Button**, which generates such a link and opens the device’s Share Sheet (or copies the link).  
+- **Shareable Puzzles**:
+  - Append `?t=<token>` to the URL to set a specific solution, useful for custom challenges.
+  - Tokens encode the solution index and are validated on load; invalid tokens are ignored.
+  - After loading, the parameter is removed so that refreshes start a random puzzle again.
+  - In the stats dialog there is a **Share Button**, which generates such a link (with token) and
+    opens the device’s Share Sheet (or copies the link).
 - **Hard Mode (strict)**: Once enabled, green letters are locked in place, gray keys cannot be used
   again, and yellow letters may not be placed again at the same position. This stricter variant
   reduces trial‑and‑error and forces more deduction, going beyond Wordle’s hard mode.
-  * **Community stats** — after each game, a dialog shows the global attempt distribution (1–6 and **X**). Your own result row is highlighted.
-
+  - **Community stats** — after each game, a dialog shows the global attempt distribution (1–6 and
+    **X**). Your own result row is highlighted.
+  - **Least‑played solution** — by default, the game fetches the least‑played word from the server
+    to ensure variety across the community. If unavailable, a random fallback is used.
 
 ## How to Play
 
@@ -58,12 +62,15 @@ FAZ). All brand assets in such deployments belong to their respective owners.
 
 ## Community Statistics (Privacy‑friendly)
 
-* After game end, Wortsel sends the outcome (attempt **1–6** or **fail**) and fetches the aggregated distribution for the specific solution.
-* The server replies **atomically with the updated stats**.
-* The modal shows seven rows (1–6 and **X**), scaled by the largest bucket; your row is highlighted.
-* **No personal data** is transmitted; only the normalized solution key and bucket counts are stored.
+- After game end, Wortsel sends the outcome (attempt **1–6** or **fail**) and fetches the aggregated
+  distribution for the specific solution.
+- The server replies **atomically with the updated stats**.
+- The modal shows seven rows (1–6 and **X**), scaled by the largest bucket; your row is highlighted.
+- **No personal data** is transmitted; only the normalized solution key and bucket counts are
+  stored.
 
-> **Offline:** When offline, the game works normally but stats cannot be updated or displayed. (Optional backlog/flush can be added in future.)
+> **Offline:** When offline, the game works normally but stats cannot be updated or displayed.
+> (Optional backlog/flush can be added in future.)
 
 ## Install as a PWA
 
@@ -76,8 +83,8 @@ Besides the public version, Wortsel has also been adapted as a white-label solut
 For example, a custom build was created for the German newspaper **Frankfurter Allgemeine Zeitung
 (FAZ)**, embedded via `<iframe>` on their site.
 
-The codebase is structured with a **core layer** (shared game logic and Wortsel’s default styles) and **theme
-layers** (e.g. `theme-faz.css`).\
+The codebase is structured with a **core layer** (shared game logic and Wortsel’s default styles)
+and **theme layers** (e.g. `theme-faz.css`).\
 This separation allows different skins (branding, typography, colors, icons) while keeping one
 maintainable codebase.
 
@@ -111,8 +118,9 @@ NYT Wordle’s hard mode requires using revealed hints but still allows reusing 
 placing yellow letters again at the same position. Wortsel’s **strict Hard Mode** disables gray keys
 and also forbids repeating a yellow letter at the same position, making it intentionally tougher.
 
-**What data does the community stats feature store?**
-Only aggregated counts per solution (attempt buckets 1–6 and fail). No user IDs, IPs, or timestamps are published. The server updates counts atomically and returns the new distribution immediately for display.
+**What data does the community stats feature store?** Only aggregated counts per solution (attempt
+buckets 1–6 and fail). No user IDs, IPs, or timestamps are published. The server updates counts
+atomically and returns the new distribution immediately for display.
 
-**Does everything work offline?**
-Gameplay does. Stats and analytics require a connection and are skipped when offline.
+**Does everything work offline?** Gameplay does. Stats and analytics require a connection and are
+skipped when offline.
