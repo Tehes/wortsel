@@ -26,7 +26,7 @@ const score = (w) => {
 };
 
 const rankedRaw = words
-	.filter((w) => new Set([...w.toLowerCase()]).size === 5)
+	.filter((w) => new Set(w.toLowerCase()).size === 5)
 	.map((w) => ({ w, s: score(w) }))
 	.sort((a, b) => b.s - a.s);
 const max = rankedRaw.length > 0 ? rankedRaw[0].s : 1;
