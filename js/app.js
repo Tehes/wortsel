@@ -56,6 +56,7 @@ let yellowBans = new Map();
 const STATE_PREFIX = "wortsel_state::"; // per-word for Challenge saves
 const CURRENT_KEY = "wortsel_current"; // exactly one non-challenge game
 const STATE_TTL_DAYS = 7; // purge only Challenge saves
+const storageKey = () => (viaChallenge ? keyFor(solution) : CURRENT_KEY);
 
 /* --------------------------------------------------------------------------------------------------
  * Dictionary and solution selection
@@ -596,6 +597,7 @@ function resetGame() {
 	settingsSection.classList.add("hidden");
 	statsSection.classList.add("hidden");
 	backdrop.classList.add("hidden");
+	resumeSection.classList.add("hidden");
 
 	letters.forEach((letter) => {
 		letter.textContent = "";
@@ -829,30 +831,25 @@ function clearGameState() {
 	if (viaChallenge) {
 		localStorage.removeItem(keyFor(solution));
 	} else {
-		const raw = localStorage.getItem(CURRENT_KEY);
-		if (raw) {
-			const s = JSON.parse(raw);
-			if (s?.solution === normalizeWord(solution)) {
-				localStorage.removeItem(CURRENT_KEY);
-			}
-		}
+		localStorage.removeItem(CURRENT_KEY);
 	}
 }
 
 function purgeExpiredChallengeStates(maxAgeDays = STATE_TTL_DAYS) {
-	const cutoff = Date.now() - maxAgeDays * 86400e3;
-	for (let i = 0; i < localStorage.length; i++) {
-		const k = localStorage.key(i);
-		if (!k || !k.startsWith(STATE_PREFIX)) continue; // only challenge saves
+	const cutoffTimestamp = Date.now() - maxAgeDays * 86400e3; // days → ms
+
+	for (let i = localStorage.length - 1; i >= 0; i--) {
+		const key = localStorage.key(i);
+		if (!key || !key.startsWith(STATE_PREFIX)) continue; // only challenge saves
 		try {
-			const s = JSON.parse(localStorage.getItem(k) || "null");
-			if (!s || !s.ts || s.ts < cutoff) {
-				localStorage.removeItem(k);
-				i--;
+			const state = JSON.parse(localStorage.getItem(key) || "null");
+			const isExpired = !state || !state.ts || state.ts < cutoffTimestamp;
+			if (isExpired) {
+				localStorage.removeItem(key);
 			}
 		} catch {
-			localStorage.removeItem(k);
-			i--;
+			// If parsing fails, remove the bad entry to keep storage clean
+			localStorage.removeItem(key);
 		}
 	}
 }
@@ -866,40 +863,14 @@ function replayByTyping(guesses = []) {
 	});
 }
 
-function promptResume(message = "Du hast eine begonnene Runde. Fortsetzen?") {
-	// Text ggf. setzen
-	const p = resumeSection.querySelector("p");
-	if (p) p.textContent = message;
-
-	return new Promise((resolve) => {
-		const onContinue = () => done(true);
-		const onClose = () => done(false);
-		const onBackdrop = () => done(false);
-
-		function done(result) {
-			resumeContinueBtn.removeEventListener("click", onContinue);
-			resumeSection.querySelector(".close")?.removeEventListener("click", onClose);
-			backdrop.removeEventListener("click", onBackdrop);
-			resumeSection.classList.add("hidden");
-			backdrop.classList.add("hidden");
-			resolve(result);
-		}
-
-		resumeContinueBtn.addEventListener("click", onContinue, { once: true });
-		resumeSection.querySelector(".close")?.addEventListener("click", onClose, { once: true });
-		backdrop.addEventListener("click", onBackdrop, { once: true });
-
-		// anzeigen
-		resumeSection.classList.remove("hidden");
-		backdrop.classList.remove("hidden");
-	});
-}
-
-function maybeResume(key) {
-	const raw = localStorage.getItem(key);
-	if (!raw) return false;
+function continueResume() {
+	const raw = localStorage.getItem(storageKey());
+	const data = JSON.parse(raw);
+	if (!viaChallenge && data.solution) {
+		solution = data.solution.toLowerCase();
+	}
+	replayByTyping(data.guesses);
 	toggleWindow(resumeSection);
-	return true;
 }
 
 /* --------------------------------------------------------------------------------------------------
@@ -921,6 +892,7 @@ function initGame() {
 	headlineElement?.addEventListener("click", resetGame, false);
 	restartButtons.forEach((btn) => btn.addEventListener("click", resetGame, false));
 	shareBtn?.addEventListener("click", shareChallenge, false);
+	resumeContinueBtn?.addEventListener("click", continueResume, false);
 
 	howToIcon.addEventListener("click", () => toggleWindow(howToSection), false);
 	settingsIcon.addEventListener("click", () => toggleWindow(settingsSection), false);
@@ -929,33 +901,6 @@ function initGame() {
 			toggleWindow(icon.parentElement);
 		}, false);
 	});
-
-	// Fortsetzen-Button
-	resumeContinueBtn.addEventListener("click", () => {
-		// passenden Speicher lesen
-		const raw = localStorage.getItem(viaChallenge ? keyFor(solution) : CURRENT_KEY);
-		if (!raw) {
-			toggleWindow(resumeSection);
-			return;
-		}
-
-		const data = JSON.parse(raw);
-
-		// Non-Challenge: gespeichertes Lösungswort wiederherstellen
-		if (!viaChallenge && data.solution) {
-			solution = data.solution.toLowerCase();
-			viaChallenge = false;
-		}
-
-		replayByTyping(data.guesses);
-		toggleWindow(resumeSection); // Modal zu
-	}, false);
-
-	// Restart-Button (du hast bereits .restart-Logik; falls nicht global: so)
-	document.querySelector("#resume-restart")?.addEventListener("click", () => {
-		toggleWindow(resumeSection);
-		resetGame();
-	}, false);
 
 	backdrop.addEventListener("click", () => {
 		[howToSection, settingsSection, statsSection, resumeSection].forEach((section) => {
@@ -995,16 +940,11 @@ function initGame() {
 	});
 
 	// Resume logic:
-	// If we came via Challenge (tokenParam already handled earlier and solution set),
-	// check only the save for *this* word. Otherwise offer the single current non-challenge slot.
+	// If we have a saved game, show resume modal. Otherwise, fetch least-played solution.
 	(async () => {
-		let shown = false;
-		if (viaChallenge) {
-			shown = maybeResume(keyFor(solution));
+		if (localStorage.getItem(storageKey())) {
+			toggleWindow(resumeSection);
 		} else {
-			shown = maybeResume(CURRENT_KEY);
-		}
-		if (!shown) {
 			await fetchLeastPlayedSolution();
 		}
 	})();
@@ -1033,8 +973,8 @@ globalThis.wortsel.initGame();
 /* --------------------------------------------------------------------------------------------------
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
-const useServiceWorker = false; // Set to "true" if you want to register the Service Worker, "false" to unregister
-const serviceWorkerVersion = "2025-09-21-v2"; // Increment this version to force browsers to fetch a new service-worker.js
+const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
+const serviceWorkerVersion = "2025-09-25-v1"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
 	try {

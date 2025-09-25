@@ -9,7 +9,7 @@ const json = (obj, status = 200) =>
 
 const ALLOW_ORIGINS = new Set([
 	"https://tehes.github.io", // production (GitHub Pages)
-	//"http://127.0.0.1:5500", // local dev (uncomment if needed)
+	"http://127.0.0.1:5500", // local dev (uncomment if needed)
 	"https://faz-sta.fastconnect.ai", // FAZ DEV
 	"https://www.testfaz.net", // FAZ TEST
 	"https://www.faz.net", // FAZ PROD
