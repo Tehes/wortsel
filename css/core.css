@@ -356,8 +356,7 @@
     background-color: var(--key-highlight-bg-color);
   }
 
-  .restart:active,
-  #shareChallengeButton:active {
+  button:active:not(#shareChallengeButton) {
     transform: translateY(1px);
   }
 
@@ -455,6 +454,21 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+  }
+
+  .resume-actions {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 1em 0 0.5em 0;
+    gap: 0.5em;
+  }
+
+  #resume-continue {
+    background-color: var(--color-correct);
+    color: var(--highlight-font-color);
   }
 
   @media only screen and (max-width: 450px) and (orientation: portrait) {

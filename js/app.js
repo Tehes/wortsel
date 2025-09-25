@@ -19,6 +19,8 @@ const howToSection = document.querySelector("#howTo");
 const settingsIcon = document.querySelector("#settingsIcon");
 const settingsSection = document.querySelector("#settings");
 const statsSection = document.querySelector("#stats");
+const resumeSection = document.querySelector("#resume");
+const resumeContinueBtn = document.querySelector("#resume-continue");
 const backdrop = document.querySelector(".backdrop");
 const closeIcons = document.querySelectorAll(".close");
 const wholeWordsCheckbox = document.querySelector("#wholeWords");
@@ -50,6 +52,10 @@ let lockedLetters = [null, null, null, null, null]; // fixed, correct letters ca
 // In hard mode, prevent reusing yellow letters at the same position
 // Key: position index (0..4), Value: Set of letters banned at that position
 let yellowBans = new Map();
+
+const STATE_PREFIX = "wortsel_state::"; // per-word for Challenge saves
+const CURRENT_KEY = "wortsel_current"; // exactly one non-challenge game
+const STATE_TTL_DAYS = 7; // purge only Challenge saves
 
 /* --------------------------------------------------------------------------------------------------
  * Dictionary and solution selection
@@ -498,6 +504,7 @@ function checkEndCondition() {
 	if (gameEnded) {
 		isGameOver = true;
 		removeInputListeners();
+		clearGameState();
 
 		if (analyticsPayload) {
 			// UMAMI ANALYTICS
@@ -581,6 +588,7 @@ function saveSettings() {
 function resetGame() {
 	isGameOver = false;
 	removeInputListeners();
+	clearGameState();
 	const letters = document.querySelectorAll("main .letter");
 	const keys = document.querySelectorAll(".key");
 
@@ -785,9 +793,121 @@ Jetzt Herausforderung annehmen: ${shareUrl}`;
 }
 
 /* --------------------------------------------------------------------------------------------------
+ * Persist: Game State (word-centric) + TTL purge (Challenge only)
+ ---------------------------------------------------------------------------------------------------*/
+const keyFor = (word) => STATE_PREFIX + normalizeWord(word);
+
+function collectGuesses() {
+	const guesses = [];
+
+	for (let i = 0; i < activeRow; i++) {
+		const letters = [...rowElements[i].querySelectorAll(".letter")]
+			.map((cell) => cell.textContent.toLowerCase());
+		guesses.push(letters.join(""));
+	}
+
+	return guesses;
+}
+
+function saveGameState() {
+	if (activeRow === 0 || isGameOver) return; // only unfinished games
+	const payload = { guesses: collectGuesses(), ts: Date.now() };
+	if (viaChallenge) {
+		localStorage.setItem(keyFor(solution), JSON.stringify(payload));
+	} else {
+		localStorage.setItem(
+			CURRENT_KEY,
+			JSON.stringify({
+				solution: normalizeWord(solution),
+				...payload,
+			}),
+		);
+	}
+}
+
+function clearGameState() {
+	if (viaChallenge) {
+		localStorage.removeItem(keyFor(solution));
+	} else {
+		const raw = localStorage.getItem(CURRENT_KEY);
+		if (raw) {
+			const s = JSON.parse(raw);
+			if (s?.solution === normalizeWord(solution)) {
+				localStorage.removeItem(CURRENT_KEY);
+			}
+		}
+	}
+}
+
+function purgeExpiredChallengeStates(maxAgeDays = STATE_TTL_DAYS) {
+	const cutoff = Date.now() - maxAgeDays * 86400e3;
+	for (let i = 0; i < localStorage.length; i++) {
+		const k = localStorage.key(i);
+		if (!k || !k.startsWith(STATE_PREFIX)) continue; // only challenge saves
+		try {
+			const s = JSON.parse(localStorage.getItem(k) || "null");
+			if (!s || !s.ts || s.ts < cutoff) {
+				localStorage.removeItem(k);
+				i--;
+			}
+		} catch {
+			localStorage.removeItem(k);
+			i--;
+		}
+	}
+}
+
+function replayByTyping(guesses = []) {
+	if (!Array.isArray(guesses) || guesses.length === 0) return;
+
+	guesses.forEach((word) => {
+		word.split("").forEach((ch) => typeKey({ key: ch }));
+		typeKey({ key: "enter" });
+	});
+}
+
+function promptResume(message = "Du hast eine begonnene Runde. Fortsetzen?") {
+	// Text ggf. setzen
+	const p = resumeSection.querySelector("p");
+	if (p) p.textContent = message;
+
+	return new Promise((resolve) => {
+		const onContinue = () => done(true);
+		const onClose = () => done(false);
+		const onBackdrop = () => done(false);
+
+		function done(result) {
+			resumeContinueBtn.removeEventListener("click", onContinue);
+			resumeSection.querySelector(".close")?.removeEventListener("click", onClose);
+			backdrop.removeEventListener("click", onBackdrop);
+			resumeSection.classList.add("hidden");
+			backdrop.classList.add("hidden");
+			resolve(result);
+		}
+
+		resumeContinueBtn.addEventListener("click", onContinue, { once: true });
+		resumeSection.querySelector(".close")?.addEventListener("click", onClose, { once: true });
+		backdrop.addEventListener("click", onBackdrop, { once: true });
+
+		// anzeigen
+		resumeSection.classList.remove("hidden");
+		backdrop.classList.remove("hidden");
+	});
+}
+
+function maybeResume(key) {
+	const raw = localStorage.getItem(key);
+	if (!raw) return false;
+	toggleWindow(resumeSection);
+	return true;
+}
+
+/* --------------------------------------------------------------------------------------------------
  * Initialization
  ---------------------------------------------------------------------------------------------------*/
 function initGame() {
+	purgeExpiredChallengeStates();
+
 	if (firstVisit === true) {
 		howToSection.classList.remove("hidden");
 		backdrop.classList.remove("hidden");
@@ -810,8 +930,35 @@ function initGame() {
 		}, false);
 	});
 
+	// Fortsetzen-Button
+	resumeContinueBtn.addEventListener("click", () => {
+		// passenden Speicher lesen
+		const raw = localStorage.getItem(viaChallenge ? keyFor(solution) : CURRENT_KEY);
+		if (!raw) {
+			toggleWindow(resumeSection);
+			return;
+		}
+
+		const data = JSON.parse(raw);
+
+		// Non-Challenge: gespeichertes Lösungswort wiederherstellen
+		if (!viaChallenge && data.solution) {
+			solution = data.solution.toLowerCase();
+			viaChallenge = false;
+		}
+
+		replayByTyping(data.guesses);
+		toggleWindow(resumeSection); // Modal zu
+	}, false);
+
+	// Restart-Button (du hast bereits .restart-Logik; falls nicht global: so)
+	document.querySelector("#resume-restart")?.addEventListener("click", () => {
+		toggleWindow(resumeSection);
+		resetGame();
+	}, false);
+
 	backdrop.addEventListener("click", () => {
-		[howToSection, settingsSection, statsSection].forEach((section) => {
+		[howToSection, settingsSection, statsSection, resumeSection].forEach((section) => {
 			if (section && !section.classList.contains("hidden")) {
 				toggleWindow(section);
 			}
@@ -821,11 +968,21 @@ function initGame() {
 	wholeWordsCheckbox.addEventListener("change", saveSettings, false);
 	hardModeCheckbox.addEventListener("change", saveSettings, false);
 
-	globalThis.addEventListener("pagehide", saveSettings, { capture: true });
-	globalThis.addEventListener("beforeunload", saveSettings, { capture: true });
+	// Save settings + game state on leave/tab switch
+	globalThis.addEventListener("pagehide", () => {
+		saveSettings();
+		saveGameState();
+	}, { capture: true });
+	globalThis.addEventListener("beforeunload", () => {
+		saveSettings();
+		saveGameState();
+	}, { capture: true });
 	document.addEventListener("visibilitychange", () => {
-		if (document.visibilityState === "hidden") saveSettings();
-	});
+		if (document.visibilityState === "hidden") {
+			saveSettings();
+			saveGameState();
+		}
+	}, { capture: true });
 
 	// Keep UI in sync across tabs/windows
 	globalThis.addEventListener("storage", (e) => {
@@ -837,7 +994,20 @@ function initGame() {
 		}
 	});
 
-	fetchLeastPlayedSolution();
+	// Resume logic:
+	// If we came via Challenge (tokenParam already handled earlier and solution set),
+	// check only the save for *this* word. Otherwise offer the single current non-challenge slot.
+	(async () => {
+		let shown = false;
+		if (viaChallenge) {
+			shown = maybeResume(keyFor(solution));
+		} else {
+			shown = maybeResume(CURRENT_KEY);
+		}
+		if (!shown) {
+			await fetchLeastPlayedSolution();
+		}
+	})();
 
 	console.log(`curated words: ${curatedWords.length}`);
 	console.log(`additional words: ${additionalWords.length}`);
@@ -863,7 +1033,7 @@ globalThis.wortsel.initGame();
 /* --------------------------------------------------------------------------------------------------
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
-const useServiceWorker = true; // Set to "true" if you want to register the Service Worker, "false" to unregister
+const useServiceWorker = false; // Set to "true" if you want to register the Service Worker, "false" to unregister
 const serviceWorkerVersion = "2025-09-21-v2"; // Increment this version to force browsers to fetch a new service-worker.js
 
 async function registerServiceWorker() {
