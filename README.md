@@ -115,18 +115,18 @@ Enjoy playing! 🎉
 
 ## FAQ
 
-**How is Hard Mode different from Wordle’s?**\
+**How is Hard Mode different from Wordle’s?**
 NYT Wordle’s hard mode requires using revealed hints but still allows reusing gray letters and
 placing yellow letters again at the same position. Wortsel’s **strict Hard Mode** disables gray keys
 and also forbids repeating a yellow letter at the same position, making it intentionally tougher.
 
-**What data does the community stats feature store?**\ Only aggregated counts per solution (attempt
+**What data does the community stats feature store?** Only aggregated counts per solution (attempt
 buckets 1–6 and fail). No user IDs, IPs, or timestamps are published. The server updates counts
 atomically and returns the new distribution immediately for display.
 
-**Does everything work offline?**\ Gameplay does. Stats and analytics require a connection and are
+**Does everything work offline?** Gameplay does. Stats and analytics require a connection and are
 skipped when offline.
 
-**How are unfinished games stored?**\
+**How are unfinished games stored?**
 - **Normal games:** a single global slot per browser profile. Starting another normal game in a different tab will overwrite this slot with the most recent progress.  
 - **Challenge games (`?t=...`):** saved **per word** (one slot per challenge). Multiple challenge saves can coexist. Old challenge saves auto-purge after **7 days** of inactivity.
