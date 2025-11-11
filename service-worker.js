@@ -28,7 +28,7 @@ self.addEventListener("fetch", (event) => {
 	if (!ALLOWED.has(url.origin)) return;
 
 	// 1) Google Fonts CSS → network-first
-	if (url.origin === ORIGINS.GF_CSS || req.destination === "style") {
+	if (url.origin === ORIGINS.GF_CSS) {
 		event.respondWith(networkFirst(req, event));
 		return;
 	}
@@ -50,7 +50,7 @@ async function cacheFirstSWR(req, event) {
 		return cached;
 	}
 	try {
-		const net = await fetch(req);
+		const net = await fetch(req, { cache: "no-store" });
 		event.waitUntil(putIfCachable(req, net.clone()));
 		return net;
 	} catch {

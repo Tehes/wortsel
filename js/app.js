@@ -974,7 +974,7 @@ globalThis.wortsel.initGame();
 Service Worker configuration. Toggle 'useServiceWorker' to enable or disable the Service Worker.
 ---------------------------------------------------------------------------------------------------*/
 const useServiceWorker = true;
-const serviceWorkerVersion = "2025-11-11-v1";
+const serviceWorkerVersion = "2025-11-11-v2";
 
 async function registerServiceWorker() {
 	try {
