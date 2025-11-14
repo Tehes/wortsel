@@ -98,7 +98,23 @@ Key aspects:
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under **MIT + Commons Clause**.
+
+You are free to:
+
+- read the code
+- clone it
+- modify it
+- use it for personal, educational, or research purposes
+
+You are **not** permitted to:
+
+- sell the Software
+- use it in commercial products or services
+- use it in advertising-supported services
+- offer it as SaaS or a white‑label product
+
+All commercial rights remain with the author.
 
 ### White-Label / Brand Assets
 
@@ -115,10 +131,10 @@ Enjoy playing! 🎉
 
 ## FAQ
 
-**How is Hard Mode different from Wordle’s?**
-NYT Wordle’s hard mode requires using revealed hints but still allows reusing gray letters and
-placing yellow letters again at the same position. Wortsel’s **strict Hard Mode** disables gray keys
-and also forbids repeating a yellow letter at the same position, making it intentionally tougher.
+**How is Hard Mode different from Wordle’s?** NYT Wordle’s hard mode requires using revealed hints
+but still allows reusing gray letters and placing yellow letters again at the same position.
+Wortsel’s **strict Hard Mode** disables gray keys and also forbids repeating a yellow letter at the
+same position, making it intentionally tougher.
 
 **What data does the community stats feature store?** Only aggregated counts per solution (attempt
 buckets 1–6 and fail). No user IDs, IPs, or timestamps are published. The server updates counts
@@ -128,5 +144,8 @@ atomically and returns the new distribution immediately for display.
 skipped when offline.
 
 **How are unfinished games stored?**
-- **Normal games:** a single global slot per browser profile. Starting another normal game in a different tab will overwrite this slot with the most recent progress.  
-- **Challenge games (`?t=...`):** saved **per word** (one slot per challenge). Multiple challenge saves can coexist. Old challenge saves auto-purge after **7 days** of inactivity.
+
+- **Normal games:** a single global slot per browser profile. Starting another normal game in a
+  different tab will overwrite this slot with the most recent progress.
+- **Challenge games (`?t=...`):** saved **per word** (one slot per challenge). Multiple challenge
+  saves can coexist. Old challenge saves auto-purge after **7 days** of inactivity.
