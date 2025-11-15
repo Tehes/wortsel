@@ -4,7 +4,8 @@ Wortsel is a browser-based word game inspired by Wordle, allowing players to gue
 within six attempts. The game is designed as a Progressive Web App (PWA) and can be played on both
 mobile devices and desktop browsers.
 
-🔗 **Play Here:** [Wortsel](https://tehes.github.io/wortsel/)
+🔗 **Play Here:** [Wortsel](https://tehes.github.io/wortsel/) 🔗 **Play the FAZ version:**
+[Wörtchen auf FAZ.net](https://www.faz.net/aktuell/spiele/faz-spiele/woertchen/)
 
 ## 📜 Disclaimer
 
