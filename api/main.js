@@ -64,6 +64,28 @@ const emptyDist = () => ({
 	counts: { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "fail": 0 },
 });
 
+let cachedTotals = null; // Map(word -> total)
+let totalsCachedAt = 0;
+const TOTALS_TTL_MS = 60_000; // 60 Sekunden
+
+async function getTotalsMap() {
+	const now = Date.now();
+
+	if (cachedTotals && (now - totalsCachedAt) < TOTALS_TTL_MS) {
+		return cachedTotals;
+	}
+
+	const totals = new Map();
+	for await (const entry of kv.list({ prefix: ["w"] })) {
+		const w = String(entry.key?.[1] ?? "");
+		if (w) totals.set(w, totalFromValue(entry.value));
+	}
+
+	cachedTotals = totals;
+	totalsCachedAt = now;
+	return totals;
+}
+
 Deno.serve(async (req) => {
 	const url = new URL(req.url);
 
@@ -76,12 +98,7 @@ Deno.serve(async (req) => {
 			return withCORS(req, json({ error: "curated words unavailable" }, 503));
 		}
 
-		// Build a totals map by streaming existing keys once
-		const totals = new Map();
-		for await (const entry of kv.list({ prefix: ["w"] })) {
-			const w = String(entry.key?.[1] ?? "");
-			if (w) totals.set(w, totalFromValue(entry.value));
-		}
+		const totals = await getTotalsMap();
 
 		// Determine least-played among all curated words (missing ⇒ 0)
 		let minTotal = Infinity;
@@ -156,6 +173,10 @@ Deno.serve(async (req) => {
 
 			if (result.ok) {
 				stats = data;
+				if (cachedTotals) {
+					const prev = cachedTotals.get(SOL) ?? 0;
+					cachedTotals.set(SOL, prev + 1);
+				}
 				success = true;
 			} else {
 				retries++;
