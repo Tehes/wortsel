@@ -117,10 +117,35 @@ if (tokenParam) {
 /* --------------------------------------------------------------------------------------------------
  * Remote least-played endpoint
  ---------------------------------------------------------------------------------------------------*/
-const NEXT_ENDPOINT = "https://wortsel.tehes.deno.net/next";
+const NEXT_ENDPOINT = "https://wortsel.tehes.deno.net/next-batch";
+const NEXT_QUEUE_KEY = "wortsel_nextQueue";
 
-// Controller for current /next request so we can cancel it on reset
+// Controller for current /next-batch request so we can cancel it on reset
 let nextFetchController = null;
+
+function storeNextQueue(queue) {
+	if (queue.length) {
+		sessionStorage.setItem(NEXT_QUEUE_KEY, JSON.stringify(queue));
+	} else {
+		sessionStorage.removeItem(NEXT_QUEUE_KEY);
+	}
+}
+
+function takeNextQueuedWord() {
+	try {
+		const queue = JSON.parse(
+			sessionStorage.getItem(NEXT_QUEUE_KEY) || "[]",
+		);
+
+		const next = queue[0];
+		const rest = queue.slice(1);
+		storeNextQueue(rest);
+
+		return next || null;
+	} catch {
+		return null;
+	}
+}
 
 /* --------------------------------------------------------------------------------------------------
  * Functions (utilities and game logic)
@@ -131,26 +156,37 @@ function getRandomInteger(min, max) {
 }
 
 /**
- * Tries to replace the fallback-random solution with a least‑played pick from the server.
- * Non-blocking: safe to call and ignore failures/timeouts. Only updates if not finalized.
+ * Tries to replace the fallback random solution with a least-played word from /next-batch.
+ * Uses a session-based queue to minimize backend requests.
+ * Non-blocking: safe to call and silently falls back on failures or empty responses.
  */
 async function fetchLeastPlayedSolution() {
 	if (viaChallenge) return; // keep challenge solution
-	if (typeof navigator !== "undefined" && navigator.onLine === false) return; // offline
+
+	const queued = takeNextQueuedWord();
+	if (queued) {
+		solution = queued.toLowerCase();
+		return;
+	}
 
 	// Create a controller and expose it globally so resetGame() can abort in-flight requests
 	const ac = new AbortController();
 	nextFetchController = ac;
 	try {
-		const res = await fetch(NEXT_ENDPOINT, { method: "GET", mode: "cors", signal: ac.signal });
-		// 204 No Content → server had no candidate; keep fallback
-		if (res.status === 204) return;
-		if (!res.ok) return;
-		const data = await res.json(); // { word, total, candidates }
-		const w = (data && typeof data.word === "string") ? data.word.toLowerCase() : null;
-		if (!w) return;
-		// Replace fallback with server-provided solution (submit will abort in-flight requests)
-		solution = w;
+		const res = await fetch(NEXT_ENDPOINT, { signal: ac.signal });
+		// Non-OK or no content -> keep fallback
+		if (!res.ok || res.status === 204) return;
+
+		const data = await res.json(); // { words: [...] }
+		const list = data?.words;
+		if (!Array.isArray(list) || list.length === 0) return;
+
+		const nextWord = list[0];
+		const rest = list.slice(1);
+		storeNextQueue(rest);
+
+		// It's safe to set `solution` here: the word is never exposed before submission
+		solution = nextWord.toLowerCase();
 	} catch (e) {
 		if (e?.name === "AbortError") {
 			console.log("[Next] Solution fetch aborted (reset)");
@@ -977,7 +1013,7 @@ globalThis.wortsel.initGame();
  * - AUTO_RELOAD_ON_SW_UPDATE: reload page once after an update
  -------------------------------------------------------------------------------------------------- */
 const USE_SERVICE_WORKER = true;
-const SERVICE_WORKER_VERSION = "2025-12-07-v1";
+const SERVICE_WORKER_VERSION = "2025-12-18-v1";
 const AUTO_RELOAD_ON_SW_UPDATE = false;
 
 /* --------------------------------------------------------------------------------------------------
