@@ -86,43 +86,86 @@ async function getTotalsMap() {
 	return totals;
 }
 
+const handlePreflight = (req) => {
+	if (req.method !== "OPTIONS") return null;
+	return withCORS(req, new Response(null, { status: 204 }));
+};
+
+const ensureCuratedAvailable = (req) => {
+	if (!curatedWordsError && curatedWords.length > 0) return null;
+	return withCORS(req, json({ error: "curated words unavailable" }, 503));
+};
+
+const getLeastPlayedWords = (totals) => {
+	let minTotal = Infinity;
+	const indices = [];
+
+	for (let i = 0; i < curatedWords.length; i++) {
+		const word = curatedWords[i];
+		const total = totals.get(word) ?? 0;
+		if (total < minTotal) {
+			minTotal = total;
+			indices.length = 0;
+			indices.push(i);
+		} else if (total === minTotal) {
+			indices.push(i);
+		}
+	}
+
+	const words = indices.map((idx) => curatedWords[idx]);
+	return { words, minTotal };
+};
+
 Deno.serve(async (req) => {
 	const url = new URL(req.url);
 
 	// GET /next: Get the next word to play (the one with the lowest total count)
 	if (url.pathname === "/next") {
-		if (req.method === "OPTIONS") return withCORS(req, new Response(null, { status: 204 }));
+		const preflight = handlePreflight(req);
+		if (preflight) return preflight;
 		if (req.method !== "GET") return new Response("Method not allowed", { status: 405 });
 
-		if (curatedWordsError || curatedWords.length === 0) {
-			return withCORS(req, json({ error: "curated words unavailable" }, 503));
-		}
+		const curatedError = ensureCuratedAvailable(req);
+		if (curatedError) return curatedError;
 
 		const totals = await getTotalsMap();
+		const { words, minTotal } = getLeastPlayedWords(totals);
 
-		// Determine least-played among all curated words (missing ⇒ 0)
-		let minTotal = Infinity;
-		const candidates = [];
-		for (let i = 0; i < curatedWords.length; i++) {
-			const w = curatedWords[i];
-			const t = totals.get(w) ?? 0;
-			if (t < minTotal) {
-				minTotal = t;
-				candidates.length = 0;
-				candidates.push({ idx: i, total: t });
-			} else if (t === minTotal) {
-				candidates.push({ idx: i, total: t });
-			}
-		}
-
-		if (candidates.length === 0) {
+		if (words.length === 0) {
 			console.error("No candidates found for /next");
 			return withCORS(req, new Response(null, { status: 204 }));
 		}
 
-		const pick = candidates[Math.floor(Math.random() * candidates.length)];
-		const word = curatedWords[pick.idx];
-		return withCORS(req, json({ word, total: pick.total, candidates: candidates.length }));
+		const word = words[Math.floor(Math.random() * words.length)];
+		return withCORS(req, json({ word, total: minTotal, candidates: words.length }));
+	}
+
+	// GET /next-batch: Get up to 50 least-played words (shuffled)
+	if (url.pathname === "/next-batch") {
+		const preflight = handlePreflight(req);
+		if (preflight) return preflight;
+		if (req.method !== "GET") return new Response("Method not allowed", { status: 405 });
+
+		const curatedError = ensureCuratedAvailable(req);
+		if (curatedError) return curatedError;
+
+		const totals = await getTotalsMap();
+		const { words, minTotal } = getLeastPlayedWords(totals);
+
+		if (words.length === 0) {
+			console.error("No candidates found for /next-batch");
+			return withCORS(req, new Response(null, { status: 204 }));
+		}
+
+		for (let i = words.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			const tmp = words[i];
+			words[i] = words[j];
+			words[j] = tmp;
+		}
+
+		const batch = words.slice(0, 50);
+		return withCORS(req, json({ words: batch, total: minTotal, candidates: words.length }));
 	}
 
 	if (url.pathname !== "/stats") return new Response("Not found", { status: 404 });
@@ -228,3 +271,4 @@ Deno.serve(async (req) => {
 
 	return new Response("Method not allowed", { status: 405 });
 });
+
