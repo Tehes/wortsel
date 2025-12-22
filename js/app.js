@@ -328,9 +328,6 @@ function typeKey(event) {
 			if (!inDatabase(letters) && wholeWordsCheckbox.checked) {
 				playErrorAnimation();
 				showModal("Kein zulässiges Wort", 1000);
-				globalThis.umami?.track("Wortsel", {
-					illegalWord: letters.map((l) => l.textContent).join(""),
-				});
 			} else {
 				if (nextFetchController) {
 					nextFetchController.abort();
@@ -534,7 +531,7 @@ function checkEndCondition() {
 			`Leider verloren. Gesucht wurde '${solution.toUpperCase()}'.`,
 			3000,
 		);
-		analyticsPayload = { failedWord: solution.toUpperCase() };
+		analyticsPayload = { roundsUntilWin: 0 };
 		gameEnded = true;
 	}
 
@@ -1013,7 +1010,7 @@ globalThis.wortsel.initGame();
  * - AUTO_RELOAD_ON_SW_UPDATE: reload page once after an update
  -------------------------------------------------------------------------------------------------- */
 const USE_SERVICE_WORKER = true;
-const SERVICE_WORKER_VERSION = "2025-12-18-v1";
+const SERVICE_WORKER_VERSION = "2025-12-22-v1";
 const AUTO_RELOAD_ON_SW_UPDATE = false;
 
 /* --------------------------------------------------------------------------------------------------
