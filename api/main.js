@@ -54,6 +54,194 @@ try {
 	console.error("Unable to import curated words list", e);
 }
 
+const PATTERN_SIZE = 243;
+const POW3 = [1, 3, 9, 27, 81];
+
+const clampScore = (value) => {
+	if (!Number.isFinite(value)) return 0;
+	return Math.max(0, Math.min(100, value));
+};
+
+const computePatternCode = (guess, solution) => {
+	const tempSolution = solution.split("");
+	const result = [0, 0, 0, 0, 0];
+
+	for (let i = 0; i < 5; i++) {
+		if (guess[i] === tempSolution[i]) {
+			result[i] = 2;
+			tempSolution[i] = "";
+		}
+	}
+
+	for (let i = 0; i < 5; i++) {
+		if (result[i] !== 0) continue;
+		const index = tempSolution.indexOf(guess[i]);
+		if (index !== -1) {
+			result[i] = 1;
+			tempSolution[index] = "";
+		}
+	}
+
+	let code = 0;
+	for (let i = 0; i < 5; i++) {
+		code += result[i] * POW3[i];
+	}
+
+	return code;
+};
+
+const decodePatternCode = (code, out) => {
+	let value = code;
+	for (let i = 0; i < 5; i++) {
+		out[i] = value % 3;
+		value = (value / 3) | 0;
+	}
+};
+
+const buildHardModeConstraints = (guesses, patterns, turnIndex) => {
+	const greens = ["", "", "", "", ""];
+	const yellowBans = [new Set(), new Set(), new Set(), new Set(), new Set()];
+	const yellowLetters = new Set();
+	const grayLetters = new Set();
+	const pattern = [0, 0, 0, 0, 0];
+
+	for (let i = 0; i < turnIndex; i++) {
+		const guess = guesses[i];
+		decodePatternCode(patterns[i], pattern);
+		for (let j = 0; j < 5; j++) {
+			const letter = guess[j];
+			const status = pattern[j];
+			if (status === 2) {
+				greens[j] = letter;
+			} else if (status === 1) {
+				yellowLetters.add(letter);
+				yellowBans[j].add(letter);
+			} else {
+				grayLetters.add(letter);
+			}
+		}
+	}
+
+	for (const letter of yellowLetters) {
+		grayLetters.delete(letter);
+	}
+	for (let i = 0; i < 5; i++) {
+		if (greens[i]) grayLetters.delete(greens[i]);
+	}
+
+	return { greens, yellowBans, yellowLetters, grayLetters };
+};
+
+const isCandidateAllowed = (word, constraints) => {
+	const { greens, yellowBans, yellowLetters, grayLetters } = constraints;
+
+	for (let i = 0; i < 5; i++) {
+		const green = greens[i];
+		if (green && word[i] !== green) return false;
+		if (yellowBans[i].size && yellowBans[i].has(word[i])) return false;
+	}
+
+	for (const letter of yellowLetters) {
+		if (word.indexOf(letter) === -1) return false;
+	}
+
+	for (const letter of grayLetters) {
+		if (word.indexOf(letter) !== -1) return false;
+	}
+
+	return true;
+};
+
+const countBuckets = (remaining, guess, bucket) => {
+	bucket.fill(0);
+	for (let i = 0; i < remaining.length; i++) {
+		const code = computePatternCode(guess, remaining[i]);
+		bucket[code] += 1;
+	}
+};
+
+const expectedRemaining = (bucket, n) => {
+	let sum = 0;
+	for (let i = 0; i < PATTERN_SIZE; i++) {
+		const count = bucket[i];
+		if (count) sum += count * count;
+	}
+	return sum / n;
+};
+
+const analyzeGame = (guesses, patterns, hardMode) => {
+	let remaining = curatedWords.slice();
+	const luckScores = [];
+	const efficiencyScores = [];
+	const bucket = new Uint16Array(PATTERN_SIZE);
+
+	for (let i = 0; i < guesses.length; i++) {
+		const guess = guesses[i];
+		const observed = patterns[i];
+		const n = remaining.length;
+
+		if (!n) return { error: "no candidates" };
+
+		countBuckets(remaining, guess, bucket);
+
+		const myE = expectedRemaining(bucket, n);
+
+		let minBucket = 0;
+		for (let p = 0; p < PATTERN_SIZE; p++) {
+			const count = bucket[p];
+			if (count > 0 && (minBucket === 0 || count < minBucket)) {
+				minBucket = count;
+			}
+		}
+
+		let luck;
+		if (myE === minBucket) {
+			luck = 50;
+		} else {
+			luck = 100 * (myE - bucket[observed]) / (myE - minBucket);
+		}
+		luckScores.push(clampScore(luck));
+
+		let candidates = curatedWords;
+		if (hardMode) {
+			const constraints = buildHardModeConstraints(guesses, patterns, i);
+			candidates = curatedWords.filter((word) =>
+				isCandidateAllowed(word, constraints)
+			);
+			if (!candidates.length) return { error: "no candidates" };
+		}
+
+		let bestE = Infinity;
+		let worstE = -Infinity;
+		for (let c = 0; c < candidates.length; c++) {
+			countBuckets(remaining, candidates[c], bucket);
+			const eCand = expectedRemaining(bucket, n);
+			if (eCand < bestE) bestE = eCand;
+			if (eCand > worstE) worstE = eCand;
+		}
+
+		let eff;
+		if (bestE === worstE) {
+			eff = 100;
+		} else {
+			eff = 100 * (worstE - myE) / (worstE - bestE);
+		}
+		efficiencyScores.push(clampScore(eff));
+
+		remaining = remaining.filter(
+			(solution) => computePatternCode(guess, solution) === observed,
+		);
+	}
+
+	const average = (values) =>
+		values.reduce((sum, value) => sum + value, 0) / values.length;
+
+	return {
+		E: Math.round(average(efficiencyScores)),
+		L: Math.round(average(luckScores)),
+	};
+};
+
 const totalFromValue = (value) => {
 	const total = value?.total;
 	return Number.isFinite(total) && total >= 0 ? total : 0;
@@ -166,6 +354,64 @@ Deno.serve(async (req) => {
 
 		const batch = words.slice(0, 50);
 		return withCORS(req, json({ words: batch, total: minTotal, candidates: words.length }));
+	}
+
+	if (url.pathname === "/analyze") {
+		const preflight = handlePreflight(req);
+		if (preflight) return preflight;
+		if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
+
+		if (!isAllowedOrigin(req)) {
+			return withCORS(req, json({ error: "origin not allowed" }, 403));
+		}
+
+		const ct = (req.headers.get("content-type") || "").toLowerCase();
+		if (!ct.startsWith("application/json")) {
+			return withCORS(req, json({ error: "content-type must be application/json" }, 415));
+		}
+
+		const curatedError = ensureCuratedAvailable(req);
+		if (curatedError) return curatedError;
+
+		const { guesses, patterns, hardMode } = await req.json().catch(() => ({}));
+
+		if (!Array.isArray(guesses) || !Array.isArray(patterns)) {
+			return withCORS(req, json({ error: "bad payload" }, 400));
+		}
+
+		if (guesses.length === 0 || guesses.length !== patterns.length) {
+			return withCORS(req, json({ error: "bad payload" }, 400));
+		}
+
+		const normalizedGuesses = [];
+		for (let i = 0; i < guesses.length; i++) {
+			const guess = norm(guesses[i]);
+			if (!guess || guess.length !== 5) {
+				return withCORS(req, json({ error: "bad guess" }, 400));
+			}
+			normalizedGuesses.push(guess);
+		}
+
+		const normalizedPatterns = [];
+		for (let i = 0; i < patterns.length; i++) {
+			const pattern = Number(patterns[i]);
+			if (!Number.isInteger(pattern) || pattern < 0 || pattern >= PATTERN_SIZE) {
+				return withCORS(req, json({ error: "bad pattern" }, 400));
+			}
+			normalizedPatterns.push(pattern);
+		}
+
+		const result = analyzeGame(
+			normalizedGuesses,
+			normalizedPatterns,
+			hardMode === true,
+		);
+
+		if (result.error) {
+			return withCORS(req, json({ error: result.error }, 400));
+		}
+
+		return withCORS(req, json(result));
 	}
 
 	if (url.pathname !== "/stats") return new Response("Not found", { status: 404 });
