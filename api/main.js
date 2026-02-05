@@ -160,13 +160,15 @@ const countBuckets = (remaining, guess, bucket) => {
 	}
 };
 
-const expectedRemaining = (bucket, n) => {
-	let sum = 0;
+const entropy = (bucket, n) => {
+	let h = 0;
 	for (let i = 0; i < PATTERN_SIZE; i++) {
-		const count = bucket[i];
-		if (count) sum += count * count;
+		if (bucket[i] > 0) {
+			const p = bucket[i] / n;
+			h -= p * Math.log2(p);
+		}
 	}
-	return sum / n;
+	return h;
 };
 
 const analyzeGame = (guesses, patterns, hardMode) => {
@@ -184,22 +186,10 @@ const analyzeGame = (guesses, patterns, hardMode) => {
 
 		countBuckets(remaining, guess, bucket);
 
-		const myE = expectedRemaining(bucket, n);
-
-		let minBucket = 0;
-		for (let p = 0; p < PATTERN_SIZE; p++) {
-			const count = bucket[p];
-			if (count > 0 && (minBucket === 0 || count < minBucket)) {
-				minBucket = count;
-			}
-		}
-
-		let luck;
-		if (myE === minBucket) {
-			luck = 50;
-		} else {
-			luck = 100 * (myE - bucket[observed]) / (myE - minBucket);
-		}
+		const myEntropy = entropy(bucket, n);
+		const expectedBucket = bucket.reduce((sum, count) => sum + count * count, 0) / n;
+		const actualBucket = bucket[observed];
+		const luck = 50 + 50 * (expectedBucket - actualBucket) / expectedBucket;
 		luckScores.push(clampScore(luck));
 
 		let candidates = curatedWords;
@@ -211,20 +201,20 @@ const analyzeGame = (guesses, patterns, hardMode) => {
 			if (!candidates.length) return { error: "no candidates" };
 		}
 
-		let bestE = Infinity;
-		let worstE = -Infinity;
+		let maxEntropy = -Infinity;
+		let minEntropy = Infinity;
 		for (let c = 0; c < candidates.length; c++) {
 			countBuckets(remaining, candidates[c], bucket);
-			const eCand = expectedRemaining(bucket, n);
-			if (eCand < bestE) bestE = eCand;
-			if (eCand > worstE) worstE = eCand;
+			const eCand = entropy(bucket, n);
+			if (eCand > maxEntropy) maxEntropy = eCand;
+			if (eCand < minEntropy) minEntropy = eCand;
 		}
 
 		let eff;
-		if (bestE === worstE) {
+		if (maxEntropy === minEntropy) {
 			eff = 100;
 		} else {
-			eff = 100 * (worstE - myE) / (worstE - bestE);
+			eff = 100 * (myEntropy - minEntropy) / (maxEntropy - minEntropy);
 		}
 		efficiencyScores.push(clampScore(eff));
 
@@ -517,4 +507,3 @@ Deno.serve(async (req) => {
 
 	return new Response("Method not allowed", { status: 405 });
 });
-
