@@ -20,8 +20,10 @@ const settingsIcon = document.querySelector("#settingsIcon");
 const settingsSection = document.querySelector("#settings");
 const statsSection = document.querySelector("#stats");
 const analysisBlock = document.querySelector("#analysisBlock");
-const analysisEfficiencyValue = analysisBlock?.querySelector(".analysis-efficiency");
-const analysisLuckValue = analysisBlock?.querySelector(".analysis-luck");
+const analysisEfficiencyValue = analysisBlock?.querySelector(
+	"[data-analysis=\"efficiency\"]",
+);
+const analysisLuckValue = analysisBlock?.querySelector("[data-analysis=\"luck\"]");
 const resumeSection = document.querySelector("#resume");
 const resumeContinueBtn = document.querySelector("#resume-continue");
 const backdrop = document.querySelector(".backdrop");
@@ -914,13 +916,8 @@ function shareChallenge() {
 	const msgtext = getTextTemplate(shareBtn, {});
 	const lines = [msgtext];
 
-	const attemptLabel = (activeRow < rowElements.length)
-		? `${activeRow + 1}/6`
-		: "X/6";
-	lines.push(`Wortsel ${attemptLabel}`);
-
 	if (analysisResult) {
-		lines.push(`E: ${analysisResult.E} G: ${analysisResult.L}`);
+		lines.push(`🎯: ${analysisResult.E}/100 🍀: ${analysisResult.L}/100`);
 	}
 
 	if (grid) lines.push(grid);
@@ -1125,7 +1122,7 @@ globalThis.wortsel.initGame();
  * - AUTO_RELOAD_ON_SW_UPDATE: reload page once after an update
  -------------------------------------------------------------------------------------------------- */
 const USE_SERVICE_WORKER = true;
-const SERVICE_WORKER_VERSION = "2026-02-05-v1";
+const SERVICE_WORKER_VERSION = "2026-02-05-v2";
 const AUTO_RELOAD_ON_SW_UPDATE = false;
 
 /* --------------------------------------------------------------------------------------------------
