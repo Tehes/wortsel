@@ -317,6 +317,25 @@
     background-color: var(--color-fail);
   }
 
+  #analysisBlock {
+    border-top: var(--border-thin);
+    margin: 1em 0 0.5em 0;
+    padding-top: 0.75em;
+  }
+
+  .analysis-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1em;
+    margin: 0.35em 0;
+  }
+
+  .analysis-value {
+    min-width: 2.5em;
+    text-align: right;
+    font-weight: 500;
+  }
+
   .stats-actions {
     display: flex;
     flex-direction: column;

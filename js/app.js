@@ -11,7 +11,7 @@ const gameBoardEl = document.querySelector("main");
 const keyboardElement = document.querySelector("#keyboard");
 const restartButtons = document.querySelectorAll(".restart");
 const shareBtn = document.querySelector("#shareChallengeButton");
-const rowElements = document.querySelectorAll(".row");
+const rowElements = document.querySelectorAll("main .row");
 const modalElement = document.querySelector("aside.modal");
 const headlineElement = document.querySelector("h1");
 const howToIcon = document.querySelector("#howToIcon");
@@ -19,6 +19,9 @@ const howToSection = document.querySelector("#howTo");
 const settingsIcon = document.querySelector("#settingsIcon");
 const settingsSection = document.querySelector("#settings");
 const statsSection = document.querySelector("#stats");
+const analysisBlock = document.querySelector("#analysisBlock");
+const analysisEfficiencyValue = analysisBlock?.querySelector(".analysis-efficiency");
+const analysisLuckValue = analysisBlock?.querySelector(".analysis-luck");
 const resumeSection = document.querySelector("#resume");
 const resumeContinueBtn = document.querySelector("#resume-continue");
 const backdrop = document.querySelector(".backdrop");
@@ -47,6 +50,7 @@ const firstVisit = JSON.parse(
 	localStorage.getItem("wortsel_firstVisit") || "true",
 );
 let isGameOver = false; // blocks input
+let analysisResult = null;
 
 let lockedLetters = [null, null, null, null, null]; // fixed, correct letters carried over
 // In hard mode, prevent reusing yellow letters at the same position
@@ -567,6 +571,8 @@ function checkEndCondition() {
 			solution,
 			attempts: (activeRow < 6) ? activeRow + 1 : "fail",
 		});
+
+		postAnalysis();
 	}
 }
 
@@ -646,6 +652,8 @@ function resetGame() {
 
 	statsSection.classList.add("hidden");
 	backdrop.classList.add("hidden");
+
+	resetAnalysisBlock();
 
 	solution = curatedWords[getRandomInteger(0, curatedWords.length - 1)]
 		.toLowerCase();
@@ -776,6 +784,101 @@ function renderCommunityStats(dist, { myResult } = {}) {
 }
 
 /* --------------------------------------------------------------------------------------------------
+ * Post-game analysis (E/L)
+ ---------------------------------------------------------------------------------------------------*/
+const ANALYZE_ENDPOINT = "https://wortsel.tehes.deno.net/analyze";
+const PATTERN_POW3 = [1, 3, 9, 27, 81];
+
+function encodePatternFromRow(rowEl) {
+	const cells = rowEl.querySelectorAll(".letter");
+	let code = 0;
+
+	for (let i = 0; i < cells.length; i++) {
+		const cell = cells[i];
+		let value = 0;
+		if (cell.classList.contains("correct")) {
+			value = 2;
+		} else if (cell.classList.contains("present")) {
+			value = 1;
+		}
+		code += value * PATTERN_POW3[i];
+	}
+
+	return code;
+}
+
+function collectCompletedGuessesWithPatterns() {
+	const guesses = [];
+	const patterns = [];
+
+	for (const row of rowElements) {
+		const cells = Array.from(row.querySelectorAll(".letter"));
+		if (!cells.every((cell) => cell.textContent !== "")) continue;
+		const word = cells.map((cell) => cell.textContent).join("");
+		guesses.push(word);
+		patterns.push(encodePatternFromRow(row));
+	}
+
+	return { guesses, patterns };
+}
+
+function resetAnalysisBlock() {
+	analysisResult = null;
+	if (!analysisBlock) return;
+	analysisBlock.classList.add("hidden");
+	if (analysisEfficiencyValue) analysisEfficiencyValue.textContent = "";
+	if (analysisLuckValue) analysisLuckValue.textContent = "";
+}
+
+function renderAnalysis(data) {
+	if (!analysisBlock || !analysisEfficiencyValue || !analysisLuckValue) return;
+	const eff = Number(data?.E);
+	const luck = Number(data?.L);
+	if (!Number.isFinite(eff) || !Number.isFinite(luck)) return;
+
+	const E = Math.max(0, Math.min(100, Math.round(eff)));
+	const L = Math.max(0, Math.min(100, Math.round(luck)));
+
+	analysisResult = { E, L };
+	analysisEfficiencyValue.textContent = `${String(E)}/100`;
+	analysisLuckValue.textContent = `${String(L)}/100`;
+	analysisBlock.classList.remove("hidden");
+}
+
+async function postAnalysis() {
+	resetAnalysisBlock();
+	if (!analysisBlock) return;
+
+	const { guesses, patterns } = collectCompletedGuessesWithPatterns();
+	if (!guesses.length) return;
+
+	const normalizedGuesses = guesses.map((guess) => normalizeWord(guess));
+
+	try {
+		const res = await fetch(ANALYZE_ENDPOINT, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				guesses: normalizedGuesses,
+				patterns,
+				hardMode: hardModeCheckbox.checked === true,
+			}),
+			mode: "cors",
+		});
+
+		if (!res.ok) {
+			console.warn("Analysis request failed:", res.status);
+			return;
+		}
+
+		const data = await res.json();
+		renderAnalysis(data);
+	} catch (e) {
+		console.warn("analysis request failed", e);
+	}
+}
+
+/* --------------------------------------------------------------------------------------------------
  * Sharing (challenge)
  ---------------------------------------------------------------------------------------------------*/
 
@@ -809,9 +912,21 @@ function shareChallenge() {
 
 	const grid = buildEmojiGrid();
 	const msgtext = getTextTemplate(shareBtn, {});
-	const msg = `${msgtext}
-${grid}
-Jetzt Herausforderung annehmen: ${shareUrl}`;
+	const lines = [msgtext];
+
+	const attemptLabel = (activeRow < rowElements.length)
+		? `${activeRow + 1}/6`
+		: "X/6";
+	lines.push(`Wortsel ${attemptLabel}`);
+
+	if (analysisResult) {
+		lines.push(`E: ${analysisResult.E} G: ${analysisResult.L}`);
+	}
+
+	if (grid) lines.push(grid);
+	lines.push(`Jetzt Herausforderung annehmen: ${shareUrl}`);
+
+	const msg = lines.join("\n");
 
 	if (navigator.share) {
 		navigator.share({ text: msg })
@@ -1010,7 +1125,7 @@ globalThis.wortsel.initGame();
  * - AUTO_RELOAD_ON_SW_UPDATE: reload page once after an update
  -------------------------------------------------------------------------------------------------- */
 const USE_SERVICE_WORKER = true;
-const SERVICE_WORKER_VERSION = "2025-12-22-v1";
+const SERVICE_WORKER_VERSION = "2026-02-05-v1";
 const AUTO_RELOAD_ON_SW_UPDATE = false;
 
 /* --------------------------------------------------------------------------------------------------
