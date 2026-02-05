@@ -210,13 +210,17 @@ const analyzeGame = (guesses, patterns, hardMode) => {
 			if (eCand < minEntropy) minEntropy = eCand;
 		}
 
-		let eff;
+		let eff = null;
 		if (maxEntropy === minEntropy) {
-			eff = 100;
+			if (n === 1 && guess !== remaining[0]) {
+				eff = 0;
+			}
 		} else {
 			eff = 100 * (myEntropy - minEntropy) / (maxEntropy - minEntropy);
 		}
-		efficiencyScores.push(clampScore(eff));
+		if (eff !== null) {
+			efficiencyScores.push(clampScore(eff));
+		}
 
 		remaining = remaining.filter(
 			(solution) => computePatternCode(guess, solution) === observed,
