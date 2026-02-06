@@ -44,6 +44,8 @@ FAZ). All brand assets in such deployments belong to their respective owners.
     **X**). Your own result row is highlighted.
   - **Least‑played solution** — by default, the game fetches the least‑played word from the server
     to ensure variety across the community. If unavailable, a random fallback is used.
+- **Post-game analysis (Efficiency & Luck)**: After each game, the stats dialog can show two scores
+  (0-100) computed from your guesses/patterns via the analysis endpoint.
 
 ## How to Play
 
@@ -139,6 +141,11 @@ same position, making it intentionally tougher.
 **What data does the community stats feature store?** Only aggregated counts per solution (attempt
 buckets 1–6 and fail). No user IDs, IPs, or timestamps are published. The server updates counts
 atomically and returns the new distribution immediately for display.
+
+**What do Efficiency and Luck mean?** Efficiency shows how well you narrowed down the list of
+possible words. A high value means you picked a word that, on average, rules out a lot of wrong
+solutions. Luck means that even a great guess can be unlucky, and a weak guess can be a lucky hit.
+This value shows whether the colors you got eliminated more words than statistically expected.
 
 **Does everything work offline?** Gameplay does. Stats and analytics require a connection and are
 skipped when offline.
