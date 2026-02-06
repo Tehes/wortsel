@@ -925,6 +925,12 @@ function shareChallenge() {
 
 	const msg = lines.join("\n");
 
+	if (navigator.clipboard?.writeText) {
+		navigator.clipboard.writeText(msg).then(() => {
+			showModal("Challenge-Text kopiert", 1000);
+		});
+	}
+
 	if (navigator.share) {
 		navigator.share({ text: msg })
 			.catch((error) => {
@@ -932,10 +938,6 @@ function shareChallenge() {
 					return navigator.share({ url: shareUrl });
 				}
 			});
-	} else if (navigator.clipboard?.writeText) {
-		navigator.clipboard.writeText(msg).then(() => {
-			showModal("Challenge-Text kopiert", 1000);
-		});
 	}
 }
 
