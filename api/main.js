@@ -54,6 +54,26 @@ try {
 	console.error("Unable to import curated words list", e);
 }
 
+let additionalWords = [];
+try {
+	const { default: additionalRaw } = await import(
+		"https://tehes.github.io/wortsel/data/additional_words.json",
+		{
+			with: { type: "json" },
+		}
+	);
+	const normalized = new Set();
+	for (const entry of additionalRaw) {
+		const word = norm(entry);
+		if (word && word.length === 5) normalized.add(word);
+	}
+	additionalWords = [...normalized];
+} catch (e) {
+	console.error("Unable to import additional words list", e);
+}
+
+const candidateWords = [...new Set([...curatedWords, ...additionalWords])];
+
 const PATTERN_SIZE = 243;
 const POW3 = [1, 3, 9, 27, 81];
 
@@ -192,10 +212,10 @@ const analyzeGame = (guesses, patterns, hardMode) => {
 		const luck = 50 + 50 * (expectedBucket - actualBucket) / expectedBucket;
 		luckScores.push(clampScore(luck));
 
-		let candidates = curatedWords;
+		let candidates = candidateWords;
 		if (hardMode) {
 			const constraints = buildHardModeConstraints(guesses, patterns, i);
-			candidates = curatedWords.filter((word) =>
+			candidates = candidateWords.filter((word) =>
 				isCandidateAllowed(word, constraints)
 			);
 			if (!candidates.length) return { error: "no candidates" };
