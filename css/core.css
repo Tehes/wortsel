@@ -86,11 +86,12 @@
   a:visited,
   a:active {
     color: inherit;
-    text-decoration: underline;
+    text-decoration: none;
   }
 
   a:hover {
     color: var(--color-correct);
+    text-decoration: underline;
   }
 }
 

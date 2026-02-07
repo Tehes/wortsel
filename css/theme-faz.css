@@ -81,6 +81,12 @@
     font-weight: 600;
   }
 
+  a:link,
+  a:visited,
+  a:active {
+    text-decoration: underline;
+  }
+
   a:hover {
     color: inherit;
     opacity: 0.7;
@@ -148,16 +154,19 @@
     font-weight: 600;
   }
 
-  .restart, .continue {
+  .restart,
+  .continue {
     background-color: rgba(var(--button-rgb), var(--button-opacity));
     color: var(--button-font-color);
   }
 
-  .restart:hover, .continue:hover {
+  .restart:hover,
+  .continue:hover {
     --button-opacity: 0.7;
   }
 
-  .restart:active, .continue:active {
+  .restart:active,
+  .continue:active {
     background-color: var(--button-bg-color);
   }
 
