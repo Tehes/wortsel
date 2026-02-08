@@ -849,7 +849,7 @@ function renderAnalysis(data) {
 
 async function postAnalysis() {
 	resetAnalysisBlock();
-	if (!analysisBlock) return;
+	if (!analysisBlock || !wholeWordsCheckbox.checked) return;
 
 	const { guesses, patterns } = collectCompletedGuessesWithPatterns();
 	if (!guesses.length) return;
@@ -1124,7 +1124,7 @@ globalThis.wortsel.initGame();
  * - AUTO_RELOAD_ON_SW_UPDATE: reload page once after an update
  -------------------------------------------------------------------------------------------------- */
 const USE_SERVICE_WORKER = true;
-const SERVICE_WORKER_VERSION = "2026-02-06-v1";
+const SERVICE_WORKER_VERSION = "2026-02-08-v1";
 const AUTO_RELOAD_ON_SW_UPDATE = false;
 
 /* --------------------------------------------------------------------------------------------------
