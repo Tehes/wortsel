@@ -214,27 +214,49 @@ const analyzeGame = (guesses, patterns, hardMode) => {
 		const luckScore = clampScore(luck);
 		luckScores.push(luckScore);
 
+		let turnConstraints = null;
 		let candidates = candidateWords;
 		if (hardMode) {
-			const constraints = buildHardModeConstraints(guesses, patterns, i);
-			candidates = candidateWords.filter((word) => isCandidateAllowed(word, constraints));
+			turnConstraints = buildHardModeConstraints(guesses, patterns, i);
+			candidates = candidateWords.filter((word) =>
+				isCandidateAllowed(word, turnConstraints)
+			);
 			if (!candidates.length) return { error: "no candidates" };
+		}
+
+		let bestWordCandidates = hardMode && turnConstraints
+			? remaining.filter((word) => isCandidateAllowed(word, turnConstraints))
+			: remaining;
+		if (!bestWordCandidates.length) {
+			bestWordCandidates = hardMode && turnConstraints
+				? additionalWords.filter((word) => isCandidateAllowed(word, turnConstraints))
+				: additionalWords;
+		}
+		if (!bestWordCandidates.length) {
+			bestWordCandidates = candidates;
 		}
 
 		let maxEntropy = -Infinity;
 		let minEntropy = Infinity;
-		const bestWords = [];
 		for (let c = 0; c < candidates.length; c++) {
 			countBuckets(remaining, candidates[c], bucket);
 			const eCand = entropy(bucket, n);
-			if (eCand > maxEntropy) {
-				maxEntropy = eCand;
-				bestWords.length = 0;
-				bestWords.push(candidates[c]);
-			} else if (eCand === maxEntropy) {
-				bestWords.push(candidates[c]);
-			}
+			if (eCand > maxEntropy) maxEntropy = eCand;
 			if (eCand < minEntropy) minEntropy = eCand;
+		}
+
+		let bestWordEntropy = -Infinity;
+		const bestWords = [];
+		for (let c = 0; c < bestWordCandidates.length; c++) {
+			countBuckets(remaining, bestWordCandidates[c], bucket);
+			const eCand = entropy(bucket, n);
+			if (eCand > bestWordEntropy) {
+				bestWordEntropy = eCand;
+				bestWords.length = 0;
+				bestWords.push(bestWordCandidates[c]);
+			} else if (eCand === bestWordEntropy) {
+				bestWords.push(bestWordCandidates[c]);
+			}
 		}
 		const bestWord = bestWords[Math.floor(Math.random() * bestWords.length)] || "";
 
