@@ -76,6 +76,7 @@ const candidateWords = [...new Set([...curatedWords, ...additionalWords])];
 
 const PATTERN_SIZE = 243;
 const POW3 = [1, 3, 9, 27, 81];
+const SOLVED_PATTERN = PATTERN_SIZE - 1;
 
 const clampScore = (value) => {
 	if (!Number.isFinite(value)) return 0;
@@ -268,6 +269,8 @@ const analyzeGame = (guesses, patterns, hardMode) => {
 			? bestWords[Math.floor(Math.random() * bestWords.length)]
 			: null;
 
+		const solvedThisTurn = observed === SOLVED_PATTERN;
+
 		let eff = null;
 		if (maxEntropy === minEntropy) {
 			if (n === 1 && guess !== remainingSolutions[0]) {
@@ -290,8 +293,8 @@ const analyzeGame = (guesses, patterns, hardMode) => {
 		attempts.push({
 			E: turnEff,
 			L: Math.round(luckScore),
-			remainingSolutions: remainingSolutions.length,
-			betterWord,
+			remainingSolutions: solvedThisTurn ? 0 : remainingSolutions.length,
+			betterWord: solvedThisTurn ? null : betterWord,
 		});
 	}
 
