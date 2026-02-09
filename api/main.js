@@ -191,10 +191,34 @@ const entropy = (bucket, n) => {
 	return h;
 };
 
+const collectBestWords = (remaining, candidates, bucket) => {
+	let maxEntropy = -Infinity;
+	const bestWords = [];
+
+	for (let i = 0; i < candidates.length; i++) {
+		countBuckets(remaining, candidates[i], bucket);
+		const candidateEntropy = entropy(bucket, remaining.length);
+
+		if (candidateEntropy > maxEntropy) {
+			maxEntropy = candidateEntropy;
+			bestWords.length = 0;
+			bestWords.push(candidates[i]);
+			continue;
+		}
+
+		if (candidateEntropy === maxEntropy) {
+			bestWords.push(candidates[i]);
+		}
+	}
+
+	return bestWords;
+};
+
 const analyzeGame = (guesses, patterns, hardMode) => {
 	let remaining = curatedWords.slice();
 	const luckScores = [];
 	const efficiencyScores = [];
+	const attempts = [];
 	const bucket = new Uint16Array(PATTERN_SIZE);
 
 	for (let i = 0; i < guesses.length; i++) {
@@ -210,14 +234,13 @@ const analyzeGame = (guesses, patterns, hardMode) => {
 		const expectedBucket = bucket.reduce((sum, count) => sum + count * count, 0) / n;
 		const actualBucket = bucket[observed];
 		const luck = 50 + 50 * (expectedBucket - actualBucket) / expectedBucket;
-		luckScores.push(clampScore(luck));
+		const luckScore = clampScore(luck);
+		luckScores.push(luckScore);
 
 		let candidates = candidateWords;
 		if (hardMode) {
 			const constraints = buildHardModeConstraints(guesses, patterns, i);
-			candidates = candidateWords.filter((word) =>
-				isCandidateAllowed(word, constraints)
-			);
+			candidates = candidateWords.filter((word) => isCandidateAllowed(word, constraints));
 			if (!candidates.length) return { error: "no candidates" };
 		}
 
@@ -238,21 +261,51 @@ const analyzeGame = (guesses, patterns, hardMode) => {
 		} else {
 			eff = 100 * (myEntropy - minEntropy) / (maxEntropy - minEntropy);
 		}
+		let turnEff = null;
 		if (eff !== null) {
-			efficiencyScores.push(clampScore(eff));
+			const effScore = clampScore(eff);
+			efficiencyScores.push(effScore);
+			turnEff = Math.round(effScore);
 		}
 
 		remaining = remaining.filter(
 			(solution) => computePatternCode(guess, solution) === observed,
 		);
+
+		let bestWordConstraints = null;
+		let bestWordCandidates = remaining;
+		if (hardMode) {
+			bestWordConstraints = buildHardModeConstraints(guesses, patterns, i + 1);
+			bestWordCandidates = remaining.filter((word) =>
+				isCandidateAllowed(word, bestWordConstraints)
+			);
+		}
+		if (!bestWordCandidates.length) {
+			bestWordCandidates = hardMode && bestWordConstraints
+				? candidateWords.filter((word) => isCandidateAllowed(word, bestWordConstraints))
+				: candidateWords;
+		}
+		if (!bestWordCandidates.length) {
+			bestWordCandidates = candidates;
+		}
+
+		const bestWords = collectBestWords(remaining, bestWordCandidates, bucket);
+		const bestWord = bestWords[Math.floor(Math.random() * bestWords.length)] || "";
+
+		attempts.push({
+			E: turnEff,
+			L: Math.round(luckScore),
+			remaining: remaining.length,
+			bestWord,
+		});
 	}
 
-	const average = (values) =>
-		values.reduce((sum, value) => sum + value, 0) / values.length;
+	const average = (values) => values.reduce((sum, value) => sum + value, 0) / values.length;
 
 	return {
 		E: Math.round(average(efficiencyScores)),
 		L: Math.round(average(luckScores)),
+		attempts,
 	};
 };
 
