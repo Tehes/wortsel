@@ -247,18 +247,26 @@ const analyzeGame = (guesses, patterns, hardMode) => {
 
 		let bestWordEntropy = -Infinity;
 		const bestWords = [];
+		const BETTER_EPSILON = 1e-12;
 		for (let c = 0; c < bestWordCandidates.length; c++) {
 			countBuckets(remaining, bestWordCandidates[c], bucket);
 			const eCand = entropy(bucket, n);
-			if (eCand > bestWordEntropy) {
+
+			if (eCand <= myEntropy + BETTER_EPSILON) {
+				continue;
+			}
+
+			if (eCand > bestWordEntropy + BETTER_EPSILON) {
 				bestWordEntropy = eCand;
 				bestWords.length = 0;
 				bestWords.push(bestWordCandidates[c]);
-			} else if (eCand === bestWordEntropy) {
+			} else if (Math.abs(eCand - bestWordEntropy) <= BETTER_EPSILON) {
 				bestWords.push(bestWordCandidates[c]);
 			}
 		}
-		const bestWord = bestWords[Math.floor(Math.random() * bestWords.length)] || "";
+		const bestWord = bestWords.length
+			? bestWords[Math.floor(Math.random() * bestWords.length)]
+			: null;
 
 		let eff = null;
 		if (maxEntropy === minEntropy) {
