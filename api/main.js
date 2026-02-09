@@ -191,29 +191,6 @@ const entropy = (bucket, n) => {
 	return h;
 };
 
-const collectBestWords = (remaining, candidates, bucket) => {
-	let maxEntropy = -Infinity;
-	const bestWords = [];
-
-	for (let i = 0; i < candidates.length; i++) {
-		countBuckets(remaining, candidates[i], bucket);
-		const candidateEntropy = entropy(bucket, remaining.length);
-
-		if (candidateEntropy > maxEntropy) {
-			maxEntropy = candidateEntropy;
-			bestWords.length = 0;
-			bestWords.push(candidates[i]);
-			continue;
-		}
-
-		if (candidateEntropy === maxEntropy) {
-			bestWords.push(candidates[i]);
-		}
-	}
-
-	return bestWords;
-};
-
 const analyzeGame = (guesses, patterns, hardMode) => {
 	let remaining = curatedWords.slice();
 	const luckScores = [];
@@ -246,12 +223,20 @@ const analyzeGame = (guesses, patterns, hardMode) => {
 
 		let maxEntropy = -Infinity;
 		let minEntropy = Infinity;
+		const bestWords = [];
 		for (let c = 0; c < candidates.length; c++) {
 			countBuckets(remaining, candidates[c], bucket);
 			const eCand = entropy(bucket, n);
-			if (eCand > maxEntropy) maxEntropy = eCand;
+			if (eCand > maxEntropy) {
+				maxEntropy = eCand;
+				bestWords.length = 0;
+				bestWords.push(candidates[c]);
+			} else if (eCand === maxEntropy) {
+				bestWords.push(candidates[c]);
+			}
 			if (eCand < minEntropy) minEntropy = eCand;
 		}
+		const bestWord = bestWords[Math.floor(Math.random() * bestWords.length)] || "";
 
 		let eff = null;
 		if (maxEntropy === minEntropy) {
@@ -271,26 +256,6 @@ const analyzeGame = (guesses, patterns, hardMode) => {
 		remaining = remaining.filter(
 			(solution) => computePatternCode(guess, solution) === observed,
 		);
-
-		let bestWordConstraints = null;
-		let bestWordCandidates = remaining;
-		if (hardMode) {
-			bestWordConstraints = buildHardModeConstraints(guesses, patterns, i + 1);
-			bestWordCandidates = remaining.filter((word) =>
-				isCandidateAllowed(word, bestWordConstraints)
-			);
-		}
-		if (!bestWordCandidates.length) {
-			bestWordCandidates = hardMode && bestWordConstraints
-				? candidateWords.filter((word) => isCandidateAllowed(word, bestWordConstraints))
-				: candidateWords;
-		}
-		if (!bestWordCandidates.length) {
-			bestWordCandidates = candidates;
-		}
-
-		const bestWords = collectBestWords(remaining, bestWordCandidates, bucket);
-		const bestWord = bestWords[Math.floor(Math.random() * bestWords.length)] || "";
 
 		attempts.push({
 			E: turnEff,
