@@ -199,7 +199,7 @@ Key design principles:
 - Reward information quality, not deterministic optimal play.
 - Avoid forcing a single "correct" meta strategy.
 - Separate information-theoretic scoring from human-plausible suggestions.
-- Highlight clearly better alternatives, ignore marginal differences.
+- Prefer better alternatives while keeping recommendations non-deterministic.
 - Preserve gameplay constraints (e.g. hard mode).
 
 Many implementation choices below reflect product UX decisions,
@@ -272,34 +272,33 @@ const analyzeGame = (guesses, patterns, hardMode) => {
 			if (eCand < minEntropy) minEntropy = eCand;
 		}
 
-		// Only treat a word as "better" if it exceeds the player's entropy
-		// by CLEAR_BETTER_DELTA bits.
-		// This avoids presenting micro-differences as meaningful improvements.
-		// The intention is to highlight clearly stronger information plays,
-		// not marginal solver-level optimizations.
-		const CLEAR_BETTER_DELTA = 0.3;
 		const BETTER_EPSILON = 1e-12;
-		const minBetterEntropy = guessEntropy + CLEAR_BETTER_DELTA;
-		const betterCandidates = [];
+		const scoredCandidates = [];
 		for (let c = 0; c < replacementCandidates.length; c++) {
 			countBuckets(remainingSolutions, replacementCandidates[c], bucket);
 			const eCand = entropy(bucket, n);
 
-			if (eCand + BETTER_EPSILON < minBetterEntropy) {
-				continue;
-			}
-
-			betterCandidates.push({ word: replacementCandidates[c], entropy: eCand });
+			scoredCandidates.push({ word: replacementCandidates[c], entropy: eCand });
 		}
+		scoredCandidates.sort((a, b) => b.entropy - a.entropy);
+		const topLimit = Math.min(20, scoredCandidates.length);
+		const topCandidates = scoredCandidates.slice(0, topLimit);
+		const betterCandidates = topCandidates.filter((cand) =>
+			cand.entropy > guessEntropy + BETTER_EPSILON
+		);
 		let betterWord = null;
+		let betterWordE = null;
 		if (betterCandidates.length) {
 			// We intentionally select a random word from the top 20 entropy candidates.
 			// The goal is to avoid deterministic "always-the-same" recommendations
 			// (especially for the opener) and prevent meta play.
 			// This function is meant for coaching, not for producing a single optimal move.
-			betterCandidates.sort((a, b) => b.entropy - a.entropy);
-			const limit = Math.min(20, betterCandidates.length);
-			betterWord = betterCandidates[Math.floor(Math.random() * limit)].word;
+			const chosen = betterCandidates[Math.floor(Math.random() * betterCandidates.length)];
+			betterWord = chosen.word;
+			if (maxEntropy !== minEntropy) {
+				const effBetter = 100 * (chosen.entropy - minEntropy) / (maxEntropy - minEntropy);
+				betterWordE = Math.round(clampScore(effBetter));
+			}
 		}
 
 		const solvedThisTurn = observed === SOLVED_PATTERN;
@@ -328,6 +327,7 @@ const analyzeGame = (guesses, patterns, hardMode) => {
 			L: Math.round(luckScore),
 			remainingSolutions: solvedThisTurn ? 0 : remainingSolutions.length,
 			betterWord: solvedThisTurn ? null : betterWord,
+			betterWordE: solvedThisTurn ? null : betterWordE,
 		});
 	}
 
