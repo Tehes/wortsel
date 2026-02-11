@@ -246,28 +246,26 @@ const analyzeGame = (guesses, patterns, hardMode) => {
 			if (eCand < minEntropy) minEntropy = eCand;
 		}
 
-		let bestReplacementEntropy = -Infinity;
-		const bestWords = [];
+		const CLEAR_BETTER_DELTA = 0.3;
 		const BETTER_EPSILON = 1e-12;
+		const minBetterEntropy = guessEntropy + CLEAR_BETTER_DELTA;
+		const betterCandidates = [];
 		for (let c = 0; c < replacementCandidates.length; c++) {
 			countBuckets(remainingSolutions, replacementCandidates[c], bucket);
 			const eCand = entropy(bucket, n);
 
-			if (eCand <= guessEntropy + BETTER_EPSILON) {
+			if (eCand + BETTER_EPSILON < minBetterEntropy) {
 				continue;
 			}
 
-			if (eCand > bestReplacementEntropy + BETTER_EPSILON) {
-				bestReplacementEntropy = eCand;
-				bestWords.length = 0;
-				bestWords.push(replacementCandidates[c]);
-			} else if (Math.abs(eCand - bestReplacementEntropy) <= BETTER_EPSILON) {
-				bestWords.push(replacementCandidates[c]);
-			}
+			betterCandidates.push({ word: replacementCandidates[c], entropy: eCand });
 		}
-		const betterWord = bestWords.length
-			? bestWords[Math.floor(Math.random() * bestWords.length)]
-			: null;
+		let betterWord = null;
+		if (betterCandidates.length) {
+			betterCandidates.sort((a, b) => b.entropy - a.entropy);
+			const limit = Math.min(20, betterCandidates.length);
+			betterWord = betterCandidates[Math.floor(Math.random() * limit)].word;
+		}
 
 		const solvedThisTurn = observed === SOLVED_PATTERN;
 
