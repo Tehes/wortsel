@@ -192,6 +192,19 @@ const entropy = (bucket, n) => {
 	return h;
 };
 
+/*
+analyzeGame is designed as a coaching tool, not a solver.
+
+Key design principles:
+- Reward information quality, not deterministic optimal play.
+- Avoid forcing a single "correct" meta strategy.
+- Separate information-theoretic scoring from human-plausible suggestions.
+- Highlight clearly better alternatives, ignore marginal differences.
+- Preserve gameplay constraints (e.g. hard mode).
+
+Many implementation choices below reflect product UX decisions,
+not purely mathematical necessities.
+*/
 const analyzeGame = (guesses, patterns, hardMode) => {
 	let remainingSolutions = curatedWords.slice();
 	const luckScores = [];
@@ -212,12 +225,25 @@ const analyzeGame = (guesses, patterns, hardMode) => {
 		const expectedBucket = bucket.reduce((sum, count) => sum + count * count, 0) / n;
 		const actualBucket = bucket[observed];
 		const luck = 50 + 50 * (expectedBucket - actualBucket) / expectedBucket;
+		// Luck score is clamped to [0, 100].
+		// Extreme outcomes are intentional: very good or very bad buckets
+		// should be reflected clearly rather than softened.
+		// Luck measures deviation from expectation, not player skill.
 		const luckScore = clampScore(luck);
 		luckScores.push(luckScore);
 
+		// Efficiency is evaluated against the full guess candidate set
+		// (information-theoretic perspective).
+		// However, recommendation candidates prioritize remaining solutions
+		// for plausibility. This separates "information quality" from
+		// "human-like solution candidates" intentionally.
 		let turnConstraints = null;
 		let guessCandidates = candidateWords;
 		if (hardMode) {
+			// In hard mode, guess candidates are restricted to words
+			// consistent with previous feedback. This mirrors actual gameplay
+			// constraints so Efficiency is evaluated under the same rules
+			// the player is operating with.
 			turnConstraints = buildHardModeConstraints(guesses, patterns, i);
 			guessCandidates = candidateWords.filter((word) =>
 				isCandidateAllowed(word, turnConstraints)
@@ -246,6 +272,11 @@ const analyzeGame = (guesses, patterns, hardMode) => {
 			if (eCand < minEntropy) minEntropy = eCand;
 		}
 
+		// Only treat a word as "better" if it exceeds the player's entropy
+		// by CLEAR_BETTER_DELTA bits.
+		// This avoids presenting micro-differences as meaningful improvements.
+		// The intention is to highlight clearly stronger information plays,
+		// not marginal solver-level optimizations.
 		const CLEAR_BETTER_DELTA = 0.3;
 		const BETTER_EPSILON = 1e-12;
 		const minBetterEntropy = guessEntropy + CLEAR_BETTER_DELTA;
@@ -262,6 +293,10 @@ const analyzeGame = (guesses, patterns, hardMode) => {
 		}
 		let betterWord = null;
 		if (betterCandidates.length) {
+			// We intentionally select a random word from the top 20 entropy candidates.
+			// The goal is to avoid deterministic "always-the-same" recommendations
+			// (especially for the opener) and prevent meta play.
+			// This function is meant for coaching, not for producing a single optimal move.
 			betterCandidates.sort((a, b) => b.entropy - a.entropy);
 			const limit = Math.min(20, betterCandidates.length);
 			betterWord = betterCandidates[Math.floor(Math.random() * limit)].word;
