@@ -31,8 +31,11 @@
 	<header>
 		<div id="howToIcon"><img alt="Hilfe-Symbol" src="img/BaselineHelpOutline.svg"></div>
 		<h1>Wortsel</h1>
-		<div id="settingsIcon" data-allow-during-game="false"><img alt="Einstellungen-Symbol"
-				src="img/BaselineTune.svg"></div>
+		<div id="headerActions">
+			<span id="statsIcon"><img alt="Statistik-Symbol" src="img/barChart.svg"></span>
+			<span id="settingsIcon" data-allow-during-game="false"><img alt="Einstellungen-Symbol"
+					src="img/BaselineTune.svg"></span>
+		</div>
 	</header>
 	<main>
 		<div class="row">
@@ -80,6 +83,87 @@
 	</main>
 	<div class="backdrop hidden"></div>
 	<aside class="modal hidden"></aside>
+	<aside id="personalStats" class="hidden">
+		<h2>Persönliche Statistik</h2>
+		<div class="personal-stats-meta">
+			<div class="personal-stats-meta-item">
+				<span>Gespielte Wörter</span>
+				<strong data-personal-stat="gamesPlayed">0</strong>
+			</div>
+			<div class="personal-stats-meta-item">
+				<span>Gewonnen</span>
+				<strong data-personal-stat="winRate">0%</strong>
+			</div>
+			<div class="personal-stats-meta-item">
+				<span>Ø Versuche</span>
+				<strong data-personal-stat="averageAttempts">-</strong>
+			</div>
+			<div class="personal-stats-meta-item">
+				<span>Ø Effizienz</span>
+				<strong data-personal-stat="averageEfficiency">-</strong>
+			</div>
+			<div class="personal-stats-meta-item">
+				<span>Aktuelle Serie</span>
+				<strong data-personal-stat="currentStreak">0</strong>
+			</div>
+			<div class="personal-stats-meta-item">
+				<span>Längste Serie</span>
+				<strong data-personal-stat="maxStreak">0</strong>
+			</div>
+		</div>
+		<ul class="stats-list">
+			<li class="stats-row" data-key="1">
+				<div class="stats-label">1</div>
+				<div class="stats-bar">
+					<div class="stats-fill"></div>
+				</div>
+				<div class="stats-count">0</div>
+			</li>
+			<li class="stats-row" data-key="2">
+				<div class="stats-label">2</div>
+				<div class="stats-bar">
+					<div class="stats-fill"></div>
+				</div>
+				<div class="stats-count">0</div>
+			</li>
+			<li class="stats-row" data-key="3">
+				<div class="stats-label">3</div>
+				<div class="stats-bar">
+					<div class="stats-fill"></div>
+				</div>
+				<div class="stats-count">0</div>
+			</li>
+			<li class="stats-row" data-key="4">
+				<div class="stats-label">4</div>
+				<div class="stats-bar">
+					<div class="stats-fill"></div>
+				</div>
+				<div class="stats-count">0</div>
+			</li>
+			<li class="stats-row" data-key="5">
+				<div class="stats-label">5</div>
+				<div class="stats-bar">
+					<div class="stats-fill"></div>
+				</div>
+				<div class="stats-count">0</div>
+			</li>
+			<li class="stats-row" data-key="6">
+				<div class="stats-label">6</div>
+				<div class="stats-bar">
+					<div class="stats-fill"></div>
+				</div>
+				<div class="stats-count">0</div>
+			</li>
+			<li class="stats-row fail" data-key="fail">
+				<div class="stats-label">X</div>
+				<div class="stats-bar">
+					<div class="stats-fill"></div>
+				</div>
+				<div class="stats-count">0</div>
+			</li>
+		</ul>
+		<div class="close"><img src="img/BaselineClose.svg" alt=""></div>
+	</aside>
 	<aside id="stats" class="hidden">
 		<h2>Community-Statistik</h2>
 		<p class="stats-meta" data-text="Das Wort &quot;{{SOLUTION}}&quot; wurde {{TOTAL}}-mal gespielt."></p>

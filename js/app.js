@@ -16,9 +16,11 @@ const modalElement = document.querySelector("aside.modal");
 const headlineElement = document.querySelector("h1");
 const howToIcon = document.querySelector("#howToIcon");
 const howToSection = document.querySelector("#howTo");
+const statsIcon = document.querySelector("#statsIcon");
 const settingsIcon = document.querySelector("#settingsIcon");
 const settingsSection = document.querySelector("#settings");
 const statsSection = document.querySelector("#stats");
+const personalStatsSection = document.querySelector("#personalStats");
 const analysisBlock = document.querySelector("#analysisBlock");
 const analysisEfficiencyValue = analysisBlock?.querySelector(
 	"[data-analysis=\"efficiency\"]",
@@ -62,6 +64,7 @@ let yellowBans = new Map();
 const STATE_PREFIX = "wortsel_state::"; // per-word for Challenge saves
 const CURRENT_KEY = "wortsel_current"; // exactly one non-challenge game
 const STATE_TTL_DAYS = 7; // purge only Challenge saves
+const PERSONAL_STATS_KEY = "wortsel_personalStats";
 const storageKey = () => (viaChallenge ? keyFor(solution) : CURRENT_KEY);
 
 /* --------------------------------------------------------------------------------------------------
@@ -545,6 +548,8 @@ function checkEndCondition() {
 		isGameOver = true;
 		removeInputListeners();
 		clearGameState();
+		const resultKey = (activeRow < 6) ? String(activeRow + 1) : "fail";
+		recordPersonalStatsGame(resultKey);
 
 		if (analyticsPayload) {
 			// UMAMI ANALYTICS
@@ -571,7 +576,7 @@ function checkEndCondition() {
 
 		postCommunityStats({
 			solution,
-			attempts: (activeRow < 6) ? activeRow + 1 : "fail",
+			attempts: (resultKey !== "fail") ? Number(resultKey) : "fail",
 		});
 
 		postAnalysis();
@@ -627,6 +632,141 @@ function saveSettings() {
 	localStorage.setItem("wortsel_hardMode", JSON.stringify(hardModeCheckbox.checked));
 }
 
+/* --------------------------------------------------------------------------------------------------
+ * Personal stats
+ ---------------------------------------------------------------------------------------------------*/
+function createEmptyPersonalStats() {
+	return {
+		gamesPlayed: 0,
+		wins: 0,
+		currentStreak: 0,
+		maxStreak: 0,
+		counts: { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, fail: 0 },
+		efficiencyTotal: 0,
+		efficiencyCount: 0,
+	};
+}
+
+function normalizePersonalStats(stats) {
+	const emptyStats = createEmptyPersonalStats();
+	return {
+		...emptyStats,
+		...(stats || {}),
+		counts: {
+			...emptyStats.counts,
+			...(stats?.counts || {}),
+		},
+	};
+}
+
+function getPersonalStats() {
+	try {
+		const storedStats = JSON.parse(localStorage.getItem(PERSONAL_STATS_KEY) || "null");
+		return normalizePersonalStats(storedStats);
+	} catch (e) {
+		console.warn("Personal stats could not be read:", e);
+		return normalizePersonalStats();
+	}
+}
+
+function savePersonalStats(stats) {
+	localStorage.setItem(PERSONAL_STATS_KEY, JSON.stringify(stats));
+}
+
+function recordPersonalStatsGame(resultKey) {
+	if (!personalStatsSection) return;
+
+	const stats = getPersonalStats();
+	const didWin = resultKey !== "fail";
+
+	stats.gamesPlayed++;
+	stats.counts[resultKey]++;
+
+	if (didWin) {
+		stats.wins++;
+		stats.currentStreak++;
+		stats.maxStreak = Math.max(stats.maxStreak, stats.currentStreak);
+	} else {
+		stats.currentStreak = 0;
+	}
+
+	savePersonalStats(stats);
+}
+
+function recordPersonalStatsEfficiency(efficiency) {
+	if (!personalStatsSection) return;
+
+	const value = Number(efficiency);
+	if (!Number.isFinite(value)) return;
+
+	const stats = getPersonalStats();
+	stats.efficiencyTotal += Math.max(0, Math.min(100, Math.round(value)));
+	stats.efficiencyCount++;
+	savePersonalStats(stats);
+
+	if (!personalStatsSection.classList.contains("hidden")) {
+		renderPersonalStats();
+	}
+}
+
+function setPersonalStatsText(key, text) {
+	const element = personalStatsSection?.querySelector(`[data-personal-stat="${key}"]`);
+	if (element) {
+		element.textContent = text;
+	}
+}
+
+function renderPersonalStats(stats = getPersonalStats()) {
+	if (!personalStatsSection) return;
+
+	stats = normalizePersonalStats(stats);
+	const winRate = stats.gamesPlayed ? Math.round((stats.wins / stats.gamesPlayed) * 100) : 0;
+	const attemptTotal = [1, 2, 3, 4, 5, 6].reduce(
+		(total, attempt) => total + attempt * Number(stats.counts[String(attempt)] || 0),
+		0,
+	);
+	const averageAttempts = stats.wins
+		? (attemptTotal / stats.wins).toFixed(2).replace(".", ",")
+		: "-";
+	const averageEfficiency = stats.efficiencyCount
+		? `${Math.round(stats.efficiencyTotal / stats.efficiencyCount)}/100`
+		: "-";
+
+	setPersonalStatsText("gamesPlayed", String(stats.gamesPlayed));
+	setPersonalStatsText("winRate", `${winRate}%`);
+	setPersonalStatsText("averageAttempts", averageAttempts);
+	setPersonalStatsText("currentStreak", String(stats.currentStreak));
+	setPersonalStatsText("maxStreak", String(stats.maxStreak));
+	setPersonalStatsText("averageEfficiency", averageEfficiency);
+
+	const rows = Array.from(personalStatsSection.querySelectorAll(".stats-row"));
+	const counts = rows.map((row) => Number(stats.counts[row.dataset.key] || 0));
+	const max = Math.max(0, ...counts);
+
+	rows.forEach((row) => {
+		const fill = row.querySelector(".stats-fill");
+		fill.style.width = "0%";
+	});
+
+	void personalStatsSection.offsetWidth;
+
+	rows.forEach((row) => {
+		const key = row.dataset.key;
+		const count = Number(stats.counts[key] || 0);
+		const fill = row.querySelector(".stats-fill");
+		const countElement = row.querySelector(".stats-count");
+		const pct = stats.gamesPlayed ? Math.round((count / stats.gamesPlayed) * 100) : 0;
+
+		fill.style.width = max && count ? (count / max) * 100 + "%" : "0%";
+		countElement.textContent = `${pct}%`;
+	});
+}
+
+function openPersonalStats() {
+	renderPersonalStats();
+	toggleWindow(personalStatsSection);
+}
+
 function resetGame() {
 	isGameOver = false;
 	removeInputListeners();
@@ -637,6 +777,7 @@ function resetGame() {
 	howToSection.classList.add("hidden");
 	settingsSection.classList.add("hidden");
 	statsSection.classList.add("hidden");
+	personalStatsSection?.classList.add("hidden");
 	backdrop.classList.add("hidden");
 	resumeSection.classList.add("hidden");
 
@@ -653,6 +794,7 @@ function resetGame() {
 	yellowBans = new Map();
 
 	statsSection.classList.add("hidden");
+	personalStatsSection?.classList.add("hidden");
 	backdrop.classList.add("hidden");
 
 	resetAnalysisBlock();
@@ -845,6 +987,7 @@ function renderAnalysis(data) {
 	analysisEfficiencyValue.textContent = `${String(E)}/100`;
 	analysisLuckValue.textContent = `${String(L)}/100`;
 	analysisBlock.classList.remove("hidden");
+	recordPersonalStatsEfficiency(E);
 }
 
 async function postAnalysis() {
@@ -1044,6 +1187,7 @@ function initGame() {
 
 	howToIcon.addEventListener("click", () => toggleWindow(howToSection), false);
 	settingsIcon.addEventListener("click", () => toggleWindow(settingsSection), false);
+	statsIcon?.addEventListener("click", openPersonalStats, false);
 	closeIcons.forEach((icon) => {
 		icon.addEventListener("click", () => {
 			toggleWindow(icon.parentElement);
@@ -1051,7 +1195,7 @@ function initGame() {
 	});
 
 	backdrop.addEventListener("click", () => {
-		[howToSection, settingsSection, statsSection, resumeSection].forEach((section) => {
+		[howToSection, settingsSection, statsSection, personalStatsSection, resumeSection].forEach((section) => {
 			if (section && !section.classList.contains("hidden")) {
 				toggleWindow(section);
 			}
@@ -1109,10 +1253,20 @@ globalThis.wortsel = {
 	initGame,
 	solve,
 	renderCommunityStats,
+	renderPersonalStats,
 	/* Test with:
 	wortsel.renderCommunityStats(
 	  { total: 100, counts: { "1":5,"2":10,"3":20,"4":25,"5":20,"6":10,"fail":10 } },
 	  { myResult: "3" });
+	wortsel.renderPersonalStats({
+	  gamesPlayed: 42,
+	  wins: 36,
+	  currentStreak: 5,
+	  maxStreak: 11,
+	  counts: { "1":2,"2":6,"3":12,"4":9,"5":5,"6":2,"fail":6 },
+	  efficiencyTotal: 2890,
+	  efficiencyCount: 36
+	});
 	*/
 };
 
@@ -1125,7 +1279,7 @@ globalThis.wortsel.initGame();
  * - AUTO_RELOAD_ON_SW_UPDATE: reload page once after an update
  -------------------------------------------------------------------------------------------------- */
 const USE_SERVICE_WORKER = true;
-const SERVICE_WORKER_VERSION = "2026-05-07-v1";
+const SERVICE_WORKER_VERSION = "2026-05-29-v1";
 const AUTO_RELOAD_ON_SW_UPDATE = false;
 
 /* --------------------------------------------------------------------------------------------------

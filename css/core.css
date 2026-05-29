@@ -113,6 +113,12 @@
     filter: var(--header-img-filter);
   }
 
+  #headerActions {
+    display: flex;
+    align-items: center;
+    gap: 1vmin;
+  }
+
   aside img {
     width: 30px;
     height: 30px;
@@ -271,9 +277,31 @@
     justify-content: flex-start;
   }
 
-  #stats .stats-list {
+  #stats .stats-list,
+  #personalStats .stats-list {
     list-style: none;
     padding: 0;
+  }
+
+  .personal-stats-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1vmin 2vmin;
+    margin: 1em 0;
+  }
+
+  .personal-stats-meta-item {
+    border-bottom: var(--border-thin);
+    padding: 0.5em 0;
+  }
+
+  .personal-stats-meta-item span,
+  .personal-stats-meta-item strong {
+    display: block;
+  }
+
+  .personal-stats-meta-item strong {
+    font-size: 1.1em;
   }
 
   .stats-row {
