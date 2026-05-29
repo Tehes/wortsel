@@ -31,6 +31,8 @@ FAZ). All brand assets in such deployments belong to their respective owners.
 - **Settings Persistence**: Last game options are stored in `localStorage`.
 - **Saved Game Resume**: Unfinished puzzles are automatically saved and can be resumed when the page
   is reloaded.
+- **Personal Statistics**: The public Wortsel version keeps local stats for played games, win rate,
+  streaks, average attempts, average efficiency, and attempt distribution.
 - **Shareable Puzzles**:
   - Append `?t=<token>` to the URL to set a specific solution, useful for custom challenges.
   - Tokens encode the solution index and are validated on load; invalid tokens are ignored.
@@ -75,6 +77,17 @@ FAZ). All brand assets in such deployments belong to their respective owners.
 
 > **Offline:** When offline, the game works normally but stats cannot be updated or displayed.
 > (Optional backlog/flush can be added in future.)
+
+## Personal Statistics (Local)
+
+- The public Wortsel version (`index.html`) stores personal play stats locally in `localStorage`
+  under `wortsel_personalStats`.
+- The personal stats dialog shows played words, win rate, average attempts, average efficiency,
+  current streak, longest streak, and the local attempt distribution.
+- Average efficiency only includes games where the analysis endpoint returned an efficiency score.
+- These stats are not sent to the server, not synced across browsers, and are cleared when the user
+  deletes browser/site data.
+- The FAZ white-label entry point (`faz.html`) does not include the personal stats icon or dialog.
 
 ## Install as a PWA
 
@@ -141,6 +154,10 @@ same position, making it intentionally tougher.
 **What data does the community stats feature store?** Only aggregated counts per solution (attempt
 buckets 1–6 and fail). No user IDs, IPs, or timestamps are published. The server updates counts
 atomically and returns the new distribution immediately for display.
+
+**What data does the personal stats feature store?** Personal stats are stored only in the browser's
+`localStorage`. They include aggregated play counts, streaks, average attempts, average efficiency,
+and attempt distribution. Clearing browser or site data resets them.
 
 **What do Efficiency and Luck mean?** Efficiency shows how well you narrowed down the list of
 possible words. A high value means you picked a word that, on average, rules out a lot of wrong
