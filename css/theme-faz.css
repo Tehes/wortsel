@@ -119,6 +119,11 @@
     opacity: 0.7;
   }
 
+  header > #settingsIcon {
+    grid-column: 3;
+    justify-self: end;
+  }
+
   header img,
   aside img {
     width: 1.5em;
