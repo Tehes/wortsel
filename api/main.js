@@ -341,14 +341,39 @@ const analyzeGame = (guesses, patterns, hardMode) => {
 };
 
 const totalFromValue = (value) => {
-	const total = value?.total;
-	return Number.isFinite(total) && total >= 0 ? total : 0;
+	return normalizeDist(value).total;
+};
+
+const statBuckets = ["1", "2", "3", "4", "5", "6", "fail"];
+
+const countFromValue = (value) => {
+	if (value && typeof value === "object" && "value" in value) {
+		value = value.value;
+	}
+
+	const count = Number(value);
+	return Number.isFinite(count) && count >= 0 ? Math.floor(count) : 0;
 };
 
 const emptyDist = () => ({
 	total: 0,
 	counts: { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "fail": 0 },
 });
+
+const normalizeDist = (value) => {
+	const dist = emptyDist();
+	const counts = value?.counts ?? {};
+
+	for (const bucket of statBuckets) {
+		dist.counts[bucket] = countFromValue(counts[bucket]);
+	}
+
+	const total = countFromValue(value?.total);
+	const countsTotal = statBuckets.reduce((sum, bucket) => sum + dist.counts[bucket], 0);
+	dist.total = total || countsTotal;
+
+	return dist;
+};
 
 let cachedTotals = null; // Map(word -> total)
 let totalsCachedAt = 0;
@@ -402,7 +427,7 @@ const getLeastPlayedWords = (totals) => {
 	return { words, minTotal };
 };
 
-Deno.serve(async (req) => {
+async function handleRequest(req) {
 	const url = new URL(req.url);
 
 	// GET /next: Get the next word to play (the one with the lowest total count)
@@ -543,7 +568,7 @@ Deno.serve(async (req) => {
 
 		while (!success && retries < maxRetries) {
 			const current = await kv.get(key);
-			const data = current.value ?? emptyDist();
+			const data = normalizeDist(current.value);
 
 			// Increment counters
 			data.total += 1;
@@ -589,7 +614,7 @@ Deno.serve(async (req) => {
 			for await (const entry of kv.list({ prefix: ["w"] })) {
 				entries.push({
 					key: entry.key,
-					value: entry.value,
+					value: normalizeDist(entry.value),
 				});
 			}
 			const meta = await kv.get(["meta", "lastUpdate"]);
@@ -607,11 +632,20 @@ Deno.serve(async (req) => {
 		return withCORS(
 			req,
 			json({
-				...(r.value ?? emptyDist()),
+				...normalizeDist(r.value),
 				lastUpdate: meta.value ?? null,
 			}),
 		);
 	}
 
 	return new Response("Method not allowed", { status: 405 });
+}
+
+Deno.serve(async (req) => {
+	try {
+		return await handleRequest(req);
+	} catch (error) {
+		console.error("Unhandled API error", error);
+		return withCORS(req, json({ error: "internal server error" }, 500));
+	}
 });
