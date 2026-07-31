@@ -31,8 +31,8 @@ FAZ). All brand assets in such deployments belong to their respective owners.
 - **Settings Persistence**: Last game options are stored in `localStorage`.
 - **Saved Game Resume**: Unfinished puzzles are automatically saved and can be resumed when the page
   is reloaded.
-- **Personal Statistics**: The public Wortsel version keeps local stats for played games, win rate,
-  streaks, average attempts, average efficiency, and attempt distribution.
+- **Personal Statistics**: Local stats cover played games, win rate, streaks, average attempts,
+  average efficiency, and attempt distribution.
 - **Shareable Puzzles**:
   - Append `?t=<token>` to the URL to set a specific solution, useful for custom challenges.
   - Tokens encode the solution index and are validated on load; invalid tokens are ignored.
@@ -80,14 +80,13 @@ FAZ). All brand assets in such deployments belong to their respective owners.
 
 ## Personal Statistics (Local)
 
-- The public Wortsel version (`index.html`) stores personal play stats locally in `localStorage`
-  under `wortsel_personalStats`.
+- Personal play stats are stored locally in the browser under the `localStorage` key
+  `wortsel_personalStats`.
 - The personal stats dialog shows played words, win rate, average attempts, average efficiency,
   current streak, longest streak, and the local attempt distribution.
 - Average efficiency only includes games where the analysis endpoint returned an efficiency score.
 - These stats are not sent to the server, not synced across browsers, and are cleared when the user
   deletes browser/site data.
-- The FAZ white-label entry point (`faz.html`) does not include the personal stats icon or dialog.
 
 ## Install as a PWA
 

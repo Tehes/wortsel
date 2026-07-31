@@ -760,11 +760,13 @@ function renderPersonalStats(stats = getPersonalStats()) {
 		fill.style.width = max && count ? (count / max) * 100 + "%" : "0%";
 		countElement.textContent = `${pct}%`;
 	});
+
+	personalStatsSection.classList.remove("hidden");
+	backdrop.classList.remove("hidden");
 }
 
 function openPersonalStats() {
 	renderPersonalStats();
-	toggleWindow(personalStatsSection);
 }
 
 function resetGame() {
@@ -887,7 +889,7 @@ async function postCommunityStats({ solution, attempts }) {
 }
 
 // Renders the community stats in the stats section.
-function renderCommunityStats(dist, { myResult } = {}) {
+function renderCommunityStats(dist, { myResult, analysis } = {}) {
 	const meta = statsSection.querySelector(".stats-meta");
 	const list = statsSection.querySelector(".stats-list");
 
@@ -927,6 +929,10 @@ function renderCommunityStats(dist, { myResult } = {}) {
 		const isMine = String(myResult) === key;
 		row.classList.toggle("mine", isMine);
 	});
+
+	if (analysis) {
+		renderAnalysis(analysis, { recordPersonalStats: false });
+	}
 }
 
 /* --------------------------------------------------------------------------------------------------
@@ -976,7 +982,7 @@ function resetAnalysisBlock() {
 	if (analysisLuckValue) analysisLuckValue.textContent = "";
 }
 
-function renderAnalysis(data) {
+function renderAnalysis(data, { recordPersonalStats = true } = {}) {
 	if (!analysisBlock || !analysisEfficiencyValue || !analysisLuckValue) return;
 	const eff = Number(data?.E);
 	const luck = Number(data?.L);
@@ -989,7 +995,9 @@ function renderAnalysis(data) {
 	analysisEfficiencyValue.textContent = `${String(E)}/100`;
 	analysisLuckValue.textContent = `${String(L)}/100`;
 	analysisBlock.classList.remove("hidden");
-	recordPersonalStatsEfficiency(E);
+	if (recordPersonalStats) {
+		recordPersonalStatsEfficiency(E);
+	}
 }
 
 async function postAnalysis() {
@@ -1259,7 +1267,7 @@ globalThis.wortsel = {
 	/* Test with:
 	wortsel.renderCommunityStats(
 	  { total: 100, counts: { "1":5,"2":10,"3":20,"4":25,"5":20,"6":10,"fail":10 } },
-	  { myResult: "3" });
+	  { myResult: "3", analysis: { E: 84, L: 61 } });
 	wortsel.renderPersonalStats({
 	  gamesPlayed: 42,
 	  wins: 36,
@@ -1281,7 +1289,7 @@ globalThis.wortsel.initGame();
  * - AUTO_RELOAD_ON_SW_UPDATE: reload page once after an update
  -------------------------------------------------------------------------------------------------- */
 const USE_SERVICE_WORKER = true;
-const SERVICE_WORKER_VERSION = "2026-07-31-v1";
+const SERVICE_WORKER_VERSION = "2026-07-31-v8";
 const AUTO_RELOAD_ON_SW_UPDATE = false;
 
 /* --------------------------------------------------------------------------------------------------
