@@ -891,10 +891,12 @@ function renderCommunityStats(dist, { myResult } = {}) {
 	const meta = statsSection.querySelector(".stats-meta");
 	const list = statsSection.querySelector(".stats-list");
 
-	meta.textContent = getTextTemplate(meta, {
-		SOLUTION: solution.toUpperCase(),
+	const [textBeforeSolution, textAfterSolution] = getTextTemplate(meta, {
 		TOTAL: dist.total,
-	});
+	}).split("{{SOLUTION}}");
+	const solutionElement = document.createElement("strong");
+	solutionElement.textContent = `"${solution.toUpperCase()}"`;
+	meta.replaceChildren(textBeforeSolution, solutionElement, textAfterSolution);
 
 	const rows = Array.from(list.querySelectorAll(".stats-row"));
 	const counts = rows.map((r) => Number(dist.counts?.[r.dataset.key] || 0));
@@ -1279,7 +1281,7 @@ globalThis.wortsel.initGame();
  * - AUTO_RELOAD_ON_SW_UPDATE: reload page once after an update
  -------------------------------------------------------------------------------------------------- */
 const USE_SERVICE_WORKER = true;
-const SERVICE_WORKER_VERSION = "2026-05-29-v1";
+const SERVICE_WORKER_VERSION = "2026-07-31-v1";
 const AUTO_RELOAD_ON_SW_UPDATE = false;
 
 /* --------------------------------------------------------------------------------------------------
