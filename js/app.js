@@ -547,10 +547,7 @@ function showRemainingSolutions() {
 		return;
 	}
 	const count = remainingSolutions.length;
-	const text = count === 1
-		? "Noch 1 verbleibendes Lösungswort"
-		: `Noch ${count} verbleibende Lösungswörter`;
-	showModal(text, 1500);
+	showModal(`Verbleibende Lösungswörter: ${count}`, 1500);
 }
 
 function applyHardModeStateToRow(rowEl) {
@@ -1373,7 +1370,7 @@ globalThis.wortsel.initGame();
  * - AUTO_RELOAD_ON_SW_UPDATE: reload page once after an update
  -------------------------------------------------------------------------------------------------- */
 const USE_SERVICE_WORKER = true;
-const SERVICE_WORKER_VERSION = "2026-08-27-v11";
+const SERVICE_WORKER_VERSION = "2026-08-27-v12";
 const AUTO_RELOAD_ON_SW_UPDATE = false;
 
 /* --------------------------------------------------------------------------------------------------
