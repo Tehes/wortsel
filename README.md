@@ -65,6 +65,8 @@ FAZ). All brand assets in such deployments belong to their respective owners.
   guesses are rejected.
 - **Hard Mode (strict)** (`hardMode`): Locks green letters, disables gray keys, and forbids
   repeating a yellow letter at the same position in later guesses.
+- **Remaining solution words** (`remainingWords`, public version only): Briefly shows how many words
+  from the curated solution list still match the feedback after each non-final guess.
 
 ## Community Statistics (Privacy‑friendly)
 

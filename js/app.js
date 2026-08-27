@@ -31,6 +31,7 @@ const resumeContinueBtn = document.querySelector("#resume-continue");
 const backdrop = document.querySelector(".backdrop");
 const closeIcons = document.querySelectorAll(".close");
 const wholeWordsCheckbox = document.querySelector("#wholeWords");
+const remainingWordsCheckbox = document.querySelector("#remainingWords");
 
 /* --------------------------------------------------------------------------------------------------
  * Settings
@@ -45,6 +46,12 @@ hardModeCheckbox.checked = JSON.parse(
 	localStorage.getItem("wortsel_hardMode") || "false",
 );
 
+if (remainingWordsCheckbox) {
+	remainingWordsCheckbox.checked = JSON.parse(
+		localStorage.getItem("wortsel_remainingWords") || "false",
+	);
+}
+
 /* --------------------------------------------------------------------------------------------------
  * Game state (runtime)
  ---------------------------------------------------------------------------------------------------*/
@@ -55,6 +62,8 @@ const firstVisit = JSON.parse(
 );
 let isGameOver = false; // blocks input
 let analysisResult = null;
+let isReplaying = false;
+let modalTimeout = null;
 
 let lockedLetters = [null, null, null, null, null]; // fixed, correct letters carried over
 // In hard mode, prevent reusing yellow letters at the same position
@@ -72,6 +81,9 @@ const storageKey = () => (viaChallenge ? keyFor(solution) : CURRENT_KEY);
  ---------------------------------------------------------------------------------------------------*/
 const wordList = [...curatedWords, ...additionalWords];
 const wordSet = new Set(wordList.map((w) => w.toLowerCase()));
+const solutionCandidates = curatedWords.map((word) => word.toLowerCase());
+const PATTERN_POW3 = [1, 3, 9, 27, 81];
+let remainingSolutions = solutionCandidates.slice();
 let solution = curatedWords[getRandomInteger(0, curatedWords.length - 1)]
 	.toLowerCase();
 
@@ -344,7 +356,9 @@ function typeKey(event) {
 				}
 				colorizeRow(letters);
 				colorizeKeyboard(letters);
+				updateRemainingSolutions(letters);
 				checkEndCondition();
+				showRemainingSolutions();
 			}
 		} else {
 			showModal("Zu wenig Zeichen", 1000);
@@ -489,6 +503,56 @@ function colorizeKeyboard(letters) {
 	});
 }
 
+function computePatternCode(guess, candidate) {
+	const tempCandidate = candidate.split("");
+	const result = [0, 0, 0, 0, 0];
+
+	for (let i = 0; i < 5; i++) {
+		if (guess[i] === tempCandidate[i]) {
+			result[i] = 2;
+			tempCandidate[i] = "";
+		}
+	}
+
+	for (let i = 0; i < 5; i++) {
+		if (result[i] !== 0) {
+			continue;
+		}
+		const index = tempCandidate.indexOf(guess[i]);
+		if (index !== -1) {
+			result[i] = 1;
+			tempCandidate[index] = "";
+		}
+	}
+
+	return result.reduce(
+		(code, value, index) => code + value * PATTERN_POW3[index],
+		0,
+	);
+}
+
+function updateRemainingSolutions(letters) {
+	if (!remainingWordsCheckbox) {
+		return;
+	}
+	const guess = letters.map((letter) => letter.textContent.toLowerCase()).join("");
+	const observedPattern = encodePatternFromRow(rowElements[activeRow]);
+	remainingSolutions = remainingSolutions.filter(
+		(candidate) => computePatternCode(guess, candidate) === observedPattern,
+	);
+}
+
+function showRemainingSolutions() {
+	if (!remainingWordsCheckbox?.checked || isReplaying || isGameOver) {
+		return;
+	}
+	const count = remainingSolutions.length;
+	const text = count === 1
+		? "Noch 1 verbleibendes Lösungswort"
+		: `Noch ${count} verbleibende Lösungswörter`;
+	showModal(text, 1500);
+}
+
 function applyHardModeStateToRow(rowEl) {
 	const cells = [...rowEl.querySelectorAll(".letter")];
 	cells.forEach((cell, i) => {
@@ -584,12 +648,17 @@ function checkEndCondition() {
 }
 
 function showModal(text, duration) {
+	if (modalTimeout) {
+		clearTimeout(modalTimeout);
+		modalTimeout = null;
+	}
 	modalElement.textContent = text;
 	modalElement.classList.remove("hidden");
 
 	if (duration > 0) {
-		setTimeout(() => {
+		modalTimeout = setTimeout(() => {
 			modalElement.classList.add("hidden");
+			modalTimeout = null;
 		}, duration);
 	}
 }
@@ -630,6 +699,12 @@ function solve() {
 function saveSettings() {
 	localStorage.setItem("wortsel_wholeWords", JSON.stringify(wholeWordsCheckbox.checked));
 	localStorage.setItem("wortsel_hardMode", JSON.stringify(hardModeCheckbox.checked));
+	if (remainingWordsCheckbox) {
+		localStorage.setItem(
+			"wortsel_remainingWords",
+			JSON.stringify(remainingWordsCheckbox.checked),
+		);
+	}
 }
 
 /* --------------------------------------------------------------------------------------------------
@@ -794,6 +869,7 @@ function resetGame() {
 
 	lockedLetters = [null, null, null, null, null];
 	yellowBans = new Map();
+	remainingSolutions = solutionCandidates.slice();
 
 	statsSection.classList.add("hidden");
 	personalStatsSection?.classList.add("hidden");
@@ -939,7 +1015,6 @@ function renderCommunityStats(dist, { myResult, analysis } = {}) {
  * Post-game analysis (E/L)
  ---------------------------------------------------------------------------------------------------*/
 const ANALYZE_ENDPOINT = "https://wortsel.tehes.deno.net/analyze";
-const PATTERN_POW3 = [1, 3, 9, 27, 81];
 
 function encodePatternFromRow(rowEl) {
 	const cells = rowEl.querySelectorAll(".letter");
@@ -1158,10 +1233,15 @@ function purgeExpiredChallengeStates(maxAgeDays = STATE_TTL_DAYS) {
 function replayByTyping(guesses = []) {
 	if (!Array.isArray(guesses) || guesses.length === 0) return;
 
-	guesses.forEach((word) => {
-		word.split("").forEach((ch) => typeKey({ key: ch }));
-		typeKey({ key: "enter" });
-	});
+	isReplaying = true;
+	try {
+		guesses.forEach((word) => {
+			word.split("").forEach((ch) => typeKey({ key: ch }));
+			typeKey({ key: "enter" });
+		});
+	} finally {
+		isReplaying = false;
+	}
 }
 
 function continueResume() {
@@ -1214,6 +1294,7 @@ function initGame() {
 
 	wholeWordsCheckbox.addEventListener("change", saveSettings, false);
 	hardModeCheckbox.addEventListener("change", saveSettings, false);
+	remainingWordsCheckbox?.addEventListener("change", saveSettings, false);
 
 	// Save settings + game state on leave/tab switch
 	globalThis.addEventListener("pagehide", () => {
@@ -1238,6 +1319,9 @@ function initGame() {
 		}
 		if (e.key === "wortsel_hardMode" && hardModeCheckbox) {
 			hardModeCheckbox.checked = JSON.parse(e.newValue || "false");
+		}
+		if (e.key === "wortsel_remainingWords" && remainingWordsCheckbox) {
+			remainingWordsCheckbox.checked = JSON.parse(e.newValue || "false");
 		}
 	});
 
@@ -1289,7 +1373,7 @@ globalThis.wortsel.initGame();
  * - AUTO_RELOAD_ON_SW_UPDATE: reload page once after an update
  -------------------------------------------------------------------------------------------------- */
 const USE_SERVICE_WORKER = true;
-const SERVICE_WORKER_VERSION = "2026-07-31-v10";
+const SERVICE_WORKER_VERSION = "2026-08-27-v11";
 const AUTO_RELOAD_ON_SW_UPDATE = false;
 
 /* --------------------------------------------------------------------------------------------------
