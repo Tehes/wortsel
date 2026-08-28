@@ -631,7 +631,7 @@ function checkEndCondition() {
 		removeInputListeners();
 		clearGameState();
 		const resultKey = (activeRow < 6) ? String(activeRow + 1) : "fail";
-		const completedHistoryId = saveCompletedGameToHistory(resultKey);
+		const completedHistoryId = saveCompletedGameToHistory();
 		recordPersonalStatsGame(resultKey);
 
 		if (analyticsPayload) {
@@ -1350,7 +1350,6 @@ function normalizeHistoryEntry(entry, usedIds) {
 	const patterns = Array.isArray(entry.patterns)
 		? entry.patterns.map((pattern) => Number(pattern))
 		: [];
-	const result = String(entry.result);
 	const playedAt = new Date(entry.playedAt);
 
 	if (
@@ -1360,8 +1359,7 @@ function normalizeHistoryEntry(entry, usedIds) {
 		guesses.some((guess) => Array.from(guess).length !== 5) ||
 		patterns.length !== guesses.length ||
 		patterns.some((pattern) => !Number.isInteger(pattern) || pattern < 0 || pattern > 242) ||
-		!Number.isFinite(playedAt.getTime()) ||
-		(result !== "fail" && !["1", "2", "3", "4", "5", "6"].includes(result))
+		!Number.isFinite(playedAt.getTime())
 	) {
 		return null;
 	}
@@ -1380,7 +1378,6 @@ function normalizeHistoryEntry(entry, usedIds) {
 		solution: solutionValue,
 		guesses,
 		patterns,
-		result,
 		efficiency: normalizeHistoryScore(entry.efficiency),
 		luck: normalizeHistoryScore(entry.luck),
 	};
@@ -1425,7 +1422,7 @@ function addHistoryGame(entry) {
 	return entry.id;
 }
 
-function saveCompletedGameToHistory(result) {
+function saveCompletedGameToHistory() {
 	if (historyEntryId) return historyEntryId;
 
 	const { guesses, patterns } = collectCompletedGuessesWithPatterns();
@@ -1437,7 +1434,6 @@ function saveCompletedGameToHistory(result) {
 		solution: normalizeWord(solution),
 		guesses: guesses.map((guess) => normalizeWord(guess)),
 		patterns,
-		result,
 		efficiency: null,
 		luck: null,
 	};
@@ -1632,7 +1628,7 @@ globalThis.wortsel.initGame();
  * - AUTO_RELOAD_ON_SW_UPDATE: reload page once after an update
  -------------------------------------------------------------------------------------------------- */
 const USE_SERVICE_WORKER = true;
-const SERVICE_WORKER_VERSION = "2026-08-28-v22";
+const SERVICE_WORKER_VERSION = "2026-08-28-v23";
 const AUTO_RELOAD_ON_SW_UPDATE = false;
 
 /* --------------------------------------------------------------------------------------------------
