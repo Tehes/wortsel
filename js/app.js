@@ -1632,7 +1632,7 @@ globalThis.wortsel.initGame();
  * - AUTO_RELOAD_ON_SW_UPDATE: reload page once after an update
  -------------------------------------------------------------------------------------------------- */
 const USE_SERVICE_WORKER = true;
-const SERVICE_WORKER_VERSION = "2026-08-28-v21";
+const SERVICE_WORKER_VERSION = "2026-08-28-v22";
 const AUTO_RELOAD_ON_SW_UPDATE = false;
 
 /* --------------------------------------------------------------------------------------------------
