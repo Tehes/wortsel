@@ -33,6 +33,8 @@ FAZ). All brand assets in such deployments belong to their respective owners.
   is reloaded.
 - **Personal Statistics**: Local stats cover played games, win rate, streaks, average attempts,
   average efficiency, and attempt distribution.
+- **Local Game History (public version)**: Keeps the latest 100 completed regular and challenge
+  games in the browser and renders one read-only historical board at a time.
 - **Shareable Puzzles**:
   - Append `?t=<token>` to the URL to set a specific solution, useful for custom challenges.
   - Tokens encode the solution index and are validated on load; invalid tokens are ignored.
@@ -89,6 +91,21 @@ FAZ). All brand assets in such deployments belong to their respective owners.
 - Average efficiency only includes games where the analysis endpoint returned an efficiency score.
 - These stats are not sent to the server, not synced across browsers, and are cleared when the user
   deletes browser/site data.
+
+## Game History (Local, Public Version)
+
+- Completed regular and challenge games are stored newest-first under the `localStorage` key
+  `wortsel_gameHistory`.
+- The history keeps at most 100 games. Each entry contains a unique ID, completion timestamp,
+  solution, guesses, pattern codes, and optional efficiency and luck scores.
+- Efficiency and luck are initially stored as unavailable and added to the matching entry when the
+  asynchronous analysis response arrives.
+- The history dialog renders exactly one read-only six-row board. Arrow buttons navigate to older
+  or newer games without affecting the current game or keyboard.
+- Invalid or corrupted history data is ignored safely. History is not synced between browsers and
+  is cleared when the user deletes browser/site data.
+- This feature is available in `index.html` and is intentionally not included in the FAZ
+  white-label version.
 
 ## Install as a PWA
 
