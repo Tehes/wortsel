@@ -17,10 +17,25 @@ const headlineElement = document.querySelector("h1");
 const howToIcon = document.querySelector("#howToIcon");
 const howToSection = document.querySelector("#howTo");
 const statsIcon = document.querySelector("#statsIcon");
+const historyIcon = document.querySelector("#historyIcon");
 const settingsIcon = document.querySelector("#settingsIcon");
 const settingsSection = document.querySelector("#settings");
 const statsSection = document.querySelector("#stats");
 const personalStatsSection = document.querySelector("#personalStats");
+const historySection = document.querySelector("#history");
+const historyPosition = document.querySelector("#historyPosition");
+const historyPreviousButton = document.querySelector("#historyPrevious");
+const historyNextButton = document.querySelector("#historyNext");
+const historyEmptyMessage = document.querySelector("#historyEmptyMessage");
+const historyGame = document.querySelector("#historyGame");
+const historyPlayedAt = document.querySelector("#historyPlayedAt");
+const historySolution = document.querySelector("#historySolution");
+const historyBoard = document.querySelector("#historyBoard");
+const historyAnalysis = document.querySelector("#historyAnalysis");
+const historyEfficiencyRow = document.querySelector("#historyEfficiencyRow");
+const historyEfficiencyValue = document.querySelector("#historyEfficiencyValue");
+const historyLuckRow = document.querySelector("#historyLuckRow");
+const historyLuckValue = document.querySelector("#historyLuckValue");
 const analysisBlock = document.querySelector("#analysisBlock");
 const analysisEfficiencyValue = analysisBlock?.querySelector(
 	"[data-analysis=\"efficiency\"]",
@@ -74,7 +89,13 @@ const STATE_PREFIX = "wortsel_state::"; // per-word for Challenge saves
 const CURRENT_KEY = "wortsel_current"; // exactly one non-challenge game
 const STATE_TTL_DAYS = 7; // purge only Challenge saves
 const PERSONAL_STATS_KEY = "wortsel_personalStats";
+const GAME_HISTORY_KEY = "wortsel_gameHistory";
+const GAME_HISTORY_LIMIT = 100;
 const storageKey = () => (viaChallenge ? keyFor(solution) : CURRENT_KEY);
+
+let historyEntries = [];
+let historyIndex = 0;
+let historyEntryId = null;
 
 /* --------------------------------------------------------------------------------------------------
  * Dictionary and solution selection
@@ -610,6 +631,7 @@ function checkEndCondition() {
 		removeInputListeners();
 		clearGameState();
 		const resultKey = (activeRow < 6) ? String(activeRow + 1) : "fail";
+		const completedHistoryId = saveCompletedGameToHistory(resultKey);
 		recordPersonalStatsGame(resultKey);
 
 		if (analyticsPayload) {
@@ -640,7 +662,7 @@ function checkEndCondition() {
 			attempts: (resultKey !== "fail") ? Number(resultKey) : "fail",
 		});
 
-		postAnalysis();
+		postAnalysis(completedHistoryId);
 	}
 }
 
@@ -843,6 +865,7 @@ function openPersonalStats() {
 
 function resetGame() {
 	isGameOver = false;
+	historyEntryId = null;
 	removeInputListeners();
 	clearGameState();
 	const letters = document.querySelectorAll("main .letter");
@@ -1072,7 +1095,7 @@ function renderAnalysis(data, { recordPersonalStats = true } = {}) {
 	}
 }
 
-async function postAnalysis() {
+async function postAnalysis(historyId) {
 	resetAnalysisBlock();
 	if (!analysisBlock || !wholeWordsCheckbox.checked) return;
 
@@ -1100,10 +1123,102 @@ async function postAnalysis() {
 
 		const data = await res.json();
 		console.log("Analyze response:", data);
-		renderAnalysis(data);
+		updateHistoryAnalysis(historyId, data);
+		if (historyEntryId === historyId) {
+			renderAnalysis(data);
+		} else {
+			const efficiency = normalizeHistoryScore(data?.E);
+			if (efficiency !== null) {
+				recordPersonalStatsEfficiency(efficiency);
+			}
+		}
 	} catch (e) {
 		console.warn("analysis request failed", e);
 	}
+}
+
+function formatHistoryDate(playedAt) {
+	return new Date(playedAt).toLocaleDateString("de-DE", {
+		day: "2-digit",
+		month: "2-digit",
+		year: "numeric",
+	});
+}
+
+function decodePatternCode(code) {
+	return PATTERN_POW3.map((power) => Math.floor(code / power) % 3);
+}
+
+function clearHistoryBoard() {
+	if (!historyBoard) return;
+
+	historyBoard.querySelectorAll(".letter").forEach((cell) => {
+		cell.textContent = "";
+		cell.classList.remove("active", "correct", "present", "absent", "jump", "shake");
+		delete cell.dataset.locked;
+	});
+}
+
+function renderHistoryGame() {
+	if (!historySection || !historyBoard) return;
+
+	const entry = historyEntries[historyIndex];
+	const hasEntry = Boolean(entry);
+	historyPosition.textContent = hasEntry
+		? `Spiel ${historyIndex + 1} von ${historyEntries.length}`
+		: "Keine Spiele";
+	historyPreviousButton.disabled = !hasEntry || historyIndex >= historyEntries.length - 1;
+	historyNextButton.disabled = !hasEntry || historyIndex <= 0;
+	historyEmptyMessage.classList.toggle("hidden", hasEntry);
+	historyGame.classList.toggle("hidden", !hasEntry);
+	clearHistoryBoard();
+
+	if (!hasEntry) return;
+
+	historyPlayedAt.textContent = formatHistoryDate(entry.playedAt);
+	historySolution.textContent = `Lösung: ${entry.solution}`;
+
+	const rows = Array.from(historyBoard.querySelectorAll(".row"));
+	rows.forEach((row, rowIndex) => {
+		const guess = entry.guesses[rowIndex];
+		if (!guess) return;
+
+		const patternValues = decodePatternCode(entry.patterns[rowIndex]);
+		const cells = Array.from(row.querySelectorAll(".letter"));
+		Array.from(guess).forEach((letter, cellIndex) => {
+			const cell = cells[cellIndex];
+			cell.textContent = letter;
+			cell.classList.add(["absent", "present", "correct"][patternValues[cellIndex]]);
+		});
+	});
+
+	const hasEfficiency = entry.efficiency !== null;
+	const hasLuck = entry.luck !== null;
+	historyEfficiencyRow.classList.toggle("hidden", !hasEfficiency);
+	historyLuckRow.classList.toggle("hidden", !hasLuck);
+	historyEfficiencyValue.textContent = hasEfficiency ? `${entry.efficiency}/100` : "";
+	historyLuckValue.textContent = hasLuck ? `${entry.luck}/100` : "";
+	historyAnalysis.classList.toggle("hidden", !hasEfficiency && !hasLuck);
+}
+
+function openHistory() {
+	if (!historySection) return;
+
+	historyEntries = readGameHistory();
+	historyIndex = 0;
+	renderHistoryGame();
+	historySection.classList.remove("hidden");
+	backdrop.classList.remove("hidden");
+}
+
+function changeHistoryGame(direction) {
+	if (!historyEntries.length) return;
+
+	historyIndex = Math.max(
+		0,
+		Math.min(historyEntries.length - 1, historyIndex + direction),
+	);
+	renderHistoryGame();
 }
 
 /* --------------------------------------------------------------------------------------------------
@@ -1208,6 +1323,150 @@ function clearGameState() {
 	}
 }
 
+/* --------------------------------------------------------------------------------------------------
+ * Game history
+ ---------------------------------------------------------------------------------------------------*/
+function createHistoryId() {
+	return globalThis.crypto?.randomUUID?.() ||
+		`${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
+function normalizeHistoryScore(value) {
+	if (value === null || value === undefined) return null;
+
+	const numericValue = Number(value);
+	if (!Number.isFinite(numericValue)) return null;
+
+	return Math.max(0, Math.min(100, Math.round(numericValue)));
+}
+
+function normalizeHistoryEntry(entry, usedIds) {
+	if (!entry || typeof entry !== "object" || Array.isArray(entry)) return null;
+
+	const solutionValue = normalizeWord(entry.solution);
+	const guesses = Array.isArray(entry.guesses)
+		? entry.guesses.map((guess) => normalizeWord(guess))
+		: [];
+	const patterns = Array.isArray(entry.patterns)
+		? entry.patterns.map((pattern) => Number(pattern))
+		: [];
+	const result = String(entry.result);
+	const playedAt = new Date(entry.playedAt);
+
+	if (
+		Array.from(solutionValue).length !== 5 ||
+		guesses.length < 1 ||
+		guesses.length > 6 ||
+		guesses.some((guess) => Array.from(guess).length !== 5) ||
+		patterns.length !== guesses.length ||
+		patterns.some((pattern) => !Number.isInteger(pattern) || pattern < 0 || pattern > 242) ||
+		!Number.isFinite(playedAt.getTime()) ||
+		(result !== "fail" && !["1", "2", "3", "4", "5", "6"].includes(result))
+	) {
+		return null;
+	}
+
+	let id = typeof entry.id === "string" && entry.id.trim()
+		? entry.id
+		: createHistoryId();
+	while (usedIds.has(id)) {
+		id = createHistoryId();
+	}
+	usedIds.add(id);
+
+	return {
+		id,
+		playedAt: playedAt.toISOString(),
+		solution: solutionValue,
+		guesses,
+		patterns,
+		result,
+		efficiency: normalizeHistoryScore(entry.efficiency),
+		luck: normalizeHistoryScore(entry.luck),
+	};
+}
+
+function readGameHistory() {
+	try {
+		const parsed = JSON.parse(localStorage.getItem(GAME_HISTORY_KEY) || "[]");
+		if (!Array.isArray(parsed)) return [];
+
+		const usedIds = new Set();
+		return parsed
+			.map((entry) => normalizeHistoryEntry(entry, usedIds))
+			.filter((entry) => entry !== null)
+			.slice(0, GAME_HISTORY_LIMIT);
+	} catch (error) {
+		console.warn("Game history could not be read:", error);
+		return [];
+	}
+}
+
+function saveGameHistory(entries) {
+	try {
+		localStorage.setItem(
+			GAME_HISTORY_KEY,
+			JSON.stringify(entries.slice(0, GAME_HISTORY_LIMIT)),
+		);
+		return true;
+	} catch (error) {
+		console.warn("Game history could not be saved:", error);
+		return false;
+	}
+}
+
+function addHistoryGame(entry) {
+	const entries = readGameHistory();
+	if (entries.some((existingEntry) => existingEntry.id === entry.id)) {
+		return entry.id;
+	}
+
+	saveGameHistory([entry, ...entries]);
+	return entry.id;
+}
+
+function saveCompletedGameToHistory(result) {
+	if (historyEntryId) return historyEntryId;
+
+	const { guesses, patterns } = collectCompletedGuessesWithPatterns();
+	if (!guesses.length) return null;
+
+	const entry = {
+		id: createHistoryId(),
+		playedAt: new Date().toISOString(),
+		solution: normalizeWord(solution),
+		guesses: guesses.map((guess) => normalizeWord(guess)),
+		patterns,
+		result,
+		efficiency: null,
+		luck: null,
+	};
+
+	historyEntryId = addHistoryGame(entry);
+	return historyEntryId;
+}
+
+function updateHistoryAnalysis(id, data) {
+	if (!id) return;
+
+	const efficiency = normalizeHistoryScore(data?.E);
+	const luck = normalizeHistoryScore(data?.L);
+	if (efficiency === null && luck === null) return;
+
+	const entries = readGameHistory();
+	const entry = entries.find((historyEntry) => historyEntry.id === id);
+	if (!entry) return;
+
+	if (efficiency !== null) entry.efficiency = efficiency;
+	if (luck !== null) entry.luck = luck;
+	saveGameHistory(entries);
+
+	if (historySection && !historySection.classList.contains("hidden")) {
+		historyEntries = entries;
+		renderHistoryGame();
+	}
+}
+
 function purgeExpiredChallengeStates(maxAgeDays = STATE_TTL_DAYS) {
 	const cutoffTimestamp = Date.now() - maxAgeDays * 86400e3; // days → ms
 
@@ -1275,6 +1534,9 @@ function initGame() {
 	howToIcon.addEventListener("click", () => toggleWindow(howToSection), false);
 	settingsIcon.addEventListener("click", () => toggleWindow(settingsSection), false);
 	statsIcon?.addEventListener("click", openPersonalStats, false);
+	historyIcon?.addEventListener("click", openHistory, false);
+	historyPreviousButton?.addEventListener("click", () => changeHistoryGame(1), false);
+	historyNextButton?.addEventListener("click", () => changeHistoryGame(-1), false);
 	closeIcons.forEach((icon) => {
 		icon.addEventListener("click", () => {
 			toggleWindow(icon.parentElement);
@@ -1282,7 +1544,7 @@ function initGame() {
 	});
 
 	backdrop.addEventListener("click", () => {
-		[howToSection, settingsSection, statsSection, personalStatsSection, resumeSection].forEach((section) => {
+		[howToSection, settingsSection, statsSection, personalStatsSection, historySection, resumeSection].forEach((section) => {
 			if (section && !section.classList.contains("hidden")) {
 				toggleWindow(section);
 			}
@@ -1370,7 +1632,7 @@ globalThis.wortsel.initGame();
  * - AUTO_RELOAD_ON_SW_UPDATE: reload page once after an update
  -------------------------------------------------------------------------------------------------- */
 const USE_SERVICE_WORKER = true;
-const SERVICE_WORKER_VERSION = "2026-08-27-v12";
+const SERVICE_WORKER_VERSION = "2026-08-28-v21";
 const AUTO_RELOAD_ON_SW_UPDATE = false;
 
 /* --------------------------------------------------------------------------------------------------

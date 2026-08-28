@@ -33,6 +33,7 @@
 		<h1>Wortsel</h1>
 		<div id="headerActions">
 			<span id="statsIcon"><img alt="Statistik-Symbol" src="img/barChart.svg"></span>
+			<span id="historyIcon"><img alt="Spielhistorie-Symbol" src="img/history.svg"></span>
 			<span id="settingsIcon" data-allow-during-game="false"><img alt="Einstellungen-Symbol"
 					src="img/BaselineTune.svg"></span>
 		</div>
@@ -162,6 +163,75 @@
 				<div class="stats-count">0</div>
 			</li>
 		</ul>
+		<div class="close"><img src="img/BaselineClose.svg" alt=""></div>
+	</aside>
+	<aside id="history" class="hidden">
+		<h2>Spielhistorie</h2>
+		<div class="history-navigation">
+			<button id="historyPrevious" type="button"><img src="img/arrow_back.svg" alt="Älteres Spiel"></button>
+			<span id="historyPosition"></span>
+			<button id="historyNext" type="button"><img src="img/arrow_forward.svg" alt="Neueres Spiel"></button>
+		</div>
+		<p id="historyEmptyMessage" class="hidden">Noch keine abgeschlossenen Spiele</p>
+		<div id="historyGame">
+			<div id="historyBoard">
+				<div class="row">
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+				</div>
+				<div class="row">
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+				</div>
+				<div class="row">
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+				</div>
+				<div class="row">
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+				</div>
+				<div class="row">
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+				</div>
+				<div class="row">
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+					<div class="letter"></div>
+				</div>
+			</div>
+			<div class="history-meta">
+				<p><span id="historyPlayedAt"></span> <span>&middot;</span> <span id="historySolution"></span></p>
+			</div>
+			<div id="historyAnalysis" class="hidden">
+				<div id="historyEfficiencyRow" class="analysis-row">
+					<span>Effizienz</span>
+					<span id="historyEfficiencyValue" class="analysis-value"></span>
+				</div>
+				<div id="historyLuckRow" class="analysis-row">
+					<span>Glück</span>
+					<span id="historyLuckValue" class="analysis-value"></span>
+				</div>
+			</div>
+		</div>
 		<div class="close"><img src="img/BaselineClose.svg" alt=""></div>
 	</aside>
 	<aside id="stats" class="hidden">

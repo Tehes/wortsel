@@ -121,6 +121,49 @@
     justify-self: end;
   }
 
+  .history-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1em;
+    margin: 1em 2em;
+  }
+
+  .history-navigation button {
+    min-width: 0;
+    padding: 0.25em 0.5em;
+    background-color: transparent;
+  }
+
+  .history-navigation button:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .history-meta {
+    margin: 1em 0;
+    text-align: center;
+  }
+
+  .history-meta p {
+    margin: 0.5em 0;
+  }
+
+  #historyBoard {
+    margin: 1em 0;
+  }
+
+  #historyBoard .row {
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  #historyAnalysis {
+    border-top: var(--border-thin);
+    margin: 1em 0 0.5em;
+    padding-top: 0.75em;
+  }
+
   #howToIcon {
     grid-column: 1;
     justify-self: start;
@@ -416,7 +459,7 @@
     transform: translateY(1px);
   }
 
-  aside .letter {
+  #howTo .letter {
     width: 1.5em;
     height: 1.5em;
     margin: 0.2em;
@@ -542,6 +585,14 @@
       margin: 1vmin;
       padding: 1vmin;
       font-size: 11vmin;
+    }
+
+    #historyBoard .letter {
+      width: 12vmin;
+      height: 12vmin;
+      margin: 0.75vmin;
+      padding: 0.75vmin;
+      font-size: 8vmin;
     }
 
     h2 {
