@@ -37,7 +37,7 @@ FAZ). All brand assets in such deployments belong to their respective owners.
   games in the browser and renders one read-only historical board at a time.
 - **Shareable Puzzles**:
   - Append `?t=<token>` to the URL to set a specific solution, useful for custom challenges.
-  - Tokens encode the solution index and are validated on load; invalid tokens are ignored.
+  - Tokens encode the solution word and are validated on load; invalid tokens are ignored.
   - After loading, the parameter is removed so that refreshes start a random puzzle again.
   - In the stats dialog there is a **Share Button**, which generates such a link (with token) and
     opens the device’s Share Sheet (or copies the link).

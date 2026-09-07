@@ -115,38 +115,72 @@ const currentUrl = new URL(globalThis.location?.href);
 const tokenParam = currentUrl.searchParams.get("t");
 let viaChallenge = false;
 
-// (helper) Base32 token encoding with offset
+// These alphabets and mixing constants define the permanent challenge token format.
+const TOKEN_ALPHABET = "abcdefghijklmnopqrstuvwxyzäöüß";
 const B32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 const MAP32 = Object.fromEntries([...B32].map((c, i) => [c, i]));
-const TOKEN_OFFSET = 10000;
+const TOKEN_MASK = 0x1ffffff;
 
-function encodeIdx(index) {
-	let n = index + TOKEN_OFFSET;
-	if (n === 0) return "0";
-	let s = "";
-	while (n > 0) {
-		s = B32[n % 32] + s;
-		n = Math.floor(n / 32);
+function encodeChallengeToken(word) {
+	const normalized = word.trim().toLowerCase().normalize("NFC");
+	if (normalized.length !== 5) {
+		throw new Error("invalid challenge word length");
 	}
-	return s;
+	let value = 0;
+	for (const letter of normalized) {
+		const digit = TOKEN_ALPHABET.indexOf(letter);
+		if (digit === -1) {
+			throw new Error("invalid challenge word character");
+		}
+		value = value * TOKEN_ALPHABET.length + digit;
+	}
+
+	value ^= value >>> 12;
+	value = Math.imul(value, 0x45d9f3b) & TOKEN_MASK;
+	value ^= value >>> 12;
+	value = Math.imul(value, 0x45d9f3b) & TOKEN_MASK;
+	value ^= value >>> 12;
+
+	let token = "";
+	for (let i = 0; i < 5; i++) {
+		token = B32[value & 31] + token;
+		value >>>= 5;
+	}
+	return token;
 }
 
-function decodeIdx(token) {
-	let n = 0;
-	for (const c of token.toUpperCase()) {
-		const v = MAP32[c];
-		if (v == null) throw new Error("bad b32");
-		n = n * 32 + v;
+function decodeChallengeToken(token) {
+	if (token.length !== 5 || /[^0-9A-HJKMNP-TV-Z]/i.test(token)) {
+		throw new Error("invalid challenge token");
 	}
-	const x = n - TOKEN_OFFSET;
-	if (x < 0 || x >= curatedWords.length) throw new Error("token out of range");
-	return x;
+	let value = 0;
+	for (const c of token.toUpperCase()) {
+		value = value * 32 + MAP32[c];
+	}
+
+	value = value ^ (value >>> 12) ^ (value >>> 24);
+	value = Math.imul(value, 0x19de1f3) & TOKEN_MASK;
+	value = value ^ (value >>> 12) ^ (value >>> 24);
+	value = Math.imul(value, 0x19de1f3) & TOKEN_MASK;
+	value = value ^ (value >>> 12) ^ (value >>> 24);
+	if (value >= TOKEN_ALPHABET.length ** 5) {
+		throw new Error("challenge token out of range");
+	}
+
+	let word = "";
+	for (let i = 0; i < 5; i++) {
+		word = TOKEN_ALPHABET[value % TOKEN_ALPHABET.length] + word;
+		value = Math.floor(value / TOKEN_ALPHABET.length);
+	}
+	if (!solutionCandidates.includes(word)) {
+		throw new Error("unknown challenge word");
+	}
+	return word;
 }
 
 if (tokenParam) {
 	try {
-		const idx = decodeIdx(tokenParam);
-		solution = curatedWords[idx].toLowerCase();
+		solution = decodeChallengeToken(tokenParam);
 		viaChallenge = true;
 		currentUrl.searchParams.delete("t");
 		history.replaceState(null, "", currentUrl);
@@ -1246,8 +1280,7 @@ function buildEmojiGrid() {
 
 // Shares the challenge URL and emoji grid via Web Share API or clipboard.
 function shareChallenge() {
-	const idx = curatedWords.findIndex((w) => w.toLowerCase() === solution.toLowerCase());
-	const token = encodeIdx(idx);
+	const token = encodeChallengeToken(solution);
 
 	const url = new URL(location.href);
 	url.searchParams.set("t", token);
@@ -1628,7 +1661,7 @@ globalThis.wortsel.initGame();
  * - AUTO_RELOAD_ON_SW_UPDATE: reload page once after an update
  -------------------------------------------------------------------------------------------------- */
 const USE_SERVICE_WORKER = true;
-const SERVICE_WORKER_VERSION = "2026-09-07-v2";
+const SERVICE_WORKER_VERSION = "2026-09-07-v3";
 const AUTO_RELOAD_ON_SW_UPDATE = false;
 
 /* --------------------------------------------------------------------------------------------------
