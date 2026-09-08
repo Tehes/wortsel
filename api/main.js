@@ -383,23 +383,14 @@ const ensureCuratedAvailable = (req) => {
 	return withCORS(req, json({ error: "curated words unavailable" }, 503));
 };
 
-const getLeastPlayedWords = (totals) => {
-	let minTotal = Infinity;
-	const indices = [];
+const getLeastPlayedWords = (totals, minCandidates = 1) => {
+	const ranked = curatedWords.map((word) => ({ word, total: totals.get(word) ?? 0 }));
+	ranked.sort((a, b) => a.total - b.total);
 
-	for (let i = 0; i < curatedWords.length; i++) {
-		const word = curatedWords[i];
-		const total = totals.get(word) ?? 0;
-		if (total < minTotal) {
-			minTotal = total;
-			indices.length = 0;
-			indices.push(i);
-		} else if (total === minTotal) {
-			indices.push(i);
-		}
-	}
-
-	const words = indices.map((idx) => curatedWords[idx]);
+	const minTotal = ranked[0]?.total ?? Infinity;
+	// Include the entire boundary tier so ties are sampled fairly after shuffling.
+	const maxTotal = ranked[Math.min(minCandidates, ranked.length) - 1]?.total ?? Infinity;
+	const words = ranked.filter((entry) => entry.total <= maxTotal).map((entry) => entry.word);
 	return { words, minTotal };
 };
 
@@ -427,7 +418,7 @@ Deno.serve(async (req) => {
 		return withCORS(req, json({ word, total: minTotal, candidates: words.length }));
 	}
 
-	// GET /next-batch: Get up to 50 least-played words (shuffled)
+	// GET /next-batch: Fill a shuffled batch from the lowest count tiers.
 	if (url.pathname === "/next-batch") {
 		const preflight = handlePreflight(req);
 		if (preflight) return preflight;
@@ -437,7 +428,7 @@ Deno.serve(async (req) => {
 		if (curatedError) return curatedError;
 
 		const totals = await getTotalsMap();
-		const { words, minTotal } = getLeastPlayedWords(totals);
+		const { words, minTotal } = getLeastPlayedWords(totals, 50);
 
 		if (words.length === 0) {
 			console.error("No candidates found for /next-batch");
