@@ -39,7 +39,7 @@ let curatedWords = [];
 let curatedWordsError = null;
 try {
 	const { default: curatedRaw } = await import(
-		"https://tehes.github.io/wortsel/data/curated_words.json?v=2026-09-08-v1",
+		"https://tehes.github.io/wortsel/data/curated_words.json?v=2026-09-08-v2",
 		{
 			with: { type: "json" },
 		}
@@ -58,7 +58,7 @@ try {
 let additionalWords = [];
 try {
 	const { default: additionalRaw } = await import(
-		"https://tehes.github.io/wortsel/data/additional_words.json?v=2026-09-08-v1",
+		"https://tehes.github.io/wortsel/data/additional_words.json?v=2026-09-08-v2",
 		{
 			with: { type: "json" },
 		}
