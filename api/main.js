@@ -34,11 +34,12 @@ const withCORS = (req, res) => {
 // Normalize to keep Ä/Ö/Ü stable and uppercase
 const norm = (s) => (s ?? "").toString().trim().toUpperCase().normalize("NFC");
 
+// Bump both import URL versions after publishing updated word lists to GitHub Pages.
 let curatedWords = [];
 let curatedWordsError = null;
 try {
 	const { default: curatedRaw } = await import(
-		"https://tehes.github.io/wortsel/data/curated_words.json",
+		"https://tehes.github.io/wortsel/data/curated_words.json?v=2026-09-08-v1",
 		{
 			with: { type: "json" },
 		}
@@ -57,7 +58,7 @@ try {
 let additionalWords = [];
 try {
 	const { default: additionalRaw } = await import(
-		"https://tehes.github.io/wortsel/data/additional_words.json",
+		"https://tehes.github.io/wortsel/data/additional_words.json?v=2026-09-08-v1",
 		{
 			with: { type: "json" },
 		}

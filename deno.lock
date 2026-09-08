@@ -1,0 +1,7 @@
+{
+  "version": "5",
+  "remote": {
+    "https://tehes.github.io/wortsel/data/additional_words.json?v=2026-09-08-v1": "88626c880fceb46e419ac307618e07fbd7ca3e5728e540860be6d25efb26a7d3",
+    "https://tehes.github.io/wortsel/data/curated_words.json?v=2026-09-08-v1": "d0054f604df0f3120bd8aa6e652ba25cc04794dd6c8ae2c606d1702147526f65"
+  }
+}
