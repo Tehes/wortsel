@@ -675,6 +675,7 @@ function checkEndCondition() {
 				...analyticsPayload,
 				usedDictionary: wholeWordsCheckbox.checked,
 				activatedHardMode: hardModeCheckbox.checked,
+				activatedRemainingWords: remainingWordsCheckbox?.checked ?? false,
 				viaChallenge: viaChallenge,
 			});
 			//ADOBE ANALYTICS
@@ -1662,7 +1663,7 @@ globalThis.wortsel.initGame();
  * - AUTO_RELOAD_ON_SW_UPDATE: reload page once after an update
  -------------------------------------------------------------------------------------------------- */
 const USE_SERVICE_WORKER = true;
-const SERVICE_WORKER_VERSION = "2026-09-08-v2";
+const SERVICE_WORKER_VERSION = "2026-09-08-v3";
 const AUTO_RELOAD_ON_SW_UPDATE = false;
 
 /* --------------------------------------------------------------------------------------------------
